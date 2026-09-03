@@ -12,12 +12,106 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.9** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.10** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
 [PDI](https://github.com/davidsbianchi1984/pdi) (personal data vault). One
 version number names one tested combination of all three.
+
+> **Patent pending** — *Networked Responsive Personal Guidance System for
+> Known Conditions* (U.S. Patent Application No. 19/038,196, **published as
+> US 2025/0246290 A1**). The dated invention disclosure — each mechanism,
+> where it is reduced to practice in this repository, and the release that
+> first shipped it — is [docs/invention-disclosure.md](docs/invention-disclosure.md).
+
+## For examination
+
+This page is written to be checked, not believed. Three rules hold
+throughout it:
+
+- **A photograph outranks a drawing.** Every `.png` under `docs/screens/`
+  and `docs/walkthrough/` is a capture of the running console taken by
+  `tools/shoot_screens.py` and `tools/walkthrough.py` against a live
+  backend; an `.svg` is a design drawing and is captioned as one. The
+  36 watch faces are drawings by design, and each links to the working
+  face at jim-mini.com.
+- **Every behaviour stated here is held by a test.** The suite
+  (`python -m pytest`, 3,000-plus cases) reads this file: the release
+  banner, the release table, the gallery, the screen numbering, the
+  screen count and the closing passage all fail the build when they
+  drift from the product.
+- **Nothing is claimed that the product does not do.** Where a behaviour
+  is deliberately held shut — the 911 send — the page says so, and a test
+  reads the source to prove the hold.
+
+### Components
+
+| Component | Where | What it is |
+|---|---|---|
+| API server | `jim/` | FastAPI over SQLite: every door the clients use, the guardian's detection and escalation, the audit chain, the offline gate. |
+| Web console | `app/` | React and TypeScript. The 45 numbered screens photographed below, in ten languages. |
+| Watch surface | `app/` at `#watch`, `docs/watch/` | 36 working faces at wrist size in any browser, on the same API as the phones. |
+| iOS, Android, Windows shells | `native/ios/`, `native/android/`, `native/windows/` | Native shells at parity with the console; every route they call is a route the server publishes. |
+| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
+| Wrist channel | `jim/watch.py` | A deposit-only drip URL a phone automation posts readings to; a health export seeds weeks of baseline. |
+| The safety ladder | `jim/crashwatch.py`, `jim/vigil.py`, `jim/escalation.py`, `jim/reachout.py`, `jim/dialer.py`, `jim/ticker.py` | Detection, the question, the contacts rung in turn, the held 911 send, and the clock that advances without a read. |
+| The phone line | `jim/telephony.py` and the voice sidecar (`docker/voice` in the QRME repository) | JIM's half of a stateless sidecar that holds the phone house's credential and speaks one small protocol; five houses behind one interface. |
+| The model layer | `jim/llm.py`, `jim/loadouts.py`, `jim/cloud.py` | Provider menu by region, bring-your-own key per request, the offline stub, the cloud gateway; who answered is on the record. |
+| Memory and the vault | `jim/recall.py`, `jim/storage.py`, `jim/pdi_client.py` | Long-term memory sealed in the PDI vault, shown and forgettable down to the vectors. |
+| The tandem | `jim/qrme_client.py`, `jim/specialists.py` | QRME's specialist profiles reached from the coach. |
+| The record | `jim/audit.py`, `jim/offline.py` | The hash-chained audit log and the one gate every socket passes. |
+| The stack | `docker/beta-compose.yml` in the QRME repository | All three products, the sidecars (ears, film, forge, renderer, voice, cloud gateway) and Caddy, deployed as one. |
+
+### The mechanisms on file
+
+The seven numbered mechanisms in the invention disclosure, with where
+each lives:
+
+| § | Mechanism | Reduced to practice in |
+|---|---|---|
+| 1 | Wearable-to-guardian bridge requiring no vendor app store | `jim/watch.py` — the deposit-only drip channel and the export-as-baseline fold |
+| 2 | Personal drift bands distinct from a clinical alarm layer | `jim/guardian.py`, `jim/earlywarning.py`, `jim/conditions.py` |
+| 3 | Signal-quality-capped escalation | `jim/escalation.py`, `jim/signal.py`, `jim/freshness.py` |
+| 4 | Degrade-not-fail model layer with disclosed provenance | `jim/llm.py` — every answer names who answered |
+| 5 | Version-matched backend adoption in the desktop shell | the desktop launcher under `python -m jim` |
+| 6 | The vigil — an alarm on the absence of signals | `jim/vigil.py` |
+| 7 | Interoperating three-product architecture | `jim/qrme_client.py`, `jim/pdi_client.py`, one version number across the three |
+
+### The safety path, as built
+
+| Rung | Module | Held by |
+|---|---|---|
+| A critical reading opens "are you okay?" and re-asks on a deadline | `jim/crashwatch.py` | `test_crashwatch.py`, `test_the_crash_watch_rings_the_same_bell.py` |
+| The clock advances without anyone looking | `jim/ticker.py` | `test_the_clock_advances_without_a_read.py` |
+| Silence over days asks a steward to check in | `jim/vigil.py` | `test_vigil.py` |
+| The emergency contacts are rung one after another, keypad consent first, a grounded conversation on 1 | `jim/reachout.py` | `test_the_reachout_cascade.py`, `test_a_call_event_decides_reached_or_unreached.py` |
+| The call rings through the voice door; a door that refuses or does not answer leaves the leg unplaced, never pretended | `jim/telephony.py` | `test_the_contact_call_rings_through_the_voice_door.py`, `test_the_dialer_posture_is_proven.py` |
+| The 911 send is built to the send and held shut in source | `jim/dialer.py` (`SEND_ENABLED = False`) | `test_the_dialer_is_held_shut.py`, `test_the_transport_never_carries_911.py` |
+| Every rung lands on the hash-chained record | `jim/audit.py` | `test_a_chain_with_a_hole_in_it_is_not_evidence.py` |
+
+### Where each highlight is proven
+
+| Highlight | Module | Test | Screen |
+|---|---|---|---|
+| Offline is enforced at every socket | `jim/offline.py` | `test_nothing_leaves_the_host.py` | 23 |
+| Ten languages, refusals included | `jim/i18n.py` | `test_the_guardian_refuses_in_one_language.py` | every screen |
+| Ability is not a gate | `app/src/screens/Access.tsx` | `test_ability_is_not_a_gate.py` | 37 |
+| The wrist channel and the watch | `jim/watch.py`, `native/wear/` | `test_watch.py`, `test_the_wrist_is_a_surface.py`, `test_the_watch_you_actually_wear.py` | 12, faces 01–36 |
+| The personal baseline and every limit on one screen | `jim/guardian.py` | `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` | 08, 13 |
+| Bring your own model key | `jim/llm.py` | `test_byo_key.py` | 15 |
+| The coach, grounded in the vault and the watched pages | `jim/coach.py`, `jim/lookout.py` | `test_the_lookout.py`, `test_the_lookout_grows_ears.py` | 07 |
+| The medicine cabinet | `jim/meds.py` | `test_meds.py` | 17 |
+| The care circle | `jim/careteam.py` | `test_careteam.py` | 18 |
+| The money guardian | `jim/money.py` | `test_the_money_guardian.py` | 13 |
+| Beacons and the rota | `jim/beacons.py`, `jim/rota.py` | `test_beacons.py` | 31 |
+| The engaged session and its permits | `jim/engaged.py`, `jim/permits.py` | `test_an_engaged_session_reaches_no_further_than_its_owner.py` | 38, 39 |
+| The agent's hands and look permits | `jim/hands.py` | `test_the_agents_hands_reach_the_look.py`, `test_the_guardian_gets_eyes_and_hands.py` | 42 |
+| Widgets that cannot leave their box | `jim/widgets.py` | `test_the_widget_cannot_leave_its_box.py` | 40 |
+| The moderated mailbox | `jim/mailbox.py` | `test_the_moderated_mailbox.py` | 44 |
+| The training corpus and the learn task | `jim/corpus.py` | `test_the_training_corpus.py`, `test_the_learn_task_plants_itself.py` | 43 |
+| App edits held for company oversight | `jim/appedits.py` | `test_the_held_screens_buttons_match_the_wire.py` | 45 |
+| Two guardians working together | `jim/family.py` | `test_two_guardians_working_together.py` | 25 |
 
 ## Who it is for
 
@@ -48,6 +142,9 @@ worded, or designed around one generation.
 | **Early-warning escalation** | A programmed ladder: check in with the person first, then contacts, then the emergency path they configured in advance. See [docs/early-warning-escalation.md](docs/early-warning-escalation.md). |
 | **The far end** | A critical detection mails the consented emergency contact a real letter with an acknowledgment link, and a monthly liveness note proves the mailbox on a calm day instead of during an emergency. |
 | **Beacons and the rota** | Location beacons for finders, an answering queue for carers, and a relay that pages a rota of responders — every attempt on the ledger, and the sentence a finder reads derived from what actually happened. |
+| **The reach-out cascade** | When a crash watch trips, JIM rings the emergency contacts one after another through the phone line: a keypad choice first (1 to hear the message, 2 to never be called this way again), then a grounded spoken conversation; no answer moves to the next person. The line's own word decides reached or unreached, once, however many times the house repeats itself. A contact who rings the number back reaches the same conversation. |
+| **The held 911 send** | The last rung is built to the send and held shut in source: the dialer assembles and routes the emergency connection and never places it. No setting, plan, waiver or wired transport opens it; only a reviewed edit to `jim/dialer.py` can, and a test reads the source to prove the hold. |
+| **The ticker** | Every deadline used to move only when a screen looked. JIM's own clock now sweeps the running clocks every thirty seconds — an open question, an armed vigil, a placed call the line has not reported on — so a collapse at 3 a.m. with every screen closed does not wait for morning. |
 | **Emergency tools** | A CPR metronome that keeps clinical time with no network and no account, first-aid playbooks localized in ten languages, a scannable Medical ID, and an emergency screen that shares location. The device dials; JIM never claims a call it did not place. |
 
 **Living**
@@ -346,7 +443,10 @@ starts climbing.
 
 **The ladder ends at a person.** Escalation is programmed in advance and
 runs in order: the person first, then their contacts, then the emergency
-path they chose. Every rung is recorded. The dialer hands the number to
+path they chose. Every rung is recorded. The contacts are rung through
+the voice door when a phone line is wired, and each call is prepared and
+documented — never pretended — when it is not. The 911 send at the last
+rung is held shut in source. The emergency screen hands that number to
 the device — the thing that can actually place a call — and JIM never
 claims a call it did not make.
 
@@ -447,6 +547,8 @@ Everything is environment-driven; the defaults run locally with no keys.
 | `JIM_MODEL` | Model override for the default provider. |
 | `ELEVENLABS_API_KEY` | Spoken voice; without it the device voice stands in and says so. |
 | `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
+| `JIM_VOICE_URL` / `JIM_VOICE_SECRET` / `JIM_TELEPHONY_PROVIDER` | The phone line: the voice sidecar's address, the secret both containers share, and which house it is keyed for. Unset, every contact call is prepared and documented and nothing rings. |
+| `JIM_TICK_SECONDS` | How often JIM's own clock sweeps the running clocks (default 30; `0` turns the ticker off). |
 | `JIM_CORS_ORIGINS` | Allowed console origins. |
 
 See [docs/hosting.md](docs/hosting.md) for production deployment and
@@ -499,6 +601,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.10** | **The line answers** — a contact the cascade rang who rings the number back inside a day reaches the conversation about that reach-out: a leg of its own, consented by the act of calling, opened with what they are calling back about, then the same grounded turns. Anyone else hears one fixed sentence in their language, and nothing is kept but the audit. A call back never advances the cascade, and a cascade a call back reached rings nobody more. Receiving is proven the way placing is: the posture says whether the number is pointed at the line, and the Safety screen prints the two URLs to point it with. |
 | **3.0.9** | **The ticker** — JIM's clock advances without a read. The crash watch's re-ask and trip, the vigil's silence check, and the settlement of a placed call the phone line never reported on used to move only while a screen or a status read was looking. One daemon thread now sweeps exactly the users whose clocks are running, every thirty seconds by default, through the same functions the reads call; a tick is a read nobody had to make. The crash watch's status carries the ticker's posture and the Safety screen says whether JIM checks on its own. |
 | **3.0.8** | **A real telephony transport for the reach-out cascade** — the cascade ran to the ring and held there; it rings now, through a voice sidecar in the compose stack that holds the house's credential and speaks one small protocol to JIM. A leg is placed and the house's reference recorded on the row, or left honestly *unplaced* with the door's sentence when the door refuses or does not answer, and the next person rung — never a pretended ring. The line's own word decides reached or unreached at one door, once, however many times the house repeats itself; every spoken sentence rides an envelope so the sidecar composes no prose; the call-id doors take a shared secret; and the posture is proven by asking the door, with *Check the line* on the Safety screen. The 911 send stays held shut in source, its path never names the transport, and the transport refuses an emergency short code before a request is built. |
 | **3.0.7** | **The learn task plants itself** — PDI 3.0.1 gave the resident `corpus.learn` and it waited on somebody planting the task by hand. The person's own switch does it now: turning capture on plants a standing learn task in the vault, scoped to this person's bundles and nothing else, every day; turning it off takes the task back, and the row lets go only after the vault did. The bank archives itself every fifty examples once a vault is there, so the task always has bundles to learn from, and the first archive plants the task for a person who never touched the switch. The posture and the Settings card say what stands, or why nothing does — no vault, an older tandem, an unreached one — in words. |
