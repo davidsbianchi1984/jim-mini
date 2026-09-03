@@ -211,6 +211,14 @@ def test_the_limits_are_finite_and_the_hidden_places_are_the_lives(tmp_path, mon
     assert workroom.LIMITS["processes"] < 100
     assert workroom.LIMITS["kept_bytes"] <= workroom.LIMITS["output_bytes"]
     assert workroom.LIMITS["file_bytes"] >= workroom.LIMITS["output_bytes"]
+    # The process ceiling is headroom over what the run's user already
+    # has, so a server with forty threads of its own does not trip it.
+    import os as _os
+    mine = workroom.tasks_of(_os.geteuid())
+    assert mine >= 1
+    assert workroom.ceiling() >= workroom.LIMITS["processes"]
+    if _os.geteuid() != 0:
+        assert workroom.ceiling() == mine + workroom.LIMITS["processes"]
     assert set(workroom.HIDDEN) >= {"/home", "/root"}
     assert {".git", "node_modules", "*.db", "*.db-wal", ".env"} <= workroom.SKIP
     # The lives are hidden wherever this host keeps them, not only at the
@@ -533,6 +541,43 @@ def test_a_host_that_cannot_build_a_room_refuses_in_a_sentence(client, monkeypat
     assert r.json()["box"]["status"] == "refused"
     assert r.json()["box"]["detail"] == "the assistant's box is not available on this host"
     assert "appedit.box_refused" in _actions(uid) and "appedit.boxed" not in _actions(uid)
+
+
+@needs_box
+def test_a_busy_server_is_not_its_own_process_ceiling(tmp_path, monkeypatch, rooms):
+    """Forty threads of uvicorn on the run's uid used to eat a flat ceiling
+    of thirty-two before the box's first fork. The ceiling is headroom
+    over what is already there, and the run still cannot fork past it."""
+    import threading, time as _time
+    stop = threading.Event()
+    threads = [threading.Thread(target=stop.wait, daemon=True) for _ in range(48)]
+    for th in threads:
+        th.start()
+    try:
+        src = _tree(tmp_path / "src")
+        (src / "jim" / "tests" / "test_walls.py").write_text(textwrap.dedent("""\
+            import os, time
+            from jim.walls import WALLS
+
+            def test_forks_only_so_far():
+                kids = []
+                try:
+                    for _ in range(400):
+                        pid = os.fork()
+                        if pid == 0:
+                            time.sleep(20)
+                            os._exit(0)
+                        kids.append(pid)
+                except OSError:
+                    pass
+                for pid in kids:
+                    os.kill(pid, 9); os.waitpid(pid, 0)
+                assert 0 < len(kids) < 400, len(kids)
+            """))
+        got = workroom.try_draft(WALLS, "jim/walls.py", source=src)
+        assert got["status"] == "green", got["output"]
+    finally:
+        stop.set()
 
 
 # --- the door, the owner, and oversight ----------------------------------------

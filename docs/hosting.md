@@ -82,6 +82,17 @@ or any container platform is the right shape.
 |---|---|
 | `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms — a copy of the tree with a draft applied, its tests run inside four walls. Default: `jim-workrooms` under the system temp directory. It must sit outside `/home`, `/root`, `/srv` and `/data`, because those are hidden inside the box and a room under one of them cannot see itself. |
 
+**On a hosted cloud.** Inside a container the box needs what Docker's
+defaults refuse: `unshare` and `mount` past the default seccomp profile,
+and mounts and user namespaces past the default AppArmor profile. Without
+them the probe fails with *unshare failed: Operation not permitted* and the
+Studio shows the sentence. The compose stack in the QRME repository ships
+two profiles that widen the defaults by exactly those calls, for the JIM
+container only — `docker/jim-box.seccomp.json` and `docker/jim-box.apparmor`,
+loaded by `docker/jim-box-install.sh` on the host — and its deploy page says
+how. The box's own walls still hold inside: the profiles let the namespaces
+be raised, and the namespaces do the confining.
+
 **The assistant's box.** A drafted app edit can be tried before oversight
 reads it: the diff applied to a copy of the repository (never the
 database, its journals or a `.env`), the tests it names run with the

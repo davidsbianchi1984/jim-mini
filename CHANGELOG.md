@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.12] - 2026-09-03
+
+### Fixed
+
+- **The box's process ceiling is headroom, not a flat count.** The
+  kernel counts every task the run's user already has against
+  `RLIMIT_NPROC`, the server's own threads included, so a flat ceiling
+  of thirty-two was tripped by a forty-thread server before the box's
+  first fork and the box refused on a hosted cloud for the wrong reason.
+  The ceiling is now what the run's user has plus `LIMITS["processes"]`
+  of headroom, read from `/proc` at the moment of the run; the probe
+  forks past the headroom to prove the count still holds, and a test
+  starts forty-eight threads of its own before trying a draft.
+- **What the hosted cloud needs, written down.** `docs/hosting.md` says
+  what a container must allow for the box to open — `unshare` and
+  `mount` past Docker's default seccomp profile, mounts and user
+  namespaces past its default AppArmor profile — and points at the
+  profiles the compose stack ships for exactly that. Nothing here opens
+  anything: a container that allows none of it gets the same sentence
+  as before.
+
 ## [3.0.11] - 2026-09-03
 
 ### Added
@@ -12177,7 +12198,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.11...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.12...HEAD
+[3.0.12]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.11...app-v3.0.12
 [3.0.11]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...app-v3.0.11
 [3.0.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...app-v3.0.10
 [3.0.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...app-v3.0.9

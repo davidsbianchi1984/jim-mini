@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.11** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.12** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -604,6 +604,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.12** | **The box on a busy server** — the process ceiling is headroom over what the run's user already has rather than a flat count, so a forty-thread server no longer trips it before the box's first fork; and the hosting page says what a container must allow for the box to open on a hosted cloud, with the profiles the compose stack ships for it. |
 | **3.0.11** | **The coding assistant gets a box** — a drafted app edit is tried before a person is asked to judge it: the diff applied to a copy of the tree (never the database or a secret), the tests it names run with the network cut, every life on the disk hidden, the run in a pid namespace of its own so nothing outlives it, processes counted, time, memory and output finite. A red run goes back to the assistant with what the tests said, for up to three tries of the draft in all, and every round is filed beside the diff, so oversight reads a fact and not a guess. The Studio has the button and the outcome, the Oversight desk reads the same, and a host without user namespaces gets a sentence instead of a button. The box decides nothing: an approved edit still rides the next publish-merge. |
 | **3.0.10** | **The line answers** — a contact the cascade rang who rings the number back inside a day reaches the conversation about that reach-out: a leg of its own, consented by the act of calling, opened with what they are calling back about, then the same grounded turns. Anyone else hears one fixed sentence in their language, and nothing is kept but the audit. A call back never advances the cascade, and a cascade a call back reached rings nobody more. Receiving is proven the way placing is: the posture says whether the number is pointed at the line, and the Safety screen prints the two URLs to point it with. |
 | **3.0.9** | **The ticker** — JIM's clock advances without a read. The crash watch's re-ask and trip, the vigil's silence check, and the settlement of a placed call the phone line never reported on used to move only while a screen or a status read was looking. One daemon thread now sweeps exactly the users whose clocks are running, every thirty seconds by default, through the same functions the reads call; a tick is a read nobody had to make. The crash watch's status carries the ticker's posture and the Safety screen says whether JIM checks on its own. |

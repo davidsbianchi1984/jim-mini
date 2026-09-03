@@ -37,9 +37,12 @@ the run before a test starts.
 **Processes are counted.** ``unshare -p --fork --kill-child`` makes the
 run pid 1 of its own pid namespace, so nothing it starts outlives it —
 a detached grandchild dies with the run. ``RLIMIT_NPROC`` holds the
-count; because the kernel does not count root's processes, a server
-running as root drops the run to ``nobody`` first, and the probe forks
-past the ceiling to prove the count holds before the box is offered.
+count: the kernel counts every task the run's user already has, the
+server's own threads included, so the ceiling is that count plus a fixed
+headroom rather than a flat number a busy server would trip on its own.
+Because the kernel does not count root's processes at all, a server
+running as root drops the run to ``nobody`` first; and the probe forks
+past the headroom to prove the count holds before the box is offered.
 
 **Time and memory are finite.** ``setrlimit`` caps CPU seconds, address
 space, and file size before the interpreter starts; a wall-clock kill
@@ -88,7 +91,8 @@ log = logging.getLogger("jim.workroom")
 
 REPO = Path(__file__).resolve().parent.parent
 
-#: The ceilings, carried into the child before it starts.
+#: The ceilings, carried into the child before it starts. ``processes`` is
+#: headroom over what the run's user already has, not a flat count.
 LIMITS = {"wall_seconds": 300, "cpu_seconds": 240,
           "address_space": 2 * 1024 ** 3, "processes": 32,
           "file_bytes": 16 * 1024 ** 2,
@@ -188,7 +192,7 @@ with open(os.path.join(os.environ["TMPDIR"], "scratch"), "w") as fh:
 kids = []
 held = False
 try:
-    for _ in range(200):
+    for _ in range(400):
         pid = os.fork()
         if pid == 0:
             time.sleep(20)
@@ -479,7 +483,45 @@ def tests_for(tree: Path, changed: list[str], target: str = "") -> list[str]:
     return found
 
 
-def _limits() -> None:                              # pragma: no cover - child
+def run_as() -> int:
+    """The uid the run is: the server's own, or ``nobody`` when the server
+    is root."""
+    if os.geteuid() == 0:
+        who = _nobody()
+        return who.pw_uid if who else 0
+    return os.geteuid()
+
+
+def tasks_of(uid: int) -> int:
+    """How many tasks — processes and their threads — this uid has now,
+    as the kernel will count them against ``RLIMIT_NPROC``."""
+    total = 0
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        try:
+            with open(f"/proc/{entry}/status", encoding="utf-8", errors="replace") as fh:
+                owner, threads = None, 1
+                for line in fh:
+                    if line.startswith("Uid:"):
+                        owner = int(line.split()[1])
+                    elif line.startswith("Threads:"):
+                        threads = int(line.split()[1])
+                        break
+            if owner == uid:
+                total += threads
+        except (OSError, ValueError):
+            continue
+    return total
+
+
+def ceiling() -> int:
+    """The process ceiling for a run: what the run's user already has,
+    plus the headroom."""
+    return tasks_of(run_as()) + LIMITS["processes"]
+
+
+def _limits(processes: int) -> None:                # pragma: no cover - child
     cpu = LIMITS["cpu_seconds"]
     resource.setrlimit(resource.RLIMIT_CPU, (cpu, cpu + 5))
     space = LIMITS["address_space"]
@@ -491,7 +533,7 @@ def _limits() -> None:                              # pragma: no cover - child
         os.setgroups([])
         os.setgid(who.pw_gid)
         os.setuid(who.pw_uid)
-    resource.setrlimit(resource.RLIMIT_NPROC, (LIMITS["processes"],) * 2)
+    resource.setrlimit(resource.RLIMIT_NPROC, (processes, processes))
 
 
 def _script(tree: Path, places: list[str], program: str) -> str:
@@ -526,6 +568,7 @@ def _invoke(room: Path, tree: Path, script: str) -> dict:
            "JIM_OFFLINE": "1", "JIM_LLM": "stub", "JIM_TICK_SECONDS": "0",
            "JIM_DB": str(room / "tmp" / "jim.db"), "LANG": "C.UTF-8"}
     logfile = room / "run.log"
+    processes = ceiling()
     started = time.monotonic()
     timed_out = False
     try:
@@ -534,7 +577,7 @@ def _invoke(room: Path, tree: Path, script: str) -> dict:
                 [_UNSHARE, *_UNSHARE_ARGS, "sh", "-c", script],
                 stdout=fh, stderr=subprocess.STDOUT,
                 timeout=LIMITS["wall_seconds"], env=env,
-                preexec_fn=_limits, cwd=str(room))
+                preexec_fn=lambda: _limits(processes), cwd=str(room))
         code = done.returncode
     except subprocess.TimeoutExpired:
         timed_out = True
