@@ -5387,6 +5387,12 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   // Edit the app — the submit + approval seam, in the Studio. The assistant
   // writes the change with the person's pick from their region's menu.
+  "cor.learn.on": {
+    en: "The vault learns from this corpus on its own, every {n} hours — the coach's grounded answers stand on it.", es: "La bóveda aprende de este corpus por sí sola, cada {n} horas: las respuestas fundamentadas del coach se apoyan en él.", fr: "Le coffre apprend de ce corpus tout seul, toutes les {n} heures — les réponses ancrées du coach s'appuient dessus.", de: "Der Tresor lernt von selbst aus diesem Korpus, alle {n} Stunden — die fundierten Antworten des Coachs stützen sich darauf.", pt: "O cofre aprende deste corpus sozinho, a cada {n} horas — as respostas fundamentadas do coach apoiam-se nele.", it: "La cassaforte impara da sola da questo corpus, ogni {n} ore — le risposte fondate del coach vi si appoggiano.", ja: "保管庫は{n}時間ごとにこのコーパスから自動で学習します。コーチの根拠つきの回答はそれに基づきます。", zh: "保险库每 {n} 小时自动从此语料库学习 — 教练的有据回答以此为基础。", hi: "वॉल्ट हर {n} घंटे में इस कॉर्पस से खुद सीखता है — कोच के आधारित उत्तर इसी पर टिके हैं।", ar: "يتعلّم الخزن من هذا المتن بنفسه كل {n} ساعة — وتستند إجابات المدرّب المؤسَّسة إليه.",
+  },
+  "cor.learn.off": {
+    en: "No standing learn task in the vault yet.", es: "Aún no hay tarea de aprendizaje permanente en la bóveda.", fr: "Pas encore de tâche d'apprentissage permanente dans le coffre.", de: "Noch keine ständige Lernaufgabe im Tresor.", pt: "Ainda não há tarefa de aprendizagem permanente no cofre.", it: "Nessun compito di apprendimento permanente nella cassaforte, per ora.", ja: "保管庫にはまだ常設の学習タスクがありません。", zh: "保险库中尚无常设学习任务。", hi: "वॉल्ट में अभी कोई स्थायी सीखने का कार्य नहीं।", ar: "لا توجد مهمة تعلّم قائمة في الخزن بعد.",
+  },
   "edit.title": {
     en: "Edit the app", es: "Editar la app", fr: "Modifier l'app", de: "Die App bearbeiten", pt: "Editar a app", it: "Modifica l'app", ja: "アプリを編集", zh: "编辑应用", hi: "ऐप संपादित करें", ar: "تعديل التطبيق",
   },

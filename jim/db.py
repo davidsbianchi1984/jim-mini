@@ -1879,6 +1879,10 @@ def db_path() -> str:
 # second list — (table, column, type) — applied by connect() when missing.
 _NEW_COLUMNS = [
     ("checkins", "stress", "INTEGER"),
+    # The standing learn task the tandem vault keeps for this person's
+    # corpus (jim/corpus.py, 3.0.7). NULL is no task planted — no vault, an
+    # older tandem, or capture off.
+    ("corpus_consent", "learn_task_id", "TEXT"),
     # Anonymous enrollment (jim/identity.py, spec [0031] / FIG. 2 box 212):
     # `display_name` holds a pseudonym when `anonymous` is set, and
     # `legal_name` is the name — if any — the user chose to leave for

@@ -1054,6 +1054,10 @@ export interface CorpusPosture {
     version: number; backend: string; examples: number; active: boolean;
   } | null;
   local_language_model_ready: boolean;
+  // The standing learn task the vault keeps for this person's corpus, or
+  // why there is none (no vault, an older tandem, capture off).
+  learning: { planted: boolean; task_id: string | null; every_hours: number;
+              status: string | null; next_run_at: string | null; why: string | null };
   note: string;
 }
 /** The model menu this account is offered — a per-region loadout, each row

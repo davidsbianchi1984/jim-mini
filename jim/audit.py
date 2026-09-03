@@ -80,6 +80,8 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "corpus.consent": ("life", "the person turned offline training-data capture on or off for their own model"),
     "corpus.archived": ("life", "the banked training corpus was sealed into the vault so it survives this machine"),
     "corpus.purged": ("life", "the person cleared their banked training corpus — the forget door for offline training data"),
+    "corpus.planted": ("life", "a standing learn task was planted in the vault for this person's corpus — the resident indexes it on its own"),
+    "corpus.unplanted": ("life", "the standing learn task for this person's corpus was taken back from the vault"),
     "region.set": ("access", "the account holder set the region their model menu is the loadout for"),
     "appedit.proposed": ("access", "a person filed a proposed change to the app itself into the deployment's lane"),
     "appedit.drafted": ("access", "the coding assistant wrote a proposed change to the app from the person's instruction"),

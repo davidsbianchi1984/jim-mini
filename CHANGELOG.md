@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.7] - 2026-09-03
+
+### Added
+
+- **The learn task plants itself.** PDI 3.0.1 gave the resident
+  `corpus.learn` — index a tandem's sealed training bundles so grounded
+  answers stand on them — and it waited on somebody planting the task by
+  hand. The person's own switch does it now (`jim/corpus.py`): turning
+  capture on plants a standing `corpus.learn` task in the vault, scoped
+  to this person's bundles (`jim/{user}/corpus/`) and nothing else, every
+  `LEARN_EVERY_HOURS`; one per person, never doubled. Turning capture off
+  takes the task back, and the row lets go only after the vault did — a
+  cancel that cannot reach the vault keeps the id so the next try can
+  still end it. The bank archives itself every `ARCHIVE_EVERY` examples
+  once a plan-gated vault is there, best-effort at the capture point, so
+  the task always has bundles to learn from without a press; and the
+  first archive plants the task for a person who never touched the
+  switch, since capture is on by default. `GET /corpus/{id}` and the
+  consent door answer with a `learning` block — planted, the task, its
+  status and next run as the vault sees it, or why nothing stands: no
+  vault, an older tandem, an unreached one — and the Settings card says
+  the same. Two audit names, `corpus.planted` and `corpus.unplanted`.
+
 ## [3.0.6] - 2026-09-03
 
 ### Added
@@ -11969,7 +11992,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...HEAD
+[3.0.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...app-v3.0.7
 [3.0.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...app-v3.0.6
 [3.0.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...app-v3.0.5
 [3.0.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...app-v3.0.4

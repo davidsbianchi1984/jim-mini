@@ -273,6 +273,12 @@ export function Settings() {
               finally { setCorBusy(false); }
             }}>{tr("cor.archive", lang)}</button>
           </div>
+          <p className="muted small">
+            {cor.learning.planted
+              ? tr("cor.learn.on", lang).replace("{n}", String(cor.learning.every_hours))
+              : tr("cor.learn.off", lang)}
+            {!cor.learning.planted && cor.learning.why && <> · {cor.learning.why}</>}
+          </p>
           <label className="spec-row">
             <span>{tr("cor.capture", lang)}</span>
             <input type="checkbox" checked={cor.capturing}

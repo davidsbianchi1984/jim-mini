@@ -121,7 +121,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.6",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.7",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2181,7 +2181,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         """How much is banked, from where, and what offline capability still
         waits on — with the zero-egress guarantee it makes worth having."""
         _user_or_404(user_id, request)
-        return corpus.posture(user_id, app)
+        # The learn task is read through the real vault, plan or no plan —
+        # a standing task somebody planted on Basic is still theirs to see.
+        return corpus.posture(user_id, app, pdi=app.state.pdi)
 
     @app.put("/corpus/{user_id}/consent")
     def corpus_set_consent(user_id: str, body: CorpusConsent,
@@ -2189,7 +2191,11 @@ def create_app(qrme_client: QRMEClient | None = None,
         """Turn banking on or off. Off stops capture and leaves what is already
         banked (purge clears that)."""
         _user_or_404(user_id, request)
-        return corpus.set_consent(user_id, body.enabled)
+        # Planting is a write and takes the plan-gated vault; taking a task
+        # back is a deletion and keeps the real one.
+        return corpus.set_consent(
+            user_id, body.enabled,
+            pdi=_vault(user_id) if body.enabled else app.state.pdi)
 
     @app.post("/corpus/{user_id}/archive")
     def corpus_archive(user_id: str, request: Request) -> dict:
