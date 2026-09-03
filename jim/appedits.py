@@ -31,12 +31,21 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 
-from . import audit, corpus, db, llm, loadouts
+from . import audit, corpus, db, i18n, llm, loadouts
 
 LANES = ("self_hosted", "cloud")
 STATES = ("proposed", "approved", "rejected")
 _TRUTHY = {"1", "true", "yes", "on"}
+
+#: How many drafts may be in the box at once, and which are. A box run
+#: pins a worker thread for minutes; two at a time keeps every other door
+#: — the safety paths above all — answering.
+BOX_SLOTS = 2
+_SLOTS = threading.BoundedSemaphore(BOX_SLOTS)
+_IN_FLIGHT: set[str] = set()
+_FLIGHT_LOCK = threading.Lock()
 
 
 def lane() -> str:
@@ -67,14 +76,15 @@ def posture() -> dict:
     }
 
 
-def _public(r: dict) -> dict:
+def _public(r: dict, language: str = i18n.DEFAULT) -> dict:
     from . import workroom
     return {"id": r["id"], "title": r["title"], "description": r["description"],
             "target": r["target"], "patch": r["patch"], "model": r["model"],
             "lane": r["lane"], "state": r["state"], "note": r["note"],
             "decided_at": r["decided_at"], "created_at": r["created_at"],
-            # What the assistant's box made of it, or null when never tried.
-            "box": workroom.summary(workroom.loads(r.get("box")))}
+            # What the assistant's box made of it, or null when never tried;
+            # its sentence, if any, in the reader's language.
+            "box": workroom.summary(workroom.loads(r.get("box")), language)}
 
 
 def _row(edit_id: str) -> dict:
@@ -128,8 +138,11 @@ def _system(target: str) -> str:
 
 
 def _again(user_id: str, model_choice: str):
-    """The assistant asked once more, with what the tests said."""
-    def revise(patch: str, output: str) -> str:
+    """The assistant asked once more, with what the tests said. Answers
+    ``(patch, who)`` so the round records its author; a degraded answer —
+    the stub standing in for a provider that did not answer — is no
+    revision at all, so the draft on file is never replaced by stub text."""
+    def revise(patch: str, output: str) -> tuple[str, str]:
         system = ("You are a careful software engineer. Your earlier diff was "
                   "tried in a box and its tests failed. Answer with a revised "
                   "git-style unified diff against the ORIGINAL files — the "
@@ -138,19 +151,31 @@ def _again(user_id: str, model_choice: str):
         prompt = (f"Your diff:\n\n{patch}\n\nWhat the tests said:\n\n"
                   f"{output[-4000:]}")
         if model_choice == "auto":
-            return llm.generate_for_user(user_id, system, prompt,
-                                         source="appedit")["text"]
+            gen = llm.generate_for_user(user_id, system, prompt,
+                                        source="appedit")
+            if gen.get("degraded"):
+                return "", gen["provider"]
+            return gen["text"], gen["provider"]
         provider = llm.get_provider(choice=model_choice)
-        return provider.generate(system, prompt)
+        text = provider.generate(system, prompt)
+        used = getattr(provider, "answered_by", None) or model_choice
+        corpus.capture(user_id, system, prompt, text, used, source="appedit")
+        return text, used
     return revise
 
 
-def box(user_id: str, edit_id: str, *, model: str = "") -> dict:
+def box(user_id: str, edit_id: str, *, model: str = "",
+        language: str = i18n.DEFAULT) -> dict:
     """Try a drafted edit in the assistant's box (jim/workroom.py): the
     diff applied to a copy of the tree, the tests it names run inside four
-    walls, the assistant asked again on a red run up to MAX_ROUNDS times,
-    and every round filed beside the diff for oversight. The box decides
-    nothing: an approved edit still rides the next publish-merge."""
+    walls, the assistant asked again on a red run up to MAX_ROUNDS tries in
+    all, and every round filed beside the diff for oversight. The box
+    decides nothing: an approved edit still rides the next publish-merge.
+
+    Only an edit still awaiting a decision is tried — or, on a self-hosted
+    server, the owner's own approved one, since there the owner is the
+    oversight — so a diff oversight approved is never rewritten under it.
+    One edit is in the box once at a time, and ``BOX_SLOTS`` at most."""
     from . import workroom
     try:
         row = _row(edit_id)
@@ -159,6 +184,9 @@ def box(user_id: str, edit_id: str, *, model: str = "") -> dict:
     # Somebody else's edit reads as no edit: the box is the owner's to ask.
     if row is None or row["user_id"] != user_id:
         raise ValueError("no such edit")
+    if row["state"] == "rejected" or (
+            row["state"] == "approved" and row["lane"] != "self_hosted"):
+        raise ValueError("this app edit is already decided")
     ok, why = workroom.available()
     if not ok:
         audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
@@ -166,17 +194,38 @@ def box(user_id: str, edit_id: str, *, model: str = "") -> dict:
     choice = (model or "").strip() or "auto"
     if not loadouts.allowed(user_id, choice):
         raise ValueError("that model is not on the menu for your region")
-    got = workroom.iterate(row["patch"], row["target"], _again(user_id, choice))
-    conn = db.connect()
-    conn.execute("UPDATE app_edits SET box=?, patch=?, updated_at=? WHERE id=?",
-                 (json.dumps(got), got["patch"], db.utcnow(), edit_id))
-    conn.commit()
+    with _FLIGHT_LOCK:
+        if edit_id in _IN_FLIGHT:
+            raise ValueError("that edit is already in the box")
+        if not _SLOTS.acquire(blocking=False):
+            raise ValueError("the assistant's box is busy, so try again in a moment")
+        _IN_FLIGHT.add(edit_id)
+    try:
+        got = workroom.iterate(row["patch"], row["target"],
+                               _again(user_id, choice))
+        conn = db.connect()
+        # Optimistic: the row must still be the one read above. A decision
+        # taken while the box ran wins, and the run is filed as refused.
+        n = conn.execute(
+            "UPDATE app_edits SET box=?, patch=?, model=?, updated_at=?"
+            " WHERE id=? AND state=? AND patch=?",
+            (json.dumps(got), got["patch"],
+             got.get("model") or row["model"], db.utcnow(),
+             edit_id, row["state"], row["patch"])).rowcount
+        conn.commit()
+    finally:
+        with _FLIGHT_LOCK:
+            _IN_FLIGHT.discard(edit_id)
+            _SLOTS.release()
+    if n == 0:
+        audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
+        raise ValueError("this app edit was decided while the box was running")
     if got["status"] == "unapplied":
         audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
     else:
         audit.record("appedit.boxed", user_id=user_id,
                      ref=f"{edit_id}:{got['status']}")
-    return _public(_row(edit_id))
+    return _public(_row(edit_id), language)
 
 
 def draft(user_id: str, *, target: str = "", instruction: str,
@@ -207,21 +256,22 @@ def draft(user_id: str, *, target: str = "", instruction: str,
                    target=target, patch=text, model=used)
 
 
-def mine(user_id: str, limit: int = 50) -> list[dict]:
+def mine(user_id: str, limit: int = 50,
+         language: str = i18n.DEFAULT) -> list[dict]:
     rows = db.connect().execute(
         "SELECT * FROM app_edits WHERE user_id=? ORDER BY created_at DESC"
         " LIMIT ?", (user_id, int(limit))).fetchall()
-    return [_public(dict(r)) for r in rows]
+    return [_public(dict(r), language) for r in rows]
 
 
-def queue() -> dict:
+def queue(language: str = i18n.DEFAULT) -> dict:
     """Oversight's view: what awaits a decision, and what is approved and
     queued to ride the next publish-merge."""
     conn = db.connect()
-    awaiting = [_public(dict(r)) for r in conn.execute(
+    awaiting = [_public(dict(r), language) for r in conn.execute(
         "SELECT * FROM app_edits WHERE state='proposed' ORDER BY created_at"
     ).fetchall()]
-    queued = [_public(dict(r)) for r in conn.execute(
+    queued = [_public(dict(r), language) for r in conn.execute(
         "SELECT * FROM app_edits WHERE state='approved' ORDER BY decided_at"
     ).fetchall()]
     return {"awaiting": awaiting, "queued": queued, "posture": posture()}

@@ -14,22 +14,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   diff and never ran a line; oversight read text and guessed. A drafted
   app edit can be tried (`POST /appedits/{user_id}/{edit_id}/box`):
   the diff applied to a copy of the tree in a workroom under
-  `JIM_WORKROOMS`, the tests whose names match the files it changes run
-  inside four walls — the network cut and every other life on the disk
-  hidden by `unshare -rmn` with an empty mount over `/home`, `/root`,
-  `/srv` and `/data`; processes, CPU seconds, address space and wall
-  time capped before the interpreter starts; the output a person reads
-  capped at a byte count. A red run goes back to the assistant with what
-  the tests said, up to `MAX_ROUNDS` (3) times, and every round is filed
+  `JIM_WORKROOMS` — the database, its journals and every `.env` are
+  never copied — and the tests whose names match the files it changes
+  run inside four walls: the network cut and every life on the disk
+  hidden by `unshare -rmnp` with a size-capped empty mount over `/home`,
+  `/root`, `/srv`, `/data` and wherever the database, the checkout and
+  the console actually sit; the run pid 1 of its own pid namespace, so
+  nothing it starts outlives it; processes, CPU seconds, address space,
+  file size and wall time capped before the interpreter starts, and a
+  server that is root drops the run to `nobody` so the process count
+  holds; the output written to a file the kernel bounds, never buffered
+  by the server, and the tail kept. A red run goes back to the assistant with what
+  the tests said — up to `MAX_ROUNDS` (3) tries of the draft in all, so
+  at most two revisions — and every round is filed
   beside the diff (`app_edits.box`), so the draft on file is the revised
   one and the path to it is kept. Audit: `appedit.boxed`,
   `appedit.box_refused`.
-- **The refusal that matters.** On a host that cannot raise all four
-  walls the box runs nothing and says so in a sentence; the posture
+- **The refusal that matters.** The probe is the run's own script with
+  the interpreter in place of the tests: it raises every namespace,
+  checks every hidden place is empty from inside, and forks past the
+  process ceiling to prove the count holds. A host that cannot is refused
+  in a sentence and the reason is logged for the operator; the posture
   carries `box_available`, the Studio shows the sentence instead of a
-  button, and a draft that is not a unified diff, reaches outside the
-  tree, or does not fit the file it changes is `unapplied` with the
-  reason.
+  button. A draft that is not a unified diff, reaches outside the tree,
+  names a directory or a binary, or does not fit the file it changes is
+  `unapplied` with the reason; a revision that does not apply stays on
+  the record and never replaces the draft on file; tests that collect
+  nothing are said so and the assistant is not asked again.
+- **The door's rules.** Only an edit awaiting a decision is tried — or,
+  on a self-hosted server, the owner's own approved one — so a diff
+  oversight approved is never rewritten under it, and a decision taken
+  while the box ran wins. One edit is in the box once at a time and two
+  at most (`BOX_SLOTS`), so a box run never starves the safety doors.
+  The revised draft names who revised it; a degraded answer is no
+  revision. Every sentence the box files reaches the reader in their
+  language.
 - **On the screens.** The Studio's own edits carry *Try it in the box*
   and the outcome — green, red, stopped, timed out, refused, unapplied —
   with the rounds, the tests, the counts and the tail of what the tests

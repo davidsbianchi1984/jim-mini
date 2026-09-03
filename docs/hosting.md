@@ -83,11 +83,16 @@ or any container platform is the right shape.
 | `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms — a copy of the tree with a draft applied, its tests run inside four walls. Default: `jim-workrooms` under the system temp directory. It must sit outside `/home`, `/root`, `/srv` and `/data`, because those are hidden inside the box and a room under one of them cannot see itself. |
 
 **The assistant's box.** A drafted app edit can be tried before oversight
-reads it: the diff applied to a copy of the repository, the tests it names
-run with the network cut (`unshare -rmn`), every other life on the disk
-hidden under an empty mount, processes counted, CPU and memory and wall
-time capped. A red run goes back to the assistant up to three times and
-every round is filed beside the diff. On a host without user namespaces
+reads it: the diff applied to a copy of the repository (never the
+database, its journals or a `.env`), the tests it names run with the
+network cut (`unshare -rmnp`), every life on the disk — the fixed places
+and wherever the database, the checkout and the console sit — hidden
+under a size-capped empty mount, the run pid 1 of its own pid namespace
+so nothing outlives it, processes counted (a server that is root drops
+the run to `nobody`, since the kernel does not count root's), CPU,
+memory, file size and wall time capped, the output bounded on disk. A red run goes back to the assistant with what the tests said,
+for up to three tries of the draft in all, and every round is filed
+beside the diff. On a host without user namespaces
 the box refuses to run anything and says so in a sentence — it never tries
 a draft with three walls instead of four. Nothing the box does applies an
 edit or deploys; an approved edit still rides the next publish-merge.

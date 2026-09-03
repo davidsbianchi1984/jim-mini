@@ -2345,7 +2345,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     def appedits_queue(request: Request) -> dict:
         """What awaits a decision and what is approved and queued."""
         auth.require_reviewer(request)
-        return appedits.queue()
+        return appedits.queue(i18n.refusal_language(request))
 
     @app.post("/appedits/oversight/{edit_id}/decide")
     def appedits_decide(edit_id: str, body: AppEditDecide,
@@ -2363,7 +2363,9 @@ def create_app(qrme_client: QRMEClient | None = None,
         """This person's edits, the lane they run in, and the model menu the
         assistant can draft with."""
         _user_or_404(user_id, request)
-        return {"posture": appedits.posture(), "edits": appedits.mine(user_id),
+        return {"posture": appedits.posture(),
+                "edits": appedits.mine(
+                    user_id, language=i18n.refusal_language(request)),
                 "models": loadouts.offered(user_id)}
 
     @app.post("/appedits/{user_id}", status_code=201)
@@ -2399,10 +2401,14 @@ def create_app(qrme_client: QRMEClient | None = None,
         Nothing is applied; oversight still stands in front of the merge."""
         _user_or_404(user_id, request)
         try:
-            return appedits.box(user_id, edit_id, model=body.model)
+            return appedits.box(user_id, edit_id, model=body.model,
+                                language=i18n.refusal_language(request))
         except ValueError as exc:
-            code = 404 if i18n.raised(exc) == "no such edit" else 422
-            raise HTTPException(code, i18n.raised(exc)) from None
+            said = i18n.raised(exc)
+            code = (404 if said == "no such edit"
+                    else 409 if said == "that edit is already in the box"
+                    else 422)
+            raise HTTPException(code, said) from None
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it
