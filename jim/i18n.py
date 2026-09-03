@@ -6133,7 +6133,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     # The phone line's event body (jim/models.ReachOutEvent) — 3.0.8.
     'event': {'en': 'What the phone line reported', 'es': 'Lo que reportó la línea telefónica', 'fr': 'Ce que la ligne téléphonique a signalé', 'de': 'Was die Telefonleitung gemeldet hat', 'pt': 'O que a linha telefónica reportou', 'it': 'Cosa ha riportato la linea telefonica', 'ja': '電話回線が報告した内容', 'zh': '电话线路报告的内容', 'hi': 'फ़ोन लाइन ने क्या सूचना दी', 'ar': 'ما أبلغ عنه خط الهاتف'},
     'seconds': {'en': 'Seconds', 'es': 'Segundos', 'fr': 'Secondes', 'de': 'Sekunden', 'pt': 'Segundos', 'it': 'Secondi', 'ja': '秒', 'zh': '秒', 'hi': 'सेकंड', 'ar': 'الثواني'},
-    'detail': {'en': 'What the phone line said about it', 'es': 'Lo que la línea telefónica dijo al respecto', 'fr': 'Ce que la ligne téléphonique en a dit', 'de': 'Was die Telefonleitung dazu sagte', 'pt': 'O que a linha telefónica disse sobre isso', 'it': 'Cosa ha detto la linea telefonica al riguardo', 'ja': '電話回線の補足', 'zh': '电话线路对此的说明', 'hi': 'फ़ोन लाइन ने इसके बारे में क्या कहा', 'ar': 'ما قاله خط الهاتف عنها'},
+    "detail": {"en": "The move's argument", "es": "El argumento del movimiento", "fr": "L'argument du geste", "de": "Das Argument der Bewegung", "pt": "O argumento do movimento", "it": "L'argomento della mossa", "ja": "動作の引数", "zh": "该动作的参数", "hi": "चाल का तर्क", "ar": "معطى الحركة"},
     # The hands (jim/hands.py), worded exactly as the sibling product
     # words them. Somebody who read the grant card on one console and
     # then meets a refusal on the other has to be reading the same
