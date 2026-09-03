@@ -65,6 +65,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -248,6 +249,130 @@ def furnish(session: dict) -> None:
     except Exception as exc:  # noqa: BLE001 — the desk shows an untried edit then
         print(f"  ? the box did not try the draft ({type(exc).__name__}); "
               "the desk shows it untried")
+
+
+#: A screen taller than this many phone heights is also photographed in
+#: parts, one phone height each, so a reader on GitHub — where a tall
+#: capture is scaled to a thumbnail — can read every part at full size.
+#: The whole-screen capture stays; the parts stand beside it.
+PARTS_ABOVE = 1.15
+LONG_BEGIN = "<!-- long-screens:begin -->"
+LONG_END = "<!-- long-screens:end -->"
+
+
+def write_long_gallery() -> None:
+    """The parts, listed in docs/gallery.md between two markers.
+
+    Written from what is on disk rather than by hand, so a part the
+    camera makes is always shown somewhere and the gallery's own guards —
+    every screen shown, every reference resolving — keep holding.
+    """
+    gallery = REPO / "docs" / "gallery.md"
+    text = gallery.read_text(encoding="utf-8")
+    if LONG_BEGIN not in text:
+        text = text.rstrip("\n") + (
+            "\n\n## Long screens, in parts\n\nScreens taller than the glass"
+            " they are read on, sliced a phone height at a time so every part"
+            " reads at full size. The whole-screen capture of each is in the"
+            " tour above.\n\n" + LONG_BEGIN + "\n" + LONG_END + "\n")
+    groups: dict[str, list[str]] = {}
+    # `-part<n>.png` exactly: a plain `*-part*` glob also matches
+    # `155-party.png`, whose name simply begins that way.
+    for f in sorted(OUT.glob("*.png")):
+        m = re.fullmatch(r"(\d+)-([a-z0-9-]+)-part(\d+)\.png", f.name)
+        if m:
+            groups.setdefault(f"{m.group(1)}-{m.group(2)}", []).append(f.name)
+    rows = []
+    for key in sorted(groups, key=lambda k: int(k.split("-", 1)[0])):
+        files = sorted(groups[key],
+                       key=lambda n: int(re.search(r"part(\d+)", n).group(1)))
+        number, stem = key.split("-", 1)
+        # Four to a row at most: the gallery is read on a phone, and the
+        # grid guard next door holds every table in this repository to
+        # the same four.
+        # Four to a row at most, and a table of its own for each band: the
+        # gallery is read on a phone, the grid guard next door holds every
+        # table here to four across, and a short row padded with blanks
+        # would trip the guard that says a cell is never empty.
+        tables = []
+        for start in range(0, len(files), 4):
+            band = files[start:start + 4]
+            width = 100 // len(band)
+            cells = "".join(
+                f'<td align="center" width="{width}%" valign="top">'
+                f'<a href="screens/{n}"><img src="screens/{n}" width="150"'
+                f' alt="{stem} part {start + i + 1}"></a><br>'
+                f"<sub>part {start + i + 1} of {len(files)}</sub></td>"
+                for i, n in enumerate(band))
+            tables.append(f"<table>\n  <tr>{cells}</tr>\n</table>")
+        rows.append(f"**{number}** · {stem.replace('-', ' ')}\n\n"
+                    + "\n".join(tables) + "\n")
+    body = LONG_BEGIN + "\n" + "\n".join(rows) + "\n" + LONG_END
+    head, _, rest = text.partition(LONG_BEGIN)
+    _, _, tail = rest.partition(LONG_END)
+    gallery.write_text(head + body + tail, encoding="utf-8")
+
+
+#: How the console scrolls, and why a full-page capture was not the whole
+#: screen. The shell is a fixed-height grid — drawer, content column,
+#: dock — and the *content column* scrolls, not the document. Playwright
+#: grows a `full_page` capture to the document's height, and this
+#: document is exactly one phone tall on every screen, so everything
+#: below the fold was cropped out of every picture in the gallery.
+#:
+#:     asked     photograph the whole screen
+#:     mattered  the screen is taller than the glass it is shown on
+#:
+#: Scrolling the column and shooting each stop was the first answer and a
+#: brittle one: the console re-renders under the camera and puts the
+#: scroll back. So the column is *unrolled* instead — height auto, nothing
+#: hidden — which grows the document, and one ordinary full-page capture
+#: then holds the whole screen. The phone-height parts are slices of that
+#: picture, so a part can never disagree with the whole.
+_UNROLL = """() => {
+  const style = document.createElement('style');
+  style.id = 'qrme-camera-unroll';
+  style.textContent = `
+    html, body { height: auto !important; overflow: visible !important; }
+    .app { height: auto !important; min-height: 100vh !important; }
+    main.content, .content { height: auto !important; max-height: none !important;
+      overflow: visible !important; }`;
+  document.head.appendChild(style);
+}"""
+
+_ROLL_BACK = """() => {
+  const style = document.getElementById('qrme-camera-unroll');
+  if (style) style.remove();
+}"""
+
+
+def shoot_page(page, number: str, stem: str) -> list[str]:
+    """Photograph a whole screen, and slice it into phone-height parts.
+
+    The whole-screen picture is what the gallery shows; the parts stand
+    beside it for the screens too tall to read at thumbnail size.
+    """
+    page.evaluate(_UNROLL)
+    page.wait_for_timeout(400)
+    target = OUT / f"{number}-{stem}.png"
+    page.screenshot(path=str(target), full_page=True)
+    page.evaluate(_ROLL_BACK)
+    page.wait_for_timeout(150)
+
+    from PIL import Image
+    whole = Image.open(target)
+    tall = VIEWPORT["height"] * SCALE
+    if whole.height <= tall * PARTS_ABOVE:
+        return []
+    names = []
+    count = -(-whole.height // tall)
+    for i in range(count):
+        top = i * tall
+        part = whole.crop((0, top, whole.width, min(top + tall, whole.height)))
+        name = f"{number}-{stem}-part{i + 1}.png"
+        part.save(OUT / name)
+        names.append(name)
+    return names
 
 
 def open_tab(page, tab: str) -> bool:
@@ -767,10 +892,10 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                     continue
                 page.evaluate("window.scrollTo(0, 0)")
                 page.wait_for_timeout(250)
-                target = OUT / f"{number}-{stem}.png"
-                page.screenshot(path=str(target), full_page=True)
                 written += 1
-                print(f"  {target.name}")
+                print(f"  {number}-{stem}.png")
+                for part in shoot_page(page, number, stem):
+                    print(f"  {part}")
                 for offender in past_the_edge(page):
                     print(f"      past the right edge: {offender}")
 
@@ -783,10 +908,10 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                     continue
                 page.evaluate("window.scrollTo(0, 0)")
                 page.wait_for_timeout(250)
-                target = OUT / f"{number}-{stem}.png"
-                page.screenshot(path=str(target), full_page=True)
                 written += 1
-                print(f"  {target.name}")
+                print(f"  {number}-{stem}.png")
+                for part in shoot_page(page, number, stem):
+                    print(f"  {part}")
                 for offender in past_the_edge(page):
                     print(f"      past the right edge: {offender}")
             # The cards. Same refusal as the screens: a recipe whose
@@ -807,6 +932,7 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                 print(f"  {target.name}")
 
             browser.close()
+            write_long_gallery()
     finally:
         proc.terminate()
         if sibling is not None:
