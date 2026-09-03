@@ -78,7 +78,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
   </tr>
   <tr>
     <td align="center" width="25%"><img src="screens/33-feed.png" width="160" alt="104 Feed"><br><sub>104 · Feed</sub></td>
-    <td align="center" width="25%"><img src="screens/34-what-this-tab-wont-do.svg" width="160" alt="105 What This Tab Won't Do"><br><sub>105 · What This Tab Won't Do</sub></td>
+    <td align="center" width="25%"><img src="screens/34-what-this-tab-wont-do.png" width="160" alt="105 What This Tab Won't Do"><br><sub>105 · What This Tab Won't Do</sub> · <a href="screens/34-what-this-tab-wont-do.svg">drawing</a></td>
     <td align="center" width="25%"><img src="screens/35-presence.png" width="160" alt="106 Presence"><br><sub>106 · Presence</sub></td>
     <td align="center" width="25%"><img src="screens/36-what-it-will-not-be.png" width="160" alt="107 What It Will Not Be"><br><sub>107 · What It Will Not Be</sub></td>
   </tr>
