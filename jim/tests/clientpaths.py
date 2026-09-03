@@ -642,12 +642,6 @@ NOT_A_CLIENT_CALL = (
     "/reachout/call/{call_id}/say",
     "/reachout/call/{call_id}/reached",
     "/reachout/call/{call_id}/unreached",
-    # Company oversight's doors on app edits (jim/appedits.py). They carry the
-    # deployment's reviewer token (JIM_ADMIN_TOKEN), not a user's — the same
-    # standing as the accessibility reports — so no console binding is the
-    # right shape; a console door here would be a user reaching oversight.
-    "/appedits/oversight/queue",
-    "/appedits/oversight/{edit_id}/decide",
 )
 
 

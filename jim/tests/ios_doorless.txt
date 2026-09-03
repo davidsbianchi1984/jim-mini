@@ -1,4 +1,4 @@
-# status: backlog — 31 rows
+# status: backlog — 33 rows
 #
 # Every route this shell cannot reach.
 #
@@ -173,3 +173,10 @@ PUT /corpus/{user_id}/consent
 GET /models/{user_id}
 GET /video/providers/{user_id}
 PUT /users/{user_id}/region
+
+# Company oversight's desk (jim/appedits.py, 3.0.6). The console carries it
+# on the Oversight screen, opened by the deployment's reviewer token; the
+# shells wait on a screen — a binding with no caller would take these off
+# the backlog while building nothing.
+GET /appedits/oversight/queue
+POST /appedits/oversight/{edit_id}/decide

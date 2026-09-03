@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.5** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.6** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -166,6 +166,7 @@ faces have their own gallery below.
   </tr>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/44-mail.svg"><img src="docs/screens/44-mail.svg" width="165" alt="Correspondence"></a><br><sub><b>44</b> · Correspondence<br>the coach's moderated mailbox — drafts held until you approve</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/45-oversight.svg"><img src="docs/screens/45-oversight.svg" width="165" alt="Company oversight"></a><br><sub><b>45</b> · Company oversight<br>proposed app edits, held until approved — an approved edit rides the next publish</sub></td>
   </tr>
 </table>
 
@@ -498,6 +499,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.6** | **Company oversight on a screen** — the review desk over proposed app edits was API-only, behind the deployment's reviewer token; it is the Oversight tab now. Open it with the reviewer token, read each proposal, its target and its patch, approve or reject it with a note to the person who proposed it, and see what is approved and queued to ride the next publish. Nothing here touches the running app: approving queues, never applies. Screen 45, in the product map and the walkthrough. |
 | **3.0.5** | **Users can edit the app itself — submitted, and held at apply — and the model menu is a loadout per region** — a person proposes a change to the app or has the coding assistant write one, right in the Studio; free rein on their own server, held for company oversight on the hosted cloud, and either way queued to ride the next publish-merge (never applied to the running app from here). The registry grows to twenty-two providers, each tagged with its origin, and what an account is offered is its sign-up region's loadout — home providers first, a curated few popular foreign ones, with a one-line lever to taper the American-region menu if the government asks. No company emblems on the tiles: generic monograms, one accent, no rainbow. |
 | **3.0.4** | **The offline training corpus — every exchange banked so the local model grows** — `offline.py` makes offline *safe* (nothing leaves the machine); this makes it *capable*. Every exchange the agents have is banked as a training example at the one place they all pass through (`jim.llm.generate_for_user`), so a local model trained from it grows able enough to answer offline. The person owns it: capture is on by default (their own data, like the memory vault), the switch stops it, purge clears it, `archive` seals it to the vault, and a full account erase reaches it with no line of its own. Honest that a local language model served when offline is the next step — the corpus filling is what it waits on. An Offline-training card lives on Settings. |
 | **3.0.3** | **The moderated mailbox — the coach agent carries on email, and every send is held for a person** — the coach reads what comes in, drafts a reply grounded in the thread, answers back and forth, and can write to someone new, but **nothing leaves without approval**: every outbound message is a draft in a moderation queue, and only Approve sends it — over SMTP when the deployment has a mail server, and *staged* (composed and held) otherwise, the same held-at-the-send shape the 911 dialer holds. A mailbox's `role` chooses the voice: `coach` here, a profession when this seam is lifted into a QRME synthetic profile. The Mail screen is the operator surface — take a message in, draft, edit, approve or discard, or originate one — every word through the console's ten-language table. |

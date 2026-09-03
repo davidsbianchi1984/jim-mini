@@ -6,6 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.6] - 2026-09-03
+
+### Added
+
+- **Company oversight on a screen.** The review desk over proposed app
+  edits (`jim/appedits.py`) shipped in 3.0.5 as two reviewer-token doors
+  and no screen, recorded as not-a-client-call. It is the Oversight tab
+  now: open it with the deployment's reviewer token (`JIM_ADMIN_TOKEN`,
+  the same standing the accessibility reports take — whoever decides
+  stands for the deployment, not for any one account), read each proposal
+  with its target and its patch, approve or reject it with a note to the
+  person who proposed it, and see what is approved and queued to ride the
+  next publish. The posture line says which lane this deployment is —
+  hosted cloud, every edit held here; or self-hosted, approved on
+  arrival — and that approving queues an edit and never applies it to
+  the running app. The two doors leave `NOT_A_CLIENT_CALL` and gain
+  console bindings; the three shells record them as waiting on a
+  screen. Screen 45, a product-map door, a walkthrough lesson, and the
+  chrome in all ten languages.
+
 ## [3.0.5] - 2026-09-02
 
 ### Added
@@ -11949,7 +11969,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...HEAD
+[3.0.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...app-v3.0.6
 [3.0.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...app-v3.0.5
 [3.0.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.3...app-v3.0.4
 [3.0.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.2...app-v3.0.3

@@ -326,6 +326,16 @@ LESSONS: tuple[dict, ...] = (
          screens=(44,),
          try_it="Take a message in on the Mail screen and have the coach draft "
                 "a reply, then approve or discard it."),
+    dict(key="oversight", chapter="Beyond the app", title="Company oversight",
+         what="On the hosted cloud, a change somebody proposes to the app "
+              "itself waits for company oversight. The Oversight screen is "
+              "that desk: open it with the deployment's reviewer token, read "
+              "each proposal and its patch, approve or reject it with a note. "
+              "An approved edit is queued to ride the next publish — nothing "
+              "here ever touches the running app.",
+         screens=(45,),
+         try_it="Open Oversight with the reviewer token and read what is "
+                "waiting."),
     dict(key="tandem", chapter="Beyond the app", title="The tandem",
          what="When configured, JIM-mini hands a question to a QRME specialist "
               "profile and brings the answer back — moderated, and marked as "

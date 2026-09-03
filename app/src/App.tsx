@@ -14,6 +14,7 @@ import { JimMiniOS } from "./JimMiniOS";
 import { Studio } from "./screens/Studio";
 import { Talk } from "./screens/Talk";
 import { Mail } from "./screens/Mail";
+import { Oversight } from "./screens/Oversight";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
 import { Monitor } from "./screens/Monitor";
@@ -43,7 +44,7 @@ import { Capabilities } from "./screens/Capabilities";
 import { Watch } from "./screens/Watch";
 import { Hands } from "./screens/Hands";
 
-type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "capabilities" | "held" | "access" | "mail" | "settings";
+type Tab = "watch" | "studio" | "permits" | "home" | "presence" | "feed" | "monitor" | "baseline" | "meds" | "careteam" | "selfprofile" | "coach" | "engaged" | "wellness" | "checkin" | "journal" | "community" | "safety" | "channel" | "aims" | "wards" | "attending" | "reach" | "hands" | "bearing" | "capabilities" | "held" | "access" | "mail" | "oversight" | "settings";
 // Labels live in `l10n.ts` and are looked up by id — see `nav.*` there.
 //
 // They used to sit here as English literals, which made the console's own
@@ -74,6 +75,7 @@ const NAV: { id: Tab; icon: ReactNode }[] = [
   { id: "selfprofile", icon: "🪞" },
   { id: "coach", icon: "🧠" },
   { id: "mail", icon: "✉" },
+  { id: "oversight", icon: "⚖" },
   { id: "engaged", icon: <JimMiniOS /> },
   { id: "wellness", icon: "🧘" },
   { id: "checkin", icon: "🌿" },
@@ -259,6 +261,7 @@ export function App() {
         {tab === "baseline" && <Baseline />}
         {tab === "coach" && <Coach go={setTab} />}
         {tab === "mail" && <Mail />}
+        {tab === "oversight" && <Oversight />}
         {tab === "engaged" && <Talk go={(id) => setTab(id as Tab)} />}
         {tab === "permits" && <Engaged />}
         {tab === "studio" && <Studio />}

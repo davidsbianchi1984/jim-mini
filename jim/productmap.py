@@ -117,6 +117,12 @@ DOORS: tuple[Door, ...] = (
          "anything is sent",
          ("email", "mail", "inbox", "reply", "draft", "message", "letter",
           "correspondence")),
+    Door("Oversight", "Oversight tab",
+         "company oversight's desk over proposed app edits — held until "
+         "approved, and an approved edit rides the next publish, never the "
+         "running app",
+         ("oversight", "review the edits", "approve the edit", "app edits",
+          "reviewer", "publish queue")),
     Door("Talk", "JIM-mini tab — the front door",
          "talking to JIM, and the rail that opens every other screen",
          ("talk to jim", "front door", "ask jim", "jim-mini")),

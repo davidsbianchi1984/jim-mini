@@ -1843,6 +1843,16 @@ export const api = {
   videoProviders: (uid: string, token: string) =>
     req<{ providers: VideoProviderRow[]; region: string }>(
       `/video/providers/${uid}`, { token }),
+  // Company oversight's desk over app edits. The reviewer token
+  // (JIM_ADMIN_TOKEN), never a user's — the same standing as the
+  // accessibility reports: whoever decides stands for the deployment.
+  oversightQueue: (reviewerToken: string) =>
+    req<{ awaiting: AppEdit[]; queued: AppEdit[]; posture: AppEditPosture }>(
+      "/appedits/oversight/queue", { token: reviewerToken }),
+  oversightDecide: (editId: string, body: { action: "approve" | "reject"; note?: string },
+                    reviewerToken: string) =>
+    req<AppEdit>(`/appedits/oversight/${editId}/decide`,
+                 { method: "POST", body, token: reviewerToken }),
   appEdits: (uid: string, token: string) =>
     req<{ posture: AppEditPosture; edits: AppEdit[];
           models: (ProviderRow & { origin: string })[] }>(

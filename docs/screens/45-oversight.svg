@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="660" viewBox="0 0 320 660" role="img" aria-label="Company oversight screen"><defs>
+      <linearGradient id="gScr" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e1626"/><stop offset="1" stop-color="#0a0f1c"/></linearGradient>
+      <linearGradient id="gFrame" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#20263a"/><stop offset="1" stop-color="#0c1020"/></linearGradient>
+      <linearGradient id="gCard" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#182238"/><stop offset="1" stop-color="#1f2b45"/></linearGradient>
+      <linearGradient id="gBrand" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#3aa0ff"/></linearGradient>
+    </defs>
+    <rect x="10" y="12" width="300" height="636" rx="40" fill="url(#gFrame)"/>
+    <rect x="20" y="22" width="280" height="616" rx="31" fill="url(#gScr)"/>
+    <rect x="130" y="27" width="60" height="15" rx="7.5" fill="#05070d"/>
+    <text x="34" y="56" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="11" font-weight="600" fill="#8a94ad">9:41</text>
+    <rect x="264" y="50" width="20" height="11" rx="3" fill="none" stroke="#8a94ad" stroke-width="1.1"/>
+    <rect x="266" y="52" width="14" height="7" rx="2" fill="#8a94ad"/>
+    <text x="34" y="88" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="20" font-weight="700" fill="#eef1f7" letter-spacing="-0.4">Company oversight</text>
+    <text x="34" y="106" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="11.5" fill="#8a94ad">Proposed app edits · held until you decide</text>
+    <rect x="34" y="120" width="252" height="34" rx="10" fill="#0b1220" stroke="#33406a" stroke-width="1.2"/>
+    <text x="46" y="141" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9.5" fill="#8a94ad">Reviewer token  ••••••••••••</text>
+    <rect x="34" y="164" width="252" height="46" rx="12" fill="url(#gCard)" stroke="#26314e" stroke-width="1"/>
+    <circle cx="52" cy="187" r="7" fill="rgba(124,92,255,0.2)" stroke="#7c5cff" stroke-width="1.5"/>
+    <path d="M48.5 187 l2.4 2.4 l4.6 -4.8" fill="none" stroke="#7c5cff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="68" y="183" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="10" font-weight="650" fill="#eef1f7">Held at apply</text>
+    <text x="68" y="197" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" fill="#8a94ad">An approved edit rides the next publish.</text>
+    <text x="34" y="232" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9" font-weight="700" fill="#626d88" letter-spacing="0.6">AWAITING A DECISION · 1</text>
+    <rect x="34" y="242" width="252" height="236" rx="14" fill="url(#gCard)" stroke="#26314e" stroke-width="1"/>
+    <text x="48" y="264" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="11" font-weight="700" fill="#eef1f7">Bigger check-in button</text>
+    <text x="48" y="279" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9" fill="#8a94ad">the button is too small on a phone</text>
+    <rect x="216" y="252" width="58" height="16" rx="8" fill="rgba(247,183,49,0.18)" stroke="#f7b731" stroke-width="1"/>
+    <text x="245" y="263.5" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8" font-weight="700" fill="#f7b731" text-anchor="middle">Proposed</text>
+    <text x="48" y="298" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" fill="#626d88">Where: app/src/screens/Checkin.tsx</text>
+    <rect x="48" y="306" width="224" height="70" rx="10" fill="#0b1220" stroke="#33406a" stroke-width="1.2"/>
+    <text x="58" y="323" font-size="9" fill="#ff8a80" font-family="ui-monospace,Menlo,monospace">- &lt;button className="small"&gt;</text>
+    <text x="58" y="337" font-size="9" fill="#7ee787" font-family="ui-monospace,Menlo,monospace">+ &lt;button className="big"&gt;</text>
+    <text x="58" y="351" font-size="9" fill="#8a94ad" font-family="ui-monospace,Menlo,monospace">    {tr("ci.go", lang)}</text>
+    <text x="58" y="365" font-size="9" fill="#8a94ad" font-family="ui-monospace,Menlo,monospace">  &lt;/button&gt;</text>
+    <rect x="48" y="386" width="224" height="26" rx="8" fill="#0b1220" stroke="#33406a" stroke-width="1.2"/>
+    <text x="58" y="403" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" fill="#626d88">A note to the person who proposed it</text>
+    <rect x="48" y="424" width="130" height="30" rx="9" fill="url(#gBrand)"/>
+    <text x="113" y="443" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">Approve — queue it</text>
+    <rect x="188" y="424" width="84" height="30" rx="9" fill="none" stroke="#33406a" stroke-width="1.3"/>
+    <text x="230" y="443" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="10" font-weight="600" fill="#ff8a80" text-anchor="middle">Reject</text>
+    <text x="34" y="504" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9" font-weight="700" fill="#626d88" letter-spacing="0.6">APPROVED · QUEUED TO RIDE THE NEXT PUBLISH · 2</text>
+    <rect x="34" y="514" width="252" height="28" rx="10" fill="url(#gCard)" stroke="#26314e" stroke-width="1"/>
+    <text x="48" y="532" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9.5" font-weight="600" fill="#eef1f7">Larger text on the baseline sliders</text>
+    <rect x="34" y="548" width="252" height="28" rx="10" fill="url(#gCard)" stroke="#26314e" stroke-width="1"/>
+    <text x="48" y="566" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="9.5" font-weight="600" fill="#eef1f7">Dark theme for the watch faces</text>
+    <!-- bottom nav -->
+    <rect x="20" y="586" width="280" height="52" fill="#0b1220"/>
+    <rect x="20" y="586" width="280" height="1" fill="#26314e"/>
+    <circle cx="60" cy="604" r="5.4" fill="none" stroke="#eef1f7" stroke-width="1.2"/>
+    <text x="60" y="626" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" font-weight="600" fill="#eef1f7" text-anchor="middle">Home</text>
+    <path d="M150 599 h20 M150 604 h20 M150 609 h14" stroke="#7c5cff" stroke-width="1.4" stroke-linecap="round"/>
+    <text x="160" y="626" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" font-weight="700" fill="#7c5cff" text-anchor="middle">Oversight</text>
+    <circle cx="260" cy="601" r="2.4" fill="none" stroke="#626d88" stroke-width="1.2"/>
+    <path d="M255.7 609 c0 -4.3 8.6 -4.3 8.6 0" fill="none" stroke="#626d88" stroke-width="1.2"/>
+    <text x="260" y="626" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif" font-size="8.5" font-weight="600" fill="#626d88" text-anchor="middle">Profile</text>
+    <rect x="118" y="631" width="84" height="4" rx="2" fill="rgba(255,255,255,0.6)"/>
+</svg>

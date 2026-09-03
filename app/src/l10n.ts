@@ -5197,6 +5197,63 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // The moderated mailbox — the coach agent reads, drafts, and replies, but
   // every send is held here for a person to approve. The message bodies and
   // addresses are the server's; this is the chrome around them.
+  "nav.oversight": {
+    en: "Oversight", es: "Supervisión", fr: "Supervision", de: "Aufsicht", pt: "Supervisão", it: "Supervisione", ja: "監督", zh: "监督", hi: "निगरानी", ar: "الإشراف",
+  },
+  "ov.title": {
+    en: "Company oversight", es: "Supervisión de la empresa", fr: "Supervision de l'entreprise", de: "Aufsicht des Unternehmens", pt: "Supervisão da empresa", it: "Supervisione aziendale", ja: "会社による監督", zh: "公司监督", hi: "कंपनी की निगरानी", ar: "إشراف الشركة",
+  },
+  "ov.sub": {
+    en: "Proposed changes to the app, held until you decide. An approved edit rides the next publish-merge; nothing here touches the running app.", es: "Cambios propuestos a la app, retenidos hasta que decidas. Una edición aprobada va en la próxima publicación; nada aquí toca la app en ejecución.", fr: "Les modifications proposées à l'application, retenues jusqu'à votre décision. Une modification approuvée part avec la prochaine publication ; rien ici ne touche l'application en cours.", de: "Vorgeschlagene Änderungen an der App, zurückgehalten bis du entscheidest. Eine freigegebene Änderung fährt mit der nächsten Veröffentlichung mit; nichts hier berührt die laufende App.", pt: "Alterações propostas à app, retidas até decidires. Uma edição aprovada segue na próxima publicação; nada aqui toca na app em execução.", it: "Modifiche proposte all'app, trattenute finché non decidi. Una modifica approvata parte con la prossima pubblicazione; nulla qui tocca l'app in esecuzione.", ja: "アプリへの変更提案は、あなたが判断するまで保留されます。承認された編集は次回の公開に乗ります。ここで実行中のアプリに触れることはありません。", zh: "对应用提出的更改会保留到你做出决定。已批准的编辑随下一次发布合并；这里不会触及正在运行的应用。", hi: "ऐप में प्रस्तावित बदलाव आपके फ़ैसले तक रोके जाते हैं। स्वीकृत संपादन अगले प्रकाशन के साथ जाता है; यहाँ कुछ भी चल रहे ऐप को नहीं छूता।", ar: "التغييرات المقترحة على التطبيق محتجَزة حتى تقرّر. التعديل المعتمد يركب النشر التالي؛ لا شيء هنا يمسّ التطبيق العامل.",
+  },
+  "ov.token": {
+    en: "Reviewer token", es: "Token de revisor", fr: "Jeton de réviseur", de: "Prüfer-Token", pt: "Token de revisor", it: "Token del revisore", ja: "レビュアートークン", zh: "审核者令牌", hi: "समीक्षक टोकन", ar: "رمز المراجع",
+  },
+  "ov.token.ph": {
+    en: "the deployment's reviewer token", es: "el token de revisor del despliegue", fr: "le jeton de réviseur du déploiement", de: "das Prüfer-Token der Installation", pt: "o token de revisor da instalação", it: "il token del revisore dell'installazione", ja: "このデプロイのレビュアートークン", zh: "此部署的审核者令牌", hi: "इस परिनियोजन का समीक्षक टोकन", ar: "رمز المراجع لهذا النشر",
+  },
+  "ov.load": {
+    en: "Open the queue", es: "Abrir la cola", fr: "Ouvrir la file", de: "Warteschlange öffnen", pt: "Abrir a fila", it: "Apri la coda", ja: "キューを開く", zh: "打开队列", hi: "कतार खोलें", ar: "افتح قائمة الانتظار",
+  },
+  "ov.posture.cloud": {
+    en: "This deployment is the hosted cloud: every edit waits here for company oversight.", es: "Este despliegue es la nube alojada: cada edición espera aquí la supervisión de la empresa.", fr: "Ce déploiement est le cloud hébergé : chaque modification attend ici la supervision de l'entreprise.", de: "Diese Installation ist die gehostete Cloud: jede Änderung wartet hier auf die Aufsicht des Unternehmens.", pt: "Esta instalação é a nuvem alojada: cada edição espera aqui pela supervisão da empresa.", it: "Questa installazione è il cloud ospitato: ogni modifica attende qui la supervisione aziendale.", ja: "このデプロイはホスト型クラウドです。すべての編集はここで会社の監督を待ちます。", zh: "此部署是托管云：每项编辑都在这里等待公司监督。", hi: "यह परिनियोजन होस्टेड क्लाउड है: हर संपादन यहाँ कंपनी की निगरानी का इंतज़ार करता है।", ar: "هذا النشر هو السحابة المستضافة: كل تعديل ينتظر هنا إشراف الشركة.",
+  },
+  "ov.posture.self": {
+    en: "This deployment is self-hosted: edits are approved on arrival, and this desk shows what is queued.", es: "Este despliegue es propio: las ediciones se aprueban al llegar, y este escritorio muestra lo que está en cola.", fr: "Ce déploiement est auto-hébergé : les modifications sont approuvées à l'arrivée, et ce bureau montre ce qui est en file.", de: "Diese Installation ist selbst gehostet: Änderungen werden bei Ankunft freigegeben, und dieser Tisch zeigt, was ansteht.", pt: "Esta instalação é auto-hospedada: as edições são aprovadas à chegada, e esta mesa mostra o que está em fila.", it: "Questa installazione è self-hosted: le modifiche sono approvate all'arrivo, e questa scrivania mostra ciò che è in coda.", ja: "このデプロイは自己ホストです。編集は到着時に承認され、このデスクにはキュー内の内容が表示されます。", zh: "此部署为自托管：编辑到达即批准，此桌面显示已排队的内容。", hi: "यह परिनियोजन स्व-होस्टेड है: संपादन आते ही स्वीकृत होते हैं, और यह डेस्क कतार में लगे संपादन दिखाता है।", ar: "هذا النشر مستضاف ذاتيًا: تُعتمد التعديلات عند وصولها، ويعرض هذا المكتب ما هو في قائمة الانتظار.",
+  },
+  "ov.posture.apply": {
+    en: "Approving queues an edit for the next publish-merge; it is never applied to the running app from here.", es: "Aprobar pone la edición en cola para la próxima publicación; nunca se aplica a la app en ejecución desde aquí.", fr: "Approuver met la modification en file pour la prochaine publication ; elle n'est jamais appliquée à l'application en cours depuis ici.", de: "Freigeben stellt die Änderung für die nächste Veröffentlichung in die Warteschlange; sie wird von hier aus nie auf die laufende App angewendet.", pt: "Aprovar coloca a edição em fila para a próxima publicação; nunca é aplicada à app em execução a partir daqui.", it: "Approvare mette la modifica in coda per la prossima pubblicazione; non viene mai applicata all'app in esecuzione da qui.", ja: "承認すると編集は次回の公開に向けてキューに入ります。ここから実行中のアプリに適用されることはありません。", zh: "批准会将编辑排入下一次发布合并；绝不会从这里应用到正在运行的应用。", hi: "स्वीकृति संपादन को अगले प्रकाशन के लिए कतार में लगाती है; इसे यहाँ से चल रहे ऐप पर कभी लागू नहीं किया जाता।", ar: "الاعتماد يضع التعديل في قائمة انتظار النشر التالي؛ ولا يُطبَّق أبدًا على التطبيق العامل من هنا.",
+  },
+  "ov.awaiting": {
+    en: "Awaiting a decision", es: "Pendientes de decisión", fr: "En attente de décision", de: "Warten auf Entscheidung", pt: "À espera de decisão", it: "In attesa di decisione", ja: "判断待ち", zh: "等待决定", hi: "फ़ैसले की प्रतीक्षा में", ar: "بانتظار قرار",
+  },
+  "ov.queued": {
+    en: "Approved and queued to ride the next publish", es: "Aprobadas y en cola para la próxima publicación", fr: "Approuvées et en file pour la prochaine publication", de: "Freigegeben und für die nächste Veröffentlichung eingereiht", pt: "Aprovadas e em fila para a próxima publicação", it: "Approvate e in coda per la prossima pubblicazione", ja: "承認済み・次回の公開待ち", zh: "已批准并排队等待下一次发布", hi: "स्वीकृत और अगले प्रकाशन के लिए कतार में", ar: "معتمدة وفي قائمة انتظار النشر التالي",
+  },
+  "ov.none": {
+    en: "Nothing here.", es: "Nada por aquí.", fr: "Rien ici.", de: "Nichts hier.", pt: "Nada aqui.", it: "Niente qui.", ja: "ここには何もありません。", zh: "这里没有内容。", hi: "यहाँ कुछ नहीं।", ar: "لا شيء هنا.",
+  },
+  "ov.note.ph": {
+    en: "A note to the person who proposed it (optional)", es: "Una nota para quien lo propuso (opcional)", fr: "Une note à la personne qui l'a proposé (facultatif)", de: "Eine Notiz an die Person, die es vorgeschlagen hat (optional)", pt: "Uma nota para quem propôs (opcional)", it: "Una nota per chi l'ha proposta (facoltativa)", ja: "提案者へのメモ（任意）", zh: "给提出者的备注（可选）", hi: "प्रस्तावक के लिए एक नोट (वैकल्पिक)", ar: "ملاحظة لمن اقترحه (اختياري)",
+  },
+  "ov.approve": {
+    en: "Approve — queue it", es: "Aprobar y poner en cola", fr: "Approuver — mettre en file", de: "Freigeben — einreihen", pt: "Aprovar — pôr em fila", it: "Approva — metti in coda", ja: "承認してキューに入れる", zh: "批准并排队", hi: "स्वीकृत करें — कतार में लगाएँ", ar: "اعتمد — ضعه في قائمة الانتظار",
+  },
+  "ov.reject": {
+    en: "Reject", es: "Rechazar", fr: "Rejeter", de: "Ablehnen", pt: "Rejeitar", it: "Rifiuta", ja: "却下", zh: "拒绝", hi: "अस्वीकार करें", ar: "ارفض",
+  },
+  "ov.target": {
+    en: "Where in the app:", es: "Dónde en la app:", fr: "Où dans l'application :", de: "Wo in der App:", pt: "Onde na app:", it: "Dove nell'app:", ja: "アプリ内の場所:", zh: "应用中的位置：", hi: "ऐप में कहाँ:", ar: "أين في التطبيق:",
+  },
+  "ov.patch": {
+    en: "The proposed change", es: "El cambio propuesto", fr: "La modification proposée", de: "Die vorgeschlagene Änderung", pt: "A alteração proposta", it: "La modifica proposta", ja: "提案された変更", zh: "提议的更改", hi: "प्रस्तावित बदलाव", ar: "التغيير المقترح",
+  },
+  "ov.by": {
+    en: "Drafted with:", es: "Redactado con:", fr: "Rédigé avec :", de: "Entworfen mit:", pt: "Redigido com:", it: "Redatto con:", ja: "下書きに使用:", zh: "起草所用：", hi: "इससे तैयार:", ar: "صيغ باستخدام:",
+  },
+  "ov.decided": {
+    en: "Decided", es: "Decidido", fr: "Décidé", de: "Entschieden", pt: "Decidido", it: "Deciso", ja: "決定日時", zh: "决定于", hi: "निर्णय", ar: "قُرّر",
+  },
   "nav.mail": {
     en: "Mail", es: "Correo", fr: "Courrier", de: "Post", pt: "Correio", it: "Posta", ja: "メール", zh: "邮件", hi: "मेल", ar: "البريد",
   },
