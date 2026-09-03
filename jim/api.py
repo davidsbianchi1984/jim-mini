@@ -362,7 +362,11 @@ def create_app(qrme_client: QRMEClient | None = None,
     # Off when JIM_TICK_SECONDS is 0 — the suite's posture — and on by
     # default on the box. Started here so it holds the same process and
     # the same database as the doors; stopped when the app shuts down.
-    ticker.start(app)
+    # Started on the ASGI startup event, not here: this module builds an
+    # app at import (`app = create_app()` below), and a thread that begins
+    # on import would run in every process that so much as imports jim.api
+    # — a test collector, a migration — against whatever JIM_DB then says.
+    app.router.add_event_handler("startup", lambda: ticker.start(app))
     app.router.add_event_handler("shutdown", ticker.stop)
 
     def _user_or_404(user_id: str, request: Request) -> dict:

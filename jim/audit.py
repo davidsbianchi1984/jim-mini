@@ -44,8 +44,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 
 from . import db
+
+# The chain reads its last link and writes the next; two writers at once —
+# a request and the ticker — would fork it. One lock, held for two statements.
+_CHAIN = threading.Lock()
 
 _GENESIS = "0" * 64
 
@@ -149,18 +154,19 @@ def record(action: str, *, user_id: str | None = None,
     a call site that reaches for a name nobody catalogued should still leave
     a trace — `category()` reports it as `other`, and the guard on this module
     fails the build so it is named before it ships."""
-    conn = db.connect()
-    row = conn.execute(
-        "SELECT hash FROM audit ORDER BY seq DESC LIMIT 1").fetchone()
-    prev_hash = row["hash"] if row else _GENESIS
-    entry = {"user_id": user_id, "action": action, "ref": ref,
-             "at": db.utcnow()}
-    h = _hash(prev_hash, entry)
-    conn.execute(
-        "INSERT INTO audit (user_id, action, ref, at, prev_hash, hash)"
-        " VALUES (?,?,?,?,?,?)",
-        (user_id, action, ref, entry["at"], prev_hash, h))
-    conn.commit()
+    with _CHAIN:
+        conn = db.connect()
+        row = conn.execute(
+            "SELECT hash FROM audit ORDER BY seq DESC LIMIT 1").fetchone()
+        prev_hash = row["hash"] if row else _GENESIS
+        entry = {"user_id": user_id, "action": action, "ref": ref,
+                 "at": db.utcnow()}
+        h = _hash(prev_hash, entry)
+        conn.execute(
+            "INSERT INTO audit (user_id, action, ref, at, prev_hash, hash)"
+            " VALUES (?,?,?,?,?,?)",
+            (user_id, action, ref, entry["at"], prev_hash, h))
+        conn.commit()
     return {**entry, "hash": h}
 
 

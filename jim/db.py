@@ -1883,6 +1883,23 @@ CREATE INDEX IF NOT EXISTS idx_reaches_user ON reaches (user_id);
 
 _local = threading.local()
 
+# One re-entrant lock per person, for the sweeps that read a row, decide,
+# and write (jim/crashwatch.py, jim/vigil.py). Since the ticker
+# (jim/ticker.py) those sweeps run on two threads — a request's and the
+# ticker's — and a trip decided twice is a contact rung twice.
+_USER_LOCKS: dict[str, threading.RLock] = {}
+_USER_LOCKS_GUARD = threading.Lock()
+
+
+def user_lock(user_id: str) -> threading.RLock:
+    """The lock for one person's clocks. Re-entrant, so a sweep that reaches
+    a function which sweeps again does not wait on itself."""
+    with _USER_LOCKS_GUARD:
+        lock = _USER_LOCKS.get(user_id)
+        if lock is None:
+            lock = _USER_LOCKS[user_id] = threading.RLock()
+        return lock
+
 
 def db_path() -> str:
     return os.environ.get("JIM_DB", "jim.db")

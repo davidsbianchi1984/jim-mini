@@ -128,7 +128,14 @@ def status(user_id: str) -> dict:
 
 def sweep(user_id: str) -> dict:
     """Check the silence; trip at most once. Safe to call from anywhere,
-    any number of times."""
+    any number of times — and from two places at once (a screen and the
+    ticker): one sweeper per person at a time, so the steward is written
+    to once."""
+    with db.user_lock(user_id):
+        return _sweep(user_id)
+
+
+def _sweep(user_id: str) -> dict:
     from . import guardian, mailer
     row = _row(user_id)
     st = status(user_id)

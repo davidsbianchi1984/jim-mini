@@ -282,7 +282,14 @@ def note_signal(user_id: str, severity: str | None = None) -> None:
 def sweep(user_id: str, now: datetime | None = None) -> dict:
     """Advance the clock. Re-ask when a deadline passed; trip when the last
     allowed attempt passed unanswered. Safe to call from anywhere, any
-    number of times — the console poll, the ingest path, a status read."""
+    number of times — the console poll, the ingest path, a status read, the
+    ticker — and from two of them at once: one sweeper per person at a
+    time, so a deadline is consumed once and a trip decided once."""
+    with db.user_lock(user_id):
+        return _sweep(user_id, now)
+
+
+def _sweep(user_id: str, now: datetime | None = None) -> dict:
     # A placed contact call the phone line never reported on is settled
     # here and only here — a sweep advances the cascade, a read never does
     # (jim/reachout.py, settle_stale).

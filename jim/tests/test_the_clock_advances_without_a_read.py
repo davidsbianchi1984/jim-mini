@@ -10,12 +10,15 @@ and the one that starts a thread stops it.
 
 from __future__ import annotations
 
+import threading
 import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from jim import crashwatch, db, reachout, ticker, vigil
+from fastapi.testclient import TestClient
+
+from jim import audit, crashwatch, db, reachout, ticker, vigil
 
 from .conftest import enroll
 from .fakevoice import SITU, TWO, wire
@@ -195,3 +198,92 @@ def test_the_status_door_carries_the_posture(client):
     st = client.get(f"/crash-watch/{uid}").json()
     assert st["ticker"] == {**st["ticker"], "running": False, "every_seconds": 0}
     assert st["ticker"]["note"]
+
+
+# --- what the review raised ---------------------------------------------------------------
+
+def test_a_vigil_that_tripped_and_was_resolved_is_armed_again(client):
+    uid = enroll(client)
+    client.put(f"/vigil/{uid}", json={"steward_name": "Sam",
+                                      "steward_channel": "sam@example.com",
+                                      "quiet_days": 2})
+    now = db.utcnow()
+    db.connect().execute(
+        "UPDATE vigils SET tripped_at=?, resolved_at=? WHERE user_id=?",
+        (now, now, uid))
+    db.connect().commit()
+    assert uid in ticker.due_users()["vigil"]
+    db.connect().execute(
+        "UPDATE vigils SET resolved_at=NULL WHERE user_id=?", (uid,))
+    db.connect().commit()
+    assert uid not in ticker.due_users()["vigil"]     # tripped, standing
+
+
+def test_two_sweepers_at_once_trip_a_watch_once(client):
+    uid = enroll(client)
+    _arm(client, uid)
+    _open(client, uid)
+    later = _later(20)
+    go = threading.Barrier(4)
+
+    def sweeper():
+        go.wait()
+        crashwatch.sweep(uid, now=later)
+
+    threads = [threading.Thread(target=sweeper) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    trips = db.connect().execute(
+        "SELECT COUNT(*) FROM audit WHERE user_id=? AND action='watch.trip'",
+        (uid,)).fetchone()[0]
+    assert trips == 1
+    cascades = db.connect().execute(
+        "SELECT COUNT(*) FROM reachouts WHERE user_id=?", (uid,)).fetchone()[0]
+    assert cascades == 1
+
+
+def test_two_writers_never_fork_the_audit_chain(client):
+    uid = enroll(client)
+    go = threading.Barrier(3)
+
+    def writer(n):
+        go.wait()
+        for i in range(40):
+            audit.record("watch.arm", user_id=uid, ref=f"{n}-{i}")
+
+    threads = [threading.Thread(target=writer, args=(n,)) for n in range(3)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert audit.verify()["intact"] is True
+
+
+def test_a_second_start_keeps_the_running_interval(client, monkeypatch):
+    monkeypatch.setattr(ticker, "MIN_SECONDS", 1)
+    monkeypatch.setenv("JIM_TICK_SECONDS", "1")
+    thread = ticker.start()
+    try:
+        monkeypatch.setenv("JIM_TICK_SECONDS", "45")
+        assert ticker.start() is thread
+        assert ticker.posture()["every_seconds"] == 1
+        assert ticker.posture()["running"] is True
+    finally:
+        ticker.stop()
+    # Stopped: the posture reads the setting, and says the thread is not running.
+    p = ticker.posture()
+    assert p["running"] is False and p["every_seconds"] == 45
+
+
+def test_importing_the_api_starts_nothing_and_the_app_starts_it(client, monkeypatch):
+    import jim.api as api_mod
+    assert api_mod.app is not None
+    assert ticker.posture()["running"] is False        # the import started no thread
+    monkeypatch.setattr(ticker, "MIN_SECONDS", 1)
+    monkeypatch.setenv("JIM_TICK_SECONDS", "1")
+    with TestClient(api_mod.create_app()) as c:
+        assert c.get("/health").status_code == 200
+        assert ticker.posture()["running"] is True     # startup started it
+    assert ticker.posture()["running"] is False        # shutdown stopped it

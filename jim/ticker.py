@@ -40,8 +40,11 @@ MIN_SECONDS = 5
 
 _STATE: dict = {"running": False, "every_seconds": 0, "ticks": 0,
                 "last_tick_at": None, "last_swept": 0, "last_error": None}
-_STOP = threading.Event()
+#: The running thread and the event that ends it. Each thread carries its
+#: own event, so a thread stop() could not join in time keeps stopping and
+#: can never be un-stopped by the next start().
 _THREAD: threading.Thread | None = None
+_STOP: threading.Event | None = None
 
 
 def seconds() -> int:
@@ -76,8 +79,11 @@ def due_users() -> dict[str, set[str]]:
     crash = {r["user_id"] for r in conn.execute(
         "SELECT user_id FROM crash_watches WHERE enabled=1"
         " AND concern_opened_at IS NOT NULL AND tripped_at IS NULL")}
+    # A vigil that tripped and was resolved keeps its tripped_at (jim/vigil.py
+    # status reads tripped as tripped-and-not-resolved); it is armed again.
     vigil = {r["user_id"] for r in conn.execute(
-        "SELECT user_id FROM vigils WHERE enabled=1 AND tripped_at IS NULL")}
+        "SELECT user_id FROM vigils WHERE enabled=1"
+        " AND (tripped_at IS NULL OR resolved_at IS NOT NULL)")}
     calls = {r["user_id"] for r in conn.execute(
         "SELECT DISTINCT user_id FROM reachout_calls WHERE placed=1"
         " AND status IN ('ringing','consented','talking')")}
@@ -120,27 +126,30 @@ def tick(now: datetime | None = None) -> dict:
 
 def start(app=None) -> threading.Thread | None:
     """Start the ticker when the interval is above zero. Idempotent: a
-    second start while one runs returns the running thread."""
-    global _THREAD
-    every = seconds()
-    _STATE.update(every_seconds=every)
-    if every <= 0:
-        _STATE.update(running=False)
-        return None
-    if _THREAD is not None and _THREAD.is_alive():
+    second start while one runs returns the running thread, on the
+    interval it was started with."""
+    global _THREAD, _STOP
+    if _THREAD is not None and _THREAD.is_alive() and _STOP is not None \
+            and not _STOP.is_set():
         return _THREAD
-    _STOP.clear()
+    every = seconds()
+    _STATE.update(every_seconds=every, running=False)
+    if every <= 0:
+        return None
+    stop_event = threading.Event()
 
     def run() -> None:
-        while not _STOP.wait(every):
+        while not stop_event.wait(every):
             try:
                 tick()
             except Exception as exc:  # noqa: BLE001 — the thread outlives a bad pass
                 _STATE.update(last_error=f"tick: {type(exc).__name__}: {exc}")
                 log.exception("ticker: pass failed")
-        _STATE.update(running=False)
+        if _THREAD is threading.current_thread():
+            _STATE.update(running=False)
 
     _THREAD = threading.Thread(target=run, name="jim-ticker", daemon=True)
+    _STOP = stop_event
     _THREAD.start()
     _STATE.update(running=True)
     if app is not None:
@@ -150,18 +159,25 @@ def start(app=None) -> threading.Thread | None:
 
 
 def stop() -> None:
-    """Ask the thread to end and wait briefly; safe with none running."""
-    global _THREAD
-    _STOP.set()
+    """Ask the thread to end and wait briefly; safe with none running. A
+    thread still finishing a pass keeps its stop signal and is left to end
+    on its own — it is never forgotten into a second ticker."""
+    global _THREAD, _STOP
+    if _STOP is not None:
+        _STOP.set()
     if _THREAD is not None:
         _THREAD.join(timeout=2.0)
-    _THREAD = None
+        if _THREAD.is_alive():
+            log.warning("ticker: still finishing a pass; it will end after it")
     _STATE.update(running=False)
 
 
 def reset() -> None:
     """Tests: forget the counters between cases."""
+    global _THREAD, _STOP
     stop()
+    if _THREAD is not None and not _THREAD.is_alive():
+        _THREAD, _STOP = None, None
     _STATE.update(every_seconds=0, ticks=0, last_tick_at=None,
                   last_swept=0, last_error=None)
 
@@ -169,9 +185,10 @@ def reset() -> None:
 def posture() -> dict:
     """Whether JIM checks on its own, said plainly for the status a screen
     reads. ``running`` is the thread's fact, not the setting's."""
-    every = _STATE["every_seconds"] if _STATE["running"] else seconds()
     running = bool(_STATE["running"] and _THREAD is not None
-                   and _THREAD.is_alive())
+                   and _THREAD.is_alive() and _STOP is not None
+                   and not _STOP.is_set())
+    every = _STATE["every_seconds"] if running else seconds()
     if running:
         note = (f"JIM checks on its own every {every} seconds, whether or "
                 "not a screen is open")
