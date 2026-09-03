@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.1.2** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.3** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -617,6 +617,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.3** | **For examination** — every highlight names its problem, implementation, numbers and test. No functional changes; cut with the siblings |
 | **3.1.2** | **The screens are photographs, and the mechanisms are set out for examination** — 14, 44 and 45 are captures of the running console; the seven mechanisms on file each name the technical problem, the solution as built, what it changes in the machine and the test that holds it. Cut with the siblings |
 | **3.1.1** | **The image carries what the box runs** — the first probe on the hosted cloud got through every wall and fell on `import pytest`: the runtime image ships the dev extra now, and `JIM_SOURCE_DIR` names `/srv` as the tree the box copies, since the package the server runs from lives in site-packages. |
 | **3.1.0** | **The box on a busy server, and one number across the three** — the process ceiling is headroom over what the run's user already has rather than a flat count, so a forty-thread server no longer trips it before the box's first fork; the hosting page says what a container must allow for the box to open on a hosted cloud, with the profiles the compose stack ships for it; and the three products are cut together at one number from here. |
