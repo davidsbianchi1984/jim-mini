@@ -4,12 +4,24 @@ from fastapi.testclient import TestClient
 from jim import db as jim_db
 
 
+@pytest.fixture(autouse=True)
+def _no_remembered_phone_line():
+    """The voice door's proven standing is cached briefly (jim/telephony.py);
+    a test must never inherit the last test's proof."""
+    from jim import telephony
+    telephony.forget_standing()
+    yield
+    telephony.forget_standing()
+
+
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     """JIM-mini running standalone (no tandem)."""
     monkeypatch.setenv("JIM_DB", str(tmp_path / "jim.db"))
     monkeypatch.setenv("JIM_LLM", "stub")
     monkeypatch.delenv("JIM_QRME_URL", raising=False)
+    monkeypatch.delenv("JIM_VOICE_URL", raising=False)
+    monkeypatch.delenv("JIM_VOICE_SECRET", raising=False)
     jim_db.reset()
     from jim.api import create_app
 
@@ -155,6 +167,8 @@ def make_tandem(tmp_path, monkeypatch):
     def _make(hold=False):
         monkeypatch.setenv("JIM_DB", str(tmp_path / "jim.db"))
         monkeypatch.setenv("JIM_LLM", "stub")
+        monkeypatch.delenv("JIM_VOICE_URL", raising=False)
+        monkeypatch.delenv("JIM_VOICE_SECRET", raising=False)
         jim_db.reset()
         from jim.api import create_app
         from jim.qrme_client import QRMEClient

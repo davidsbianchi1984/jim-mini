@@ -6,6 +6,82 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.8] - 2026-09-03
+
+### Added
+
+- **A real telephony transport for the reach-out cascade.** Since 3.0.1
+  the cascade — JIM ringing the emergency contacts one after another when
+  a crash watch trips — ran to the ring and held there: every contact
+  call came back *prepared* because no transport was wired. It rings now.
+  `jim/telephony.py` is the JIM half of a phone line whose other half is
+  a stateless **voice sidecar** in the compose stack (`docker/voice` in
+  the QRME repository, five phone houses behind one interface), the same
+  shape as the camera and the ears: JIM speaks one small protocol to it
+  and never a vendor SDK, the house's credential never enters this
+  process, and swapping the house is a change in one file over there.
+  `jim.dialer.call_contact` — the one function the cascade promised would
+  change — hands a leg to the door when `JIM_VOICE_URL` and
+  `JIM_VOICE_SECRET` are set, the online kind is chosen and offline mode
+  is off, and records the house and its reference on the row (`placed`,
+  `provider`, `provider_call_id`, `placed_at`). Everything honest at the
+  edges stays honest: no door, offline, or the device path leaves the leg
+  prepared exactly as before; a door that refuses the number, refuses
+  JIM's secret, or does not answer leaves it *unplaced* with the sentence
+  and rings the next person — never a pretended ring
+  (`contact.unplaced`).
+- **Reached is decided by the line.** The sidecar turns the call-id doors
+  the cascade already had, plus one: `POST /reachout/call/{id}/event`
+  carries the phone line's word on a leg — `answered`, or how it ended
+  (`completed`, `voicemail`, `no-answer`, `busy`, `failed`, `canceled`) —
+  and that door is the one place *reached* is decided: pressed 1, heard a
+  spoken turn, and the line then ended is reached; a pickup that never
+  pressed 1, a keypad choice with nothing spoken after it, a voicemail, a
+  busy tone, no answer is unreached with the word for why on the row
+  (`ended`). Every row is its own mutex (`_claim`), so a house that
+  retries a status callback or delivers events out of order advances the
+  cascade once and the late word is written down as `late`. Every word
+  the line said is kept in order beside the decision
+  (`reachout_call_events`). A placed leg the line never reports on is
+  settled `no-report` by the crash watch's sweep and never by a read.
+- **Every spoken sentence rides an envelope.** Each answer to the sidecar
+  carries a `line` — what to say, what to do next (gather a digit, speak
+  first, gather speech, hang up), the language, and the re-prompt, the
+  close and the trouble sentence for the branches the sidecar takes on
+  its own — so the sidecar composes no prose of its own. Those six fixed
+  sentences (the re-prompt, the opt-out, the no-choice, the silence
+  prompt, the closing, the trouble line) are in JIM's table in all ten
+  languages. The conversation stops at `MAX_TURNS` with the closing.
+- **The doors take a secret.** All five call-id doors are guarded by
+  `auth.require_voice_adapter`, the reviewer surfaces' rule: with
+  `JIM_VOICE_SECRET` unset only localhost passes and a remote caller gets
+  a 503 naming the variable; set, the bearer must be the secret — a
+  person's own session token is a 403 here — and every refusal is
+  recorded (`voice.refused`). No new header enters the estate.
+- **The posture is proven, not read off the environment.** `wired` is
+  the configuration question; `standing` is the proof — the voice door
+  asked whether it answers, is keyed, has a number to ring from, can be
+  reached by the house's webhooks, and holds the same secret JIM does —
+  and `transport_ready` is true only on a proven `ready`. The proof is
+  cached thirty seconds; `POST /dialer/{user}/probe` forces it, and is
+  the *Check the line* button on the Safety screen, which now says one of
+  three things: the line answers and calls ring through the house; a
+  line is configured but would not ring right now, with the door's word,
+  note and fix; or no line is wired and each call is prepared and
+  documented. Each call row says whether it was placed, the house's
+  reference, and the line's word for how it ended or the door's sentence
+  for why it was never rung.
+
+### Unchanged, and pinned
+
+- **The transport never carries 911.** The dialer's send is still the
+  source constant `SEND_ENABLED = False`; its path never names the voice
+  door, pinned by reading the source; the transport refuses an emergency
+  short code before a request is built, whatever a contact's channel
+  holds; and a live, ready line changes nothing about the held rung —
+  exhausting into it asks the door for nothing. Three locks, each
+  tested; none of them a setting.
+
 ## [3.0.7] - 2026-09-03
 
 ### Added
@@ -11992,7 +12068,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...HEAD
+[3.0.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...app-v3.0.8
 [3.0.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...app-v3.0.7
 [3.0.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...app-v3.0.6
 [3.0.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.4...app-v3.0.5

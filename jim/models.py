@@ -1352,3 +1352,14 @@ class AppEditDecide(BaseModel):
 
     action: str
     note: str = ""
+
+
+class ReachOutEvent(BaseModel):
+    """The phone line's word on a leg, from the voice sidecar: the pickup, or
+    the way the line ended — in JIM's own six words, whatever the house
+    called it — with how long it ran and the house's detail kept verbatim."""
+
+    event: Literal["answered", "completed", "voicemail", "no-answer", "busy",
+                   "failed", "canceled"]
+    seconds: int = 0
+    detail: str = ""

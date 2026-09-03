@@ -70,6 +70,34 @@ or any container platform is the right shape.
 | `JIM_PUBLIC_URL` | `GET /pair` advertises this address, so the QR a phone scans points somewhere it can actually reach. |
 | `JIM_SIGNUP_KEY` | Without it, anyone who finds the URL can enroll on your deployment. Give the key to the people who should have accounts — it gates *creating* one, so anyone already enrolled keeps working and a parent adding a child is authorized by their own token. |
 
+### The phone line (optional)
+
+The reach-out cascade — JIM ringing the emergency contacts one after another
+when a crash watch trips — rings through a **voice sidecar** in the compose
+stack (`docker/voice` in the QRME repository), the same shape as the camera
+and the ears: JIM speaks one small protocol to it, the phone house's
+credential lives only in the sidecar, and swapping the house is a change in
+one file over there. With none of this set, every contact call is *prepared
+and documented* and nothing rings — the posture and the Safety screen say so.
+The 911 send stays held shut in source either way; this line carries calls
+to people, and refuses an emergency short code before a request is built.
+
+| Variable | Why |
+|---|---|
+| `JIM_VOICE_URL` | Where the voice sidecar answers. In the compose stack this is `http://voice:8800` and is set for you. |
+| `JIM_VOICE_SECRET` | The shared secret JIM presents to the sidecar and the sidecar presents back on the reach-out call doors. Set the **same value** for both containers; unset, those doors answer only localhost and a remote caller gets a 503 naming this variable. |
+| `JIM_TELEPHONY_PROVIDER` | Which house the sidecar is keyed for — `twilio` (default), `signalwire`, `telnyx`, `plivo` or `vonage`. The posture reports `mismatched` when the sidecar is keyed for another. |
+| `JIM_TELEPHONY_KIND` | `online` (default) rings through the sidecar. `device_sim` — calling through the person's own phone — is not wired this round and is said so, never pretended. |
+
+The sidecar's own variables (`VOICE_PUBLIC_URL`, `VOICE_FROM`,
+`VOICE_ACCOUNT`, `VOICE_TOKEN`, `VOICE_WEBHOOK_KEY`, `VOICE_HOUSE_REF`) are
+documented beside it in the QRME repository's `docs/beta-deploy.md`. Whether
+the line would actually ring is **proven, not read off the environment**:
+`GET /dialer/{user}/posture` asks the sidecar whether it answers, is keyed,
+has a number to ring from, can be reached by the house's webhooks, and holds
+the same secret JIM does, and `POST /dialer/{user}/probe` forces that proof
+past its short cache — the *Check the line* button on the Safety screen.
+
 ### TLS is not optional
 
 User tokens travel in the `Authorization` header, and what they unlock is

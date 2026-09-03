@@ -132,3 +132,43 @@ def require_reviewer(request: Request) -> None:
         raise HTTPException(401, "reviewer token required")
     if not secrets.compare_digest(token, required):
         raise HTTPException(403, "invalid reviewer token")
+
+
+def require_voice_adapter(request: Request) -> None:
+    """Guard the reach-out call handlers — the doors the voice sidecar turns
+    when a contact picks up, presses a key, speaks, or the line drops.
+
+    The sidecar holds ``JIM_VOICE_SECRET`` and presents it as the bearer on
+    every one of them; nothing else on the network may steer a live call.
+    Unset is development mode, and development mode means localhost — the
+    reviewer surfaces' rule, for the same reason: a compose-network caller is
+    not localhost, and "unset means everyone" is exactly wrong for the
+    deployment least likely to have configured anything. A remote caller
+    with no secret configured gets a 503 naming the variable, never a pass.
+
+    The value is compared to the secret, never looked up in ``api_tokens``:
+    a person's own session token is a 403 here. Every refusal is recorded,
+    so a forgery attempt is evidence rather than silence.
+    """
+    required = (os.environ.get("JIM_VOICE_SECRET") or "").strip()
+    call_id = str(request.path_params.get("call_id") or "")
+    if not required:
+        host = request.client.host if request.client else ""
+        if host in _LOCAL_CALLERS:
+            return
+        raise HTTPException(
+            503, "this deployment is reachable beyond localhost but has no "
+                 "JIM_VOICE_SECRET configured — the reach-out call handlers "
+                 "stay closed until it is")
+    token = bearer(request)
+    if not token:
+        _voice_refused(call_id)
+        raise HTTPException(401, "voice adapter token required")
+    if not secrets.compare_digest(token, required):
+        _voice_refused(call_id)
+        raise HTTPException(403, "invalid voice adapter token")
+
+
+def _voice_refused(call_id: str) -> None:
+    from . import audit
+    audit.record("voice.refused", ref=call_id or None)
