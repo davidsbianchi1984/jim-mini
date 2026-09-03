@@ -59,6 +59,13 @@ MAX_TURNS = 12
 MACHINE_DETECTION = True
 #: How long a proven standing is believed before the door is asked again.
 STANDING_CACHE_S = 30
+#: The wire's budget. The sidecar gives the house 8 s to take a call and
+#: its own cold proof up to three 3 s probes; JIM waits longer than either,
+#: so a slow answer is never recorded as no answer — a leg the house rang
+#: after JIM gave up on it would be a second contact rung in parallel. The
+#: whole chain still fits inside the 15 s a house gives a webhook.
+PLACE_TIMEOUT_S = 10.0
+STANDING_TIMEOUT_S = 10.0
 
 #: Short codes this transport will never ring, with or without a leading 1
 #: or a plus. The dialer holds 911 in source; this is the lock above the
@@ -157,7 +164,9 @@ def refuse_unless_dialable(to: str) -> str:
             raise RefusedNumber(
                 "this transport carries calls to people, never to emergency "
                 "services")
-    if not digits.isdigit() or len(digits) < 7:
+    # ASCII digits only: str.isdigit accepts other scripts' numerals, and a
+    # house does not.
+    if not re.fullmatch(r"[0-9]{7,15}", digits):
         raise RefusedNumber(
             "the contact's channel is not a phone number this transport can dial")
     return number
@@ -218,7 +227,8 @@ def place(call_id: str, to: str, opening: str, language: str = "en") -> dict:
         "language": language, "provider": dialer.chosen_provider(),
         "limits": {"ring_seconds": RING_SECONDS,
                    "max_call_seconds": MAX_CALL_SECONDS,
-                   "machine_detection": MACHINE_DETECTION}})
+                   "machine_detection": MACHINE_DETECTION}},
+        timeout=PLACE_TIMEOUT_S)
     if status != 201 or not body.get("placed") or not body.get("provider_call_id"):
         raise NotPlaced(str(body.get("detail") or
                             "the voice door answered without a call to follow"))
@@ -256,7 +266,10 @@ def standing(force: bool = False) -> dict:
             now - _STANDING["at"] < STANDING_CACHE_S:
         return dict(_STANDING["value"])
     try:
-        status, body = _request("GET", "/standing", timeout=3.0)
+        # A forced read forces the sidecar's own probes too, not just this
+        # cache — "Check the line" means check it now.
+        status, body = _request("GET", "/standing?force=1" if force else
+                                "/standing", timeout=STANDING_TIMEOUT_S)
     except SidecarUnreachable as exc:
         value = _held("unreachable", str(exc),
                       "check the voice container is running and JIM_VOICE_URL "

@@ -47,8 +47,10 @@ class FakeVoice:
                 "[Errno 111] Connection refused")
         if self.refuse_secret:
             return 403, {"detail": "invalid voice adapter token"}
-        if method == "GET" and path == "/standing":
+        if method == "GET" and path.startswith("/standing"):
             self.standing_reads += 1
+            self.forced_reads = getattr(self, "forced_reads", 0) + (
+                1 if path.endswith("?force=1") else 0)
             return 200, {"word": self.word, "provider": self.provider,
                          "authenticated": True,
                          "from_number": self.from_number,

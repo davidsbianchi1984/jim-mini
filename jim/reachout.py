@@ -220,6 +220,17 @@ def _place_next(reachout: dict) -> dict:
         log.warning("reach-out %s: %s not rung — %s",
                     reachout["id"], contact["name"], exc)
         return _place_next(_load(reachout["id"]))
+    except Exception as exc:  # noqa: BLE001 — a stranded leg is the worse outcome
+        # Anything else the wire can throw is still not a ring. The leg says
+        # so and the next person is rung; a row left "ringing" with no line
+        # behind it would re-fire on every sweep and never advance.
+        _call_set(cid, status="unplaced",
+                  placement=f"the transport failed before the call was placed: "
+                            f"{type(exc).__name__}: {exc}")
+        audit.record("contact.unplaced", user_id=reachout["user_id"],
+                     ref=contact["name"])
+        log.exception("reach-out %s: %s not rung", reachout["id"], contact["name"])
+        return _place_next(_load(reachout["id"]))
     if placed.get("placed"):
         _call_set(cid, placed=1, provider=placed.get("provider"),
                   provider_call_id=placed.get("provider_call_id"),
@@ -320,19 +331,24 @@ def say(call_id: str, heard: str) -> dict:
     reply = gen["text"]
     transcript = json.loads(call["transcript"])
     transcript.append({"heard": heard, "said": reply})
-    _call_set(call_id, status="talking", transcript=json.dumps(transcript),
-              turns=len(transcript))
+    # A claim, not a write: the line may have ended while the model was
+    # composing, and a terminal leg must never be pulled back to talking.
+    if not _claim(call_id, ("consented", "talking"), "talking",
+                  transcript=json.dumps(transcript), turns=len(transcript)):
+        raise ValueError("this call is not in a conversation")
     log.info("reach-out call %s: turn %d", call_id, len(transcript))
     return {"status": "talking", "said": reply, "call": _call(call_id)}
 
 
-def reached(call_id: str, ended: str | None = None) -> dict:
+def reached(call_id: str, ended: str | None = None, *,
+            only_from: tuple[str, ...] = LIVE) -> dict:
     """The contact received the message and the exchange is done — the cascade
     has reached a person, and stops here. ``ended`` is the line's word for
-    how the leg closed, when the line said one."""
+    how the leg closed, when the line said one; ``only_from`` narrows the
+    claim to the status the decision was made from."""
     call = _call(call_id)
     extra = {"ended": ended} if ended else {}
-    if not _claim(call_id, LIVE, "reached", **extra):
+    if not _claim(call_id, only_from, "reached", **extra):
         return _already(_call(call_id))
     _set(call["reachout_id"], status="reached")
     audit.record("contact.reached", user_id=call["user_id"], ref=call["name"])
@@ -340,13 +356,15 @@ def reached(call_id: str, ended: str | None = None) -> dict:
             "reachout_id": call["reachout_id"]}
 
 
-def unreached(call_id: str, ended: str | None = None) -> dict:
+def unreached(call_id: str, ended: str | None = None, *,
+              only_from: tuple[str, ...] = LIVE) -> dict:
     """No answer, or no consent — this contact is not reached; ring the next,
     or reach the held 911 rung if the list is spent. ``ended`` is the word
-    for why, kept on the row."""
+    for why, kept on the row; ``only_from`` narrows the claim to the status
+    the decision was made from."""
     call = _call(call_id)
     extra = {"ended": ended} if ended else {}
-    if not _claim(call_id, LIVE, "unreached", **extra):
+    if not _claim(call_id, only_from, "unreached", **extra):
         return _already(_call(call_id))
     audit.record("contact.unreached", user_id=call["user_id"], ref=call["name"])
     return _place_next(_load(call["reachout_id"]))
@@ -380,19 +398,30 @@ def event(call_id: str, event: str, seconds: int = 0, detail: str = "") -> dict:
                          ref=call["name"])
         return {"status": call["status"], "decided": "noted",
                 "call": _call(call_id), "reachout_id": call["reachout_id"]}
-    if call["status"] == "talking":
-        out = reached(call_id, ended=event)
-        decided = "reached"
-    elif call["status"] == "consented":
-        out = unreached(call_id, ended="consented-unspoken")
-        decided = "unreached"
-    else:
-        out = unreached(call_id, ended=("completed-without-consent"
-                                        if event == "completed" else event))
-        decided = "unreached"
-    if out.get("already"):
-        decided = "already"
-    return {**out, "decided": decided}
+    # Decide from the status the claim is made from — never from a status
+    # read a moment earlier. A turn that lands between the read and the
+    # claim moves the leg on; the claim then fails and the decision is
+    # made again from where the leg actually stands.
+    for _ in range(3):
+        where = call["status"]
+        if where in TERMINAL:
+            return {**_already(call), "decided": "already"}
+        if where == "talking":
+            out = reached(call_id, ended=event, only_from=("talking",))
+            decided = "reached"
+        elif where == "consented":
+            out = unreached(call_id, ended="consented-unspoken",
+                            only_from=("consented",))
+            decided = "unreached"
+        else:
+            out = unreached(call_id, ended=("completed-without-consent"
+                                            if event == "completed" else event),
+                            only_from=("ringing",))
+            decided = "unreached"
+        if not out.get("already"):
+            return {**out, "decided": decided}
+        call = _call(call_id)
+    return {**_already(call), "decided": "already"}
 
 
 def settle_stale(user_id: str, now: datetime | None = None) -> list[str]:

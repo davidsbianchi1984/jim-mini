@@ -156,6 +156,7 @@ def require_voice_adapter(request: Request) -> None:
         host = request.client.host if request.client else ""
         if host in _LOCAL_CALLERS:
             return
+        _voice_refused(call_id)
         raise HTTPException(
             503, "this deployment is reachable beyond localhost but has no "
                  "JIM_VOICE_SECRET configured — the reach-out call handlers "
@@ -164,7 +165,9 @@ def require_voice_adapter(request: Request) -> None:
     if not token:
         _voice_refused(call_id)
         raise HTTPException(401, "voice adapter token required")
-    if not secrets.compare_digest(token, required):
+    # Compared as bytes: compare_digest on str refuses non-ASCII with a
+    # TypeError, and a forged bearer must be a 403 on the record, never a 500.
+    if not secrets.compare_digest(token.encode("utf-8"), required.encode("utf-8")):
         _voice_refused(call_id)
         raise HTTPException(403, "invalid voice adapter token")
 

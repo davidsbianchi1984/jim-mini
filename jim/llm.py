@@ -98,8 +98,11 @@ class AnthropicProvider:
             raise offline.LeftTheHost(
                 "offline mode is on, so the Anthropic API cannot be reached. "
                 "Nothing leaves this machine while JIM_OFFLINE is set.")
-        self._client = (anthropic.Anthropic(api_key=api_key) if api_key
-                        else anthropic.Anthropic())
+        # The same ceiling the OpenAI-compatible wire keeps: JIM_LLM_TIMEOUT
+        # bounds every model path, so a phone line waiting on a turn is
+        # answered — or ended politely — inside the house's patience.
+        self._client = (anthropic.Anthropic(api_key=api_key, timeout=_TIMEOUT)
+                        if api_key else anthropic.Anthropic(timeout=_TIMEOUT))
 
     def generate(self, system: str, user: str) -> str:
         response = self._client.messages.create(

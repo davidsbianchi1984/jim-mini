@@ -92,3 +92,29 @@ def test_the_refusal_is_in_the_readers_language(client, monkeypatch):
     assert r.status_code == 401
     assert "voice adapter token required" not in r.text
     assert "token" in r.text.lower() or "adaptador" in r.text.lower()
+
+
+def test_a_bearer_that_is_not_ascii_is_a_403_on_the_record(client, monkeypatch):
+    # httpx will not send a non-ASCII header, so the door is turned directly
+    # with the request Starlette would build from such bytes.
+    from fastapi import HTTPException
+    from starlette.requests import Request
+    from jim import auth
+    uid, cid = _leg(client)
+    monkeypatch.setenv("JIM_VOICE_SECRET", "s3cret")
+    scope = {"type": "http", "method": "POST", "path": f"/reachout/call/{cid}/event",
+             "path_params": {"call_id": cid}, "query_string": b"",
+             "headers": [(b"authorization", "Bearer s3crét".encode("latin-1"))],
+             "client": ("172.18.0.4", 4000)}
+    with pytest.raises(HTTPException) as caught:
+        auth.require_voice_adapter(Request(scope))
+    assert caught.value.status_code == 403
+    assert [x["ref"] for x in _refusals()] == [cid]
+
+
+def test_the_closed_door_refusal_is_written_down_too(client):
+    uid, cid = _leg(client)
+    r = _remote(client.app).post(f"/reachout/call/{cid}/event",
+                                 json={"event": "answered"})
+    assert r.status_code == 503
+    assert [x["ref"] for x in _refusals()] == [cid]

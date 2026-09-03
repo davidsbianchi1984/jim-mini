@@ -124,6 +124,8 @@ def test_the_probe_door_forces_the_proof(client, monkeypatch):
     r = client.post(f"/dialer/{uid}/probe")
     assert r.status_code == 200, r.text
     assert fake.standing_reads == 2
+    # And the sidecar is told to check now too, not to answer from its cache.
+    assert fake.forced_reads == 1
     assert r.json()["transport_ready"] is True
     assert r.json()["standing"]["word"] == "ready"
     # The read door answers the same shape.

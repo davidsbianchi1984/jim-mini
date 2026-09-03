@@ -301,3 +301,39 @@ def test_the_crash_watch_sweep_settles(client, monkeypatch):
     crashwatch.sweep(uid)
     assert reachout._call(cid)["status"] == "unreached"
     assert reachout._call(cid)["ended"] == "no-report"
+
+
+# --- the turn that lands after the line ended ------------------------------------------
+
+def test_a_turn_that_lands_after_the_line_ended_does_not_resurrect_the_leg(client, monkeypatch):
+    uid, fake, out = _begin(client, monkeypatch)
+    cid = out["call"]["id"]
+    reachout.consent(cid, "1")
+    # The contact hangs up while the model is composing: the line's word
+    # arrives first and the cascade moves on …
+    assert _event(client, cid, "completed")["decided"] == "unreached"
+    assert _count() == 2
+    # … then the turn lands. It must not pull the leg back to talking.
+    r = client.post(f"/reachout/call/{cid}/say", json={"heard": ""}, headers=AS_SIDECAR)
+    assert r.status_code == 409
+    row = reachout._call(cid)
+    assert row["status"] == "unreached" and row["ended"] == "consented-unspoken"
+    assert row["turns"] == 0
+    assert _count() == 2
+
+
+def test_the_wires_other_failures_are_unplaced_legs_not_stranded_ones(client, monkeypatch):
+    uid = enroll(client)
+    wire(monkeypatch)
+    from jim import dialer
+
+    def broken(*a, **k):
+        raise RuntimeError("the wire caught fire")
+
+    monkeypatch.setattr(dialer, "call_contact", broken)
+    out = reachout.begin(uid, TWO, SITU)              # never raises
+    assert out["status"] == "exhausted"
+    rows = _rows(out["reachout_id"])
+    assert [r["status"] for r in rows] == ["unplaced", "unplaced"]
+    assert "RuntimeError: the wire caught fire" in rows[0]["placement"]
+    assert _actions(uid).count("contact.unplaced") == 2

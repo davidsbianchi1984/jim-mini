@@ -68,7 +68,8 @@ def test_emergency_short_codes_are_refused_before_any_request(number):
         telephony.refuse_unless_dialable(number)
 
 
-@pytest.mark.parametrize("channel", ["rosa@example.com", "123", "call me", ""])
+@pytest.mark.parametrize("channel", ["rosa@example.com", "123", "call me", "",
+                                     "＋１５５５１１１００００", "+1555111000000000"])
 def test_a_channel_that_is_not_a_number_is_refused(channel):
     with pytest.raises(telephony.RefusedNumber, match="not a phone number"):
         telephony.refuse_unless_dialable(channel)

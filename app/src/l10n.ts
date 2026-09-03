@@ -5203,6 +5203,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ro.cs.declined": {
     en: "Asked not to be called", es: "Pidió no ser llamado", fr: "A demandé à ne plus être appelé", de: "Bat, nicht angerufen zu werden", pt: "Pediu para não ser chamado", it: "Ha chiesto di non essere chiamato", ja: "連絡しないよう希望", zh: "要求不要再联系", hi: "कॉल न करने को कहा", ar: "طلب عدم الاتصال به",
   },
+  "ro.cs.prepared": {
+    en: "Prepared, waiting on a line", es: "Preparada, a la espera de una línea", fr: "Préparé, en attente d'une ligne", de: "Vorbereitet, wartet auf eine Leitung", pt: "Preparada, à espera de uma linha", it: "Preparata, in attesa di una linea", ja: "準備済み、回線待ち", zh: "已准备，等待线路", hi: "तैयार, लाइन की प्रतीक्षा में", ar: "مُجهَّزة، بانتظار خط",
+  },
   "ro.cs.unplaced": {
     en: "Not rung", es: "No se llamó", fr: "Non appelé", de: "Nicht gewählt", pt: "Não chamado", it: "Non chiamato", ja: "発信されず", zh: "未拨出", hi: "कॉल नहीं हुई", ar: "لم يُتصل",
   },

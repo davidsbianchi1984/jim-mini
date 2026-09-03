@@ -239,7 +239,11 @@ export function Safety() {
             {r.calls.map((c) => (
               <div key={c.id} className="row">
                 <span>{c.name}</span>
-                <span className="muted">{tr(`ro.cs.${c.status}`, lang)}</span>
+                <span className="muted">
+                  {c.status === "ringing" && !c.placed
+                    ? tr("ro.cs.prepared", lang)
+                    : tr(`ro.cs.${c.status}`, lang)}
+                </span>
                 {c.status === "unplaced" && c.placement
                   && <span className="muted small">{c.placement}</span>}
                 {c.status === "unreached" && c.ended
