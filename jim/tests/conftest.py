@@ -8,10 +8,12 @@ from jim import db as jim_db
 def _no_remembered_phone_line():
     """The voice door's proven standing is cached briefly (jim/telephony.py);
     a test must never inherit the last test's proof."""
-    from jim import telephony
+    from jim import telephony, ticker
     telephony.forget_standing()
+    ticker.reset()
     yield
     telephony.forget_standing()
+    ticker.reset()
 
 
 @pytest.fixture()
@@ -22,6 +24,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.delenv("JIM_QRME_URL", raising=False)
     monkeypatch.delenv("JIM_VOICE_URL", raising=False)
     monkeypatch.delenv("JIM_VOICE_SECRET", raising=False)
+    monkeypatch.setenv("JIM_TICK_SECONDS", "0")   # no thread races a test
     jim_db.reset()
     from jim.api import create_app
 
@@ -169,6 +172,7 @@ def make_tandem(tmp_path, monkeypatch):
         monkeypatch.setenv("JIM_LLM", "stub")
         monkeypatch.delenv("JIM_VOICE_URL", raising=False)
         monkeypatch.delenv("JIM_VOICE_SECRET", raising=False)
+        monkeypatch.setenv("JIM_TICK_SECONDS", "0")
         jim_db.reset()
         from jim.api import create_app
         from jim.qrme_client import QRMEClient

@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.9] - 2026-09-03
+
+### Added
+
+- **The ticker — JIM's clock advances without a read.** Every deadline in
+  this product used to move only when something looked: the crash watch
+  re-asked and tripped when the console polled or a status door was
+  read, the vigil checked the silence when its screen opened, and a
+  placed reach-out leg the phone line never reported on was settled by
+  that same sweep. A collapse at 3 a.m. with every screen closed waited
+  for morning. `jim/ticker.py` is one daemon thread that, every
+  `JIM_TICK_SECONDS` (default 30; `0` is off, the suite's posture),
+  sweeps exactly the users whose clocks are running — an open
+  crash-watch question, an armed vigil, a placed leg still live —
+  through the same functions the reads call. Nothing new decides
+  anything: a tick is a read nobody had to make. One user's failure is
+  logged and does not stop the others. The crash watch's status carries
+  the ticker's posture — running or not as the thread's fact, the
+  interval, the last pass — and the Safety screen says in words whether
+  JIM checks on its own or only while a screen is looking.
+
 ## [3.0.8] - 2026-09-03
 
 ### Added
@@ -12068,7 +12089,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...HEAD
+[3.0.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...app-v3.0.9
 [3.0.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...app-v3.0.8
 [3.0.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...app-v3.0.7
 [3.0.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.5...app-v3.0.6

@@ -70,6 +70,12 @@ or any container platform is the right shape.
 | `JIM_PUBLIC_URL` | `GET /pair` advertises this address, so the QR a phone scans points somewhere it can actually reach. |
 | `JIM_SIGNUP_KEY` | Without it, anyone who finds the URL can enroll on your deployment. Give the key to the people who should have accounts — it gates *creating* one, so anyone already enrolled keeps working and a parent adding a child is authorized by their own token. |
 
+### The clock
+
+| Variable | Why |
+|---|---|
+| `JIM_TICK_SECONDS` | How often JIM's own ticker sweeps the running clocks: an open crash-watch question, an armed vigil, a placed reach-out call the phone line has not reported on. Default `30`. Set `0` to turn it off, in which case those clocks advance only while a screen or a status read looks at them, and the Safety screen says so. |
+
 ### The phone line (optional)
 
 The reach-out cascade — JIM ringing the emergency contacts one after another

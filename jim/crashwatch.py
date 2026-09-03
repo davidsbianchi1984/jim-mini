@@ -191,10 +191,15 @@ def _parse(iso: str | None) -> datetime | None:
 
 
 def status(user_id: str) -> dict:
+    from . import ticker
     row = _row(user_id)
     if row is None:
-        return {"armed": False}
+        return {"armed": False, "ticker": ticker.posture()}
     return {
+        # Whether the clock below advances on its own (jim/ticker.py) or
+        # only while something reads it — the difference between a trip at
+        # 3 a.m. and a trip at breakfast.
+        "ticker": ticker.posture(),
         "armed": bool(row["enabled"]),
         "trusted_name": row["trusted_name"],
         "trusted_channel": row["trusted_channel"],

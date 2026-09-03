@@ -957,8 +957,20 @@ export interface CarePlan {
   created_at: string;
 }
 
+/** Whether JIM's clock advances on its own (jim/ticker.py) or only while a
+ * screen reads it. `running` is the thread's fact, not the setting's. */
+export interface TickerPosture {
+  running: boolean;
+  every_seconds: number;
+  ticks: number;
+  last_tick_at?: string | null;
+  last_swept: number;
+  last_error?: string | null;
+  note: string;
+}
 export interface CrashWatchStatus {
   armed: boolean;
+  ticker?: TickerPosture;
   trusted_name?: string;
   trusted_channel?: string;
   attempts?: number;

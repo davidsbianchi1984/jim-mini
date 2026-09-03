@@ -15,7 +15,7 @@ from fastapi import (BackgroundTasks, Depends, FastAPI, Header,
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from . import pagehead, telephony
+from . import pagehead, telephony, ticker
 from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons,
                finetune as finetune_mod,
                careteam, community,
@@ -121,7 +121,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.8",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.9",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -357,6 +357,13 @@ def create_app(qrme_client: QRMEClient | None = None,
             token=os.environ.get("JIM_CLOUD_TOKEN", ""),
             base_url=os.environ["JIM_CLOUD_URL"])
     app.state.cloud = cloud_client
+
+    # The ticker (jim/ticker.py): JIM's clock advancing without a read.
+    # Off when JIM_TICK_SECONDS is 0 — the suite's posture — and on by
+    # default on the box. Started here so it holds the same process and
+    # the same database as the doors; stopped when the app shuts down.
+    ticker.start(app)
+    app.router.add_event_handler("shutdown", ticker.stop)
 
     def _user_or_404(user_id: str, request: Request) -> dict:
         """Load the user (404 if unknown) and authorize the caller: every

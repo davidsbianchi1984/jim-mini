@@ -38,8 +38,9 @@ busy tone, no answer — unreached, with the word for how it ended on the row.
 Every row is its own mutex (:func:`_claim`), so a house that retries a status
 callback or delivers events out of order advances the cascade once. A placed
 leg the line never reports on is settled by :func:`settle_stale`, from the
-crash watch's sweep and nowhere else — a read never settles a call. A ticker
-that sweeps without a read is the next round's change.
+crash watch's sweep and nowhere else — a read never settles a call, and the
+ticker (:mod:`jim.ticker`) makes that sweep on its own clock, so the
+settlement never waits on somebody looking.
 
 ## The conversation is objective-driven
 

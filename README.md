@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.8** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.9** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -499,6 +499,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.9** | **The ticker** — JIM's clock advances without a read. The crash watch's re-ask and trip, the vigil's silence check, and the settlement of a placed call the phone line never reported on used to move only while a screen or a status read was looking. One daemon thread now sweeps exactly the users whose clocks are running, every thirty seconds by default, through the same functions the reads call; a tick is a read nobody had to make. The crash watch's status carries the ticker's posture and the Safety screen says whether JIM checks on its own. |
 | **3.0.8** | **A real telephony transport for the reach-out cascade** — the cascade ran to the ring and held there; it rings now, through a voice sidecar in the compose stack that holds the house's credential and speaks one small protocol to JIM. A leg is placed and the house's reference recorded on the row, or left honestly *unplaced* with the door's sentence when the door refuses or does not answer, and the next person rung — never a pretended ring. The line's own word decides reached or unreached at one door, once, however many times the house repeats itself; every spoken sentence rides an envelope so the sidecar composes no prose; the call-id doors take a shared secret; and the posture is proven by asking the door, with *Check the line* on the Safety screen. The 911 send stays held shut in source, its path never names the transport, and the transport refuses an emergency short code before a request is built. |
 | **3.0.7** | **The learn task plants itself** — PDI 3.0.1 gave the resident `corpus.learn` and it waited on somebody planting the task by hand. The person's own switch does it now: turning capture on plants a standing learn task in the vault, scoped to this person's bundles and nothing else, every day; turning it off takes the task back, and the row lets go only after the vault did. The bank archives itself every fifty examples once a vault is there, so the task always has bundles to learn from, and the first archive plants the task for a person who never touched the switch. The posture and the Settings card say what stands, or why nothing does — no vault, an older tandem, an unreached one — in words. |
 | **3.0.6** | **Company oversight on a screen** — the review desk over proposed app edits was API-only, behind the deployment's reviewer token; it is the Oversight tab now. Open it with the reviewer token, read each proposal, its target and its patch, approve or reject it with a note to the person who proposed it, and see what is approved and queued to ride the next publish. Nothing here touches the running app: approving queues, never applies. Screen 45, in the product map and the walkthrough. |

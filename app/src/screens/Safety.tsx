@@ -154,6 +154,10 @@ export function Safety() {
             .replace("{n}", String(watch.attempts ?? ""))}
           {watch.contact_emergency_services === true
             && <> {tr("sfy.auto.also", lang)}</>}
+          {" "}
+          {watch.ticker?.running
+            ? tr("sfy.auto.tick", lang).replace("{n}", String(watch.ticker.every_seconds))
+            : tr("sfy.auto.notick", lang)}
         </p>
       ) : (
         <p className="muted">{tr("sfy.auto.off", lang)}</p>

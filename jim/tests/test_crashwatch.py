@@ -23,7 +23,7 @@ def _arm(client, user, **extra):
 
 def test_arming_is_the_consent_moment(client):
     user = enroll(client)
-    assert client.get(f"/crash-watch/{user}").json() == {"armed": False}
+    assert client.get(f"/crash-watch/{user}").json()["armed"] is False
     st = _arm(client, user)
     assert st["armed"] and st["trusted_name"] == "Rosa"
     assert st["contact_emergency_services"] is True
@@ -119,7 +119,7 @@ def test_without_the_ticked_box_no_emergency_services(client):
 def test_unarmed_users_are_never_asked(client):
     user = enroll(client)
     client.post(f"/monitor/{user}", json={"blood_oxygen": 85})
-    assert client.get(f"/crash-watch/{user}").json() == {"armed": False}
+    assert client.get(f"/crash-watch/{user}").json()["armed"] is False
     rows = db.connect().execute(
         "SELECT COUNT(*) AS n FROM events WHERE user_id=? AND"
         " type='crash_watch'", (user,)).fetchone()
