@@ -220,7 +220,7 @@ def box(user_id: str, edit_id: str, *, model: str = "",
     if n == 0:
         audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
         raise ValueError("this app edit was decided while the box was running")
-    if got["status"] == "unapplied":
+    if got["status"] in ("unapplied", "refused"):
         audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
     else:
         audit.record("appedit.boxed", user_id=user_id,
@@ -277,7 +277,8 @@ def queue(language: str = i18n.DEFAULT) -> dict:
     return {"awaiting": awaiting, "queued": queued, "posture": posture()}
 
 
-def decide(edit_id: str, action: str, *, by: str, note: str = "") -> dict:
+def decide(edit_id: str, action: str, *, by: str, note: str = "",
+           language: str = i18n.DEFAULT) -> dict:
     """Company oversight's word on a held edit."""
     row = _row(edit_id)
     if row["state"] != "proposed":
@@ -297,4 +298,4 @@ def decide(edit_id: str, action: str, *, by: str, note: str = "") -> dict:
     # name it cannot see.
     audit.record("appedit.approved" if state == "approved" else "appedit.rejected",
                  user_id=row["user_id"], ref=row["title"][:80])
-    return _public(_row(edit_id))
+    return _public(_row(edit_id), language)

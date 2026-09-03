@@ -415,16 +415,116 @@ def test_a_revision_that_is_not_a_diff_never_replaces_the_draft_on_file(tmp_path
     src = _tree(tmp_path / "src")
     got = workroom.iterate(WRONG, "jim/adder.py",
                            lambda p, o: ("Sorry, I cannot produce a diff.", "stub"), source=src)
-    assert got["status"] == "unapplied" and len(got["rounds"]) == 2
+    assert len(got["rounds"]) == 2 and got["rounds"][1]["status"] == "unapplied"
     assert got["patch"] == WRONG                    # the last draft that applied
+    assert got["status"] == "red" and got["kept"] == 1   # and its outcome is the record's
     assert got["rounds"][1]["patch"] == "Sorry, I cannot produce a diff."
     assert got["rounds"][1]["model"] == "stub"
+    shown = workroom.summary(got)
+    assert shown["status"] == "red" and shown["tests"] == ["jim/tests/test_adder.py"]
+    assert "test_three_and_two" in shown["output"]
 
 
 def test_a_degraded_answer_is_no_revision(monkeypatch):
     monkeypatch.setattr(appedits.llm, "generate_for_user",
                         lambda *a, **k: {"text": "stub words", "provider": "stub", "degraded": True})
     assert appedits._again("u1", "auto")(WRONG, "boom") == ("", "stub")
+
+
+DELETE_TEST = textwrap.dedent("""\
+    --- a/jim/tests/test_adder.py
+    +++ /dev/null
+    @@ -1,4 +0,0 @@
+    -from jim.adder import add
+    -
+    -def test_three_and_two():
+    -    assert add(3, 2) == 5
+    """)
+
+
+@needs_box
+def test_a_revision_that_deletes_its_tests_is_never_kept(tmp_path, monkeypatch, rooms):
+    src = _tree(tmp_path / "src")
+    got = workroom.iterate(WRONG, "jim/adder.py", lambda p, o: DELETE_TEST, source=src)
+    assert [r["status"] for r in got["rounds"]] == ["red", "red"]
+    assert got["rounds"][1]["detail"] == "the draft names no tests, so nothing was tried"
+    assert got["rounds"][1]["tests"] == []
+    assert got["patch"] == WRONG and got["kept"] == 1
+    # A draft that names no test at all is not tried either.
+    lone = workroom.try_draft(FIX.replace("jim/adder.py", "jim/lonely.py")
+                              .replace("def add(a, b):\n-    return a - b\n+    return a + b",
+                                       "x\n-y\n+z"), source=src)
+    assert lone["status"] in ("unapplied", "red")
+
+
+@needs_box
+def test_the_other_rooms_are_hidden_and_the_tree_is_read_only(tmp_path, monkeypatch, rooms):
+    src = _tree(tmp_path / "src")
+    other = rooms / "room-other"
+    (other / "tree").mkdir(parents=True)
+    (other / "tree" / "secret.txt").write_text("SOMEBODY-ELSES-DRAFT")
+    workroom._own(other)
+    (src / "jim" / "tests" / "test_walls.py").write_text(textwrap.dedent("""\
+        import os
+        from jim.walls import WALLS
+
+        def test_sees_only_its_own_room():
+            room = os.path.dirname(os.getcwd())
+            base = os.path.dirname(room)
+            assert os.listdir(base) == [os.path.basename(room)], os.listdir(base)
+            assert not os.path.exists(os.path.join(base, "room-other"))
+
+        def test_cannot_write_the_tree_but_can_scratch():
+            try:
+                open("written.txt", "w").close()
+            except OSError:
+                pass
+            else:
+                raise AssertionError("the tree is writable")
+            with open(os.path.join(os.environ["TMPDIR"], "note"), "w") as fh:
+                fh.write("ok")
+        """))
+    got = workroom.try_draft(WALLS, "jim/walls.py", source=src)
+    assert got["status"] == "green", got["output"]
+    assert (other / "tree" / "secret.txt").read_text() == "SOMEBODY-ELSES-DRAFT"
+
+
+@needs_box
+def test_a_negative_probe_is_looked_at_again(monkeypatch):
+    monkeypatch.setattr(workroom, "_AVAILABLE", (False, "the assistant's box is not available on this host"))
+    monkeypatch.setattr(workroom, "_PROBED_AT", 0.0)
+    assert workroom.available() == (True, "")
+    monkeypatch.setattr(workroom, "_AVAILABLE", (False, "the assistant's box is not available on this host"))
+    import time
+    monkeypatch.setattr(workroom, "_PROBED_AT", time.monotonic())
+    assert workroom.available()[0] is False        # inside the backoff, the answer stands
+
+
+def test_an_undercounted_hunk_a_crlf_draft_and_a_rebirth_are_handled(tmp_path):
+    src = _tree(tmp_path / "src")
+    short = FIX.replace("@@ -1,2 +1,2 @@", "@@ -1 +1 @@")
+    with pytest.raises(ValueError):
+        workroom.apply_patch(src, short)
+    assert (src / "jim" / "adder.py").read_text() == "def add(a, b):\n    return a - b\n"
+    assert workroom.touched_files(FIX.replace("\n", "\r\n")) == ["jim/adder.py"]
+    assert workroom.apply_patch(src, FIX.replace("\n", "\r\n")) == ["jim/adder.py"]
+    assert "return a + b" in (src / "jim" / "adder.py").read_text()
+    with pytest.raises(ValueError):
+        workroom.apply_patch(src, "--- /dev/null\n+++ b/jim/adder.py\n@@ -0,0 +1 @@\n+# header\n")
+    assert not (src / "jim" / "adder.py").read_text().startswith("# header")
+
+
+def test_a_host_that_cannot_build_a_room_refuses_in_a_sentence(client, monkeypatch):
+    monkeypatch.setattr(workroom, "_AVAILABLE", (True, ""))
+    monkeypatch.setattr(workroom.shutil, "copytree",
+                        lambda *a, **k: (_ for _ in ()).throw(OSError(28, "No space left on device")))
+    uid = enroll(client)
+    eid = _file(client, uid, FIX)
+    r = client.post(f"/appedits/{uid}/{eid}/box", json={})
+    assert r.status_code == 200
+    assert r.json()["box"]["status"] == "refused"
+    assert r.json()["box"]["detail"] == "the assistant's box is not available on this host"
+    assert "appedit.box_refused" in _actions(uid) and "appedit.boxed" not in _actions(uid)
 
 
 # --- the door, the owner, and oversight ----------------------------------------
@@ -579,6 +679,10 @@ def test_the_boxs_sentence_reaches_the_reader_in_their_language(client, monkeypa
                    headers={"Authorization": "Bearer rev-secret", "Accept-Language": "fr"}).json()
     row = next(x for x in q["awaiting"] if x["id"] == eid)
     assert row["box"]["detail"] == i18n.tr_refusal("the draft is not a unified diff, so the box cannot try it", "fr")
+    d = client.post(f"/appedits/oversight/{eid}/decide", json={"action": "reject"},
+                    headers={"Authorization": "Bearer rev-secret", "Accept-Language": "fr"})
+    assert d.status_code == 200
+    assert d.json()["box"]["detail"] == i18n.tr_refusal("the draft is not a unified diff, so the box cannot try it", "fr")
 
 
 @needs_box

@@ -23,8 +23,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   nothing it starts outlives it; processes, CPU seconds, address space,
   file size and wall time capped before the interpreter starts, and a
   server that is root drops the run to `nobody` so the process count
-  holds; the output written to a file the kernel bounds, never buffered
-  by the server, and the tail kept. A red run goes back to the assistant with what
+  holds; the other rooms hidden under an empty mount so two drafts in
+  the box at once cannot see each other; the tree read-only and the
+  scratch space a size-capped mount; the output written to a file the
+  kernel bounds, never buffered by the server, and the tail kept. A red
+  run goes back to the assistant with what
   the tests said — up to `MAX_ROUNDS` (3) tries of the draft in all, so
   at most two revisions — and every round is filed
   beside the diff (`app_edits.box`), so the draft on file is the revised
@@ -38,9 +41,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   carries `box_available`, the Studio shows the sentence instead of a
   button. A draft that is not a unified diff, reaches outside the tree,
   names a directory or a binary, or does not fit the file it changes is
-  `unapplied` with the reason; a revision that does not apply stays on
-  the record and never replaces the draft on file; tests that collect
-  nothing are said so and the assistant is not asked again.
+  `unapplied` with the reason; a revision that does not apply — or that
+  removed the tests it was failing — stays on the record and never
+  replaces the draft on file, and the record describes the draft on
+  file; a draft that names no tests, or whose tests collect nothing, is
+  said so and the assistant is not asked again. A host that cannot build
+  a room refuses in a sentence rather than crashing, and a negative
+  probe is looked at again after a minute rather than closing the box
+  until a restart.
 - **The door's rules.** Only an edit awaiting a decision is tried — or,
   on a self-hosted server, the owner's own approved one — so a diff
   oversight approved is never rewritten under it, and a decision taken

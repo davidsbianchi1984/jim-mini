@@ -90,7 +90,8 @@ and wherever the database, the checkout and the console sit — hidden
 under a size-capped empty mount, the run pid 1 of its own pid namespace
 so nothing outlives it, processes counted (a server that is root drops
 the run to `nobody`, since the kernel does not count root's), CPU,
-memory, file size and wall time capped, the output bounded on disk. A red run goes back to the assistant with what the tests said,
+memory, file size and wall time capped, the tree read-only and the
+scratch space finite, the other rooms hidden, the output bounded on disk. A red run goes back to the assistant with what the tests said,
 for up to three tries of the draft in all, and every round is filed
 beside the diff. On a host without user namespaces
 the box refuses to run anything and says so in a sentence — it never tries

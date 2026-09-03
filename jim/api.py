@@ -2354,7 +2354,8 @@ def create_app(qrme_client: QRMEClient | None = None,
         auth.require_reviewer(request)
         try:
             return appedits.decide(edit_id, body.action, by="oversight",
-                                   note=body.note)
+                                   note=body.note,
+                                   language=i18n.refusal_language(request))
         except ValueError as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
 

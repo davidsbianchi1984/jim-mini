@@ -105,7 +105,8 @@ HIDDEN = ("/home", "/root", "/srv", "/data")
 SKIP = {".git", "node_modules", "dist", "__pycache__", ".pytest_cache",
         ".venv", "venv", "*.db", "*.db-wal", "*.db-shm", "*.sqlite3",
         ".env", ".env.*"}
-#: The size of the empty mount over each hidden place.
+#: The size of the empty mount over each hidden place and over the other
+#: rooms.
 MOUNT = "size=64m,nr_inodes=4k"
 #: Who the run is when the server is root: the kernel does not count
 #: root's processes, so root is not a uid the box can run as.
@@ -117,7 +118,14 @@ _OPEN = "__JIM_BOX_OPEN__"
 _NOT_HERE = "the assistant's box is not available on this host"
 _TIMEOUT = "the tests ran longer than the box allows"
 _NOTHING = "the named tests collected nothing, so nothing was tried"
+_NO_TESTS = "the draft names no tests, so nothing was tried"
 _AVAILABLE: tuple[bool, str] | None = None
+#: A negative answer is looked at again after this long, so one hiccup on
+#: a probe does not close the box until the server restarts.
+_RETRY_SECONDS = 60.0
+_PROBED_AT = 0.0
+#: The size of the scratch space a run may fill.
+SCRATCH = "size=256m,nr_inodes=16k"
 
 
 # --------------------------------------------------------------------------- #
@@ -163,9 +171,20 @@ def base() -> Path:
 _PROBE = r"""
 import os, sys, time
 import pytest
-for place in sys.argv[1:]:
+own = sys.argv[1]
+for place in sys.argv[2:]:
     if os.path.isdir(place) and os.listdir(place):
         sys.exit("a hidden place is not empty: " + place)
+room = os.path.dirname(os.getcwd())
+if os.listdir(os.path.dirname(room)) != [own]:
+    sys.exit("the other rooms are not hidden")
+try:
+    open(os.path.join(os.getcwd(), "written"), "w").close()
+    sys.exit("the tree is writable")
+except OSError:
+    pass
+with open(os.path.join(os.environ["TMPDIR"], "scratch"), "w") as fh:
+    fh.write("ok")
 kids = []
 held = False
 try:
@@ -193,10 +212,12 @@ def available(force: bool = False) -> tuple[bool, str]:
     checks each is empty, imports pytest from inside, and forks past the
     process ceiling to prove the count holds. A host that cannot is
     refused in a sentence; the reason is logged for the operator."""
-    global _AVAILABLE
-    if _AVAILABLE is not None and not force:
+    global _AVAILABLE, _PROBED_AT
+    if _AVAILABLE is not None and not force and (
+            _AVAILABLE[0] or time.monotonic() - _PROBED_AT < _RETRY_SECONDS):
         return _AVAILABLE
     _AVAILABLE = (False, _NOT_HERE)
+    _PROBED_AT = time.monotonic()
     if shutil.which(_UNSHARE) is None:
         log.warning("the assistant's box: no `unshare` on this host")
         return _AVAILABLE
@@ -218,15 +239,16 @@ def available(force: bool = False) -> tuple[bool, str]:
     try:
         (room / "tree").mkdir()
         (room / "tmp").mkdir()
-        (room / "probe.py").write_text(_PROBE, encoding="utf-8")
+        (room / "tree" / "probe.py").write_text(_PROBE, encoding="utf-8")
         _own(room)
         places = hidden()
-        program = (f"{sys.executable} {room / 'probe.py'} "
-                   + " ".join(places))
+        program = (f"{sys.executable} {room / 'tree' / 'probe.py'} "
+                   f"{room.name} " + " ".join(places))
         got = _invoke(room, room / "tree", _script(room / "tree", places, program))
     finally:
         discard(room)
     ok = got["status"] == "green" and "probe ok" in got["output"]
+    _PROBED_AT = time.monotonic()
     if not ok:
         log.warning("the assistant's box: the probe failed (%s): %s",
                     got["status"], got["output"][-400:].strip())
@@ -247,7 +269,7 @@ def _nobody():
 
 _OLD_HEADER = re.compile(r"^--- (?:a/)?(\S+)")
 _NEW_HEADER = re.compile(r"^\+\+\+ (?:b/)?(\S+)")
-_FILE_HEADER = re.compile(r"^--- (?:a/)?\S+\n\+\+\+ (?:b/)?(\S+)", re.M)
+_FILE_HEADER = re.compile(r"^--- (?:a/)?\S+\r?\n\+\+\+ (?:b/)?(\S+)", re.M)
 _HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 
 _NOT_A_DIFF = "the draft is not a unified diff, so the box cannot try it"
@@ -321,6 +343,8 @@ def apply_patch(root: Path, patch: str) -> list[str]:
             changed.append(path)
             continue
         target = _inside(root, path)
+        if old.group(1) == "/dev/null" and target.exists():
+            raise ValueError(_NO_FIT)
         out = _read(target)
         offset = 0
         hunks = 0
@@ -350,6 +374,13 @@ def apply_patch(root: Path, patch: str) -> list[str]:
                     old_left -= 1; new_left -= 1
                 i += 1
             if old_left != 0 or new_left != 0:
+                raise ValueError(_NO_FIT)
+            # A body line left over after the counted hunk means the header
+            # undercounted it; trying part of it would change the wrong
+            # thing, so refuse.
+            if (i < len(lines) and lines[i][:1] in ("+", "-", " ")
+                    and not _OLD_HEADER.match(lines[i])
+                    and not _NEW_HEADER.match(lines[i])):
                 raise ValueError(_NO_FIT)
             at = _locate(out, old_side, start + offset)
             if at is None:
@@ -464,20 +495,26 @@ def _limits() -> None:                              # pragma: no cover - child
 
 
 def _script(tree: Path, places: list[str], program: str) -> str:
-    """What runs inside the namespaces: hide every life on this disk — a
-    mount that fails aborts the run — say the box is open, then the
-    program."""
+    """What runs inside the namespaces: hide every life on this disk and
+    every other room — a mount that fails aborts the run — make the tree
+    read-only and the scratch space finite, say the box is open, then the
+    program. The room is the working directory, so it is still there to
+    bind back once the base is covered."""
+    room = tree.parent
     hide = " && ".join(
         f"( [ ! -d {h} ] || mount -t tmpfs -o {MOUNT} none {h} )"
         for h in places)
-    return f"{hide} && cd {tree} && echo {_OPEN} && exec {program}"
+    own = (f"mount -t tmpfs -o {MOUNT} none {base().resolve()}"
+           f" && mkdir -p {room} && mount --no-canonicalize --bind . {room}"
+           f" && mount --bind {tree} {tree}"
+           f" && mount -o remount,bind,ro {tree}"
+           f" && mount -t tmpfs -o {SCRATCH} none {room / 'tmp'}")
+    return f"{hide} && {own} && cd {tree} && echo {_OPEN} && exec {program}"
 
 
 def _program(tests: list[str]) -> str:
-    if tests:
-        return (f"{sys.executable} -m pytest -q -x -p no:cacheprovider "
-                + " ".join(tests))
-    return f"{sys.executable} -m compileall -q jim"
+    return (f"{sys.executable} -m pytest -q -x -p no:cacheprovider "
+            + " ".join(tests))
 
 
 def _invoke(room: Path, tree: Path, script: str) -> dict:
@@ -487,7 +524,7 @@ def _invoke(room: Path, tree: Path, script: str) -> dict:
            "HOME": str(room), "TMPDIR": str(room / "tmp"),
            "PYTHONPATH": str(tree), "PYTHONDONTWRITEBYTECODE": "1",
            "JIM_OFFLINE": "1", "JIM_LLM": "stub", "JIM_TICK_SECONDS": "0",
-           "LANG": "C.UTF-8"}
+           "JIM_DB": str(room / "tmp" / "jim.db"), "LANG": "C.UTF-8"}
     logfile = room / "run.log"
     started = time.monotonic()
     timed_out = False
@@ -563,6 +600,11 @@ def run(room: Path, tests: list[str]) -> dict:
         # that landed here anyway is refused the same way.
         return {"status": "refused", "detail": _NOT_HERE, "tests": tests,
                 "output": "", "ms": 0}
+    if not tests:
+        # A draft that names no test — or removed the one it named — is
+        # not tried at all, and never runs green for it.
+        return {"status": "red", "detail": _NO_TESTS, "tests": [],
+                "output": "", "ms": 0, "passed": 0, "failed": 0}
     tree = room / "tree"
     got = _invoke(room, tree, _script(tree, places, _program(tests)))
     if got["status"] == "refused":
@@ -599,6 +641,11 @@ def try_draft(patch: str, target: str = "", *, source: Path | None = None) -> di
     except ValueError as exc:
         return {"status": "unapplied", "detail": i18n.raised(exc), "changed": [],
                 "tests": [], "output": "", "ms": 0}
+    except OSError as exc:
+        log.warning("the assistant's box: no room could be built (%s)",
+                    type(exc).__name__)
+        return {"status": "refused", "detail": _NOT_HERE, "changed": [],
+                "tests": [], "output": "", "ms": 0}
     try:
         tests = tests_for(room / "tree", changed, target)
         got = run(room, tests)
@@ -617,12 +664,14 @@ def iterate(patch: str, target: str, again, *, rounds: int = MAX_ROUNDS,
     revision that was not a diff stays on the record and never replaces
     the draft on file."""
     history: list[dict] = []
-    current, kept, kept_by, who = patch, patch, "", ""
+    current, kept, kept_by, kept_n, who = patch, patch, "", 0, ""
     for n in range(1, max(1, rounds) + 1):
         got = try_draft(current, target, source=source)
         history.append({"round": n, **got, "patch": current, "model": who})
-        if got["status"] not in ("unapplied", "refused"):
-            kept, kept_by = current, who
+        # Only a draft whose tests ran can be the one on file: a revision
+        # that removed the tests it was failing is never kept.
+        if got["status"] not in ("unapplied", "refused") and got.get("tests"):
+            kept, kept_by, kept_n = current, who, n
         if got["status"] != "red" or got.get("detail") or n == rounds:
             break
         try:
@@ -637,9 +686,9 @@ def iterate(patch: str, target: str, again, *, rounds: int = MAX_ROUNDS,
         if not revised or revised == current.strip():
             break
         current = revised
-    last = history[-1]
-    return {"status": last["status"], "rounds": history, "patch": kept,
-            "model": kept_by, "ran_at": db.utcnow()}
+    shown = history[kept_n - 1] if kept_n else history[-1]
+    return {"status": shown["status"], "kept": kept_n, "rounds": history,
+            "patch": kept, "model": kept_by, "ran_at": db.utcnow()}
 
 
 def summary(box: dict | None, language: str = i18n.DEFAULT) -> dict | None:
@@ -649,7 +698,9 @@ def summary(box: dict | None, language: str = i18n.DEFAULT) -> dict | None:
     if not box:
         return None
     rounds = box.get("rounds") or []
-    last = rounds[-1] if rounds else {}
+    # The round described is the one whose draft is on file.
+    idx = box.get("kept") or len(rounds)
+    last = rounds[idx - 1] if rounds else {}
     return {"status": box.get("status"), "rounds": len(rounds),
             "tests": last.get("tests") or [], "changed": last.get("changed") or [],
             "passed": last.get("passed"), "failed": last.get("failed"),

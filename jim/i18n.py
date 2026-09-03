@@ -3195,6 +3195,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'सहायक का बॉक्स व्यस्त है, थोड़ी देर में फिर कोशिश करें',
         'ar': 'صندوق المساعد مشغول، فحاول مجددًا بعد لحظة',
     },
+    'the draft names no tests, so nothing was tried': {
+        'es': 'el borrador no indica ninguna prueba, así que no se probó nada',
+        'fr': "le brouillon ne nomme aucun test, donc rien n'a été essayé",
+        'de': 'der Entwurf nennt keine Tests, also wurde nichts ausprobiert',
+        'pt': 'o rascunho não indica nenhum teste, por isso nada foi experimentado',
+        'it': 'la bozza non indica alcun test, quindi nulla è stato provato',
+        'ja': '下書きはテストを指定していないため、何も試されませんでした',
+        'zh': '草稿没有指定任何测试，因此什么也没有试',
+        'hi': 'मसौदा कोई परीक्षण नहीं बताता, इसलिए कुछ आज़माया नहीं गया',
+        'ar': 'لا تسمّي المسودة أي اختبار، لذا لم يُجرَّب شيء',
+    },
     'no such app edit': {
         'es': 'no existe esa edición de la app',
         'fr': "cette modification de l'app n'existe pas",
