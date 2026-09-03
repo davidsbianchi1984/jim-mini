@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.10] - 2026-09-03
+
+### Added
+
+- **The line answers.** Since 3.0.8 the dialer's posture said calls go
+  both ways and answering waits. A contact the cascade rang who rings
+  the line back inside `INBOUND_WINDOW_HOURS` reaches the conversation
+  about the reach-out they were part of: a leg of its own (`direction`
+  `in`), consented by the act of calling, answered now, opened with who
+  this is for and what they are calling back about, then the same
+  grounded turns every leg takes. The number's own status callback ends
+  it by the house's reference (`POST /reachout/line/inbound/status`).
+  Anyone else hears one fixed sentence in their language — the line is
+  not a phone number — and nothing is kept but the audit
+  (`call.unknown_caller`). A call back never advances the cascade: a
+  contact hanging up on their own call rings nobody; and a cascade a
+  call back reached rings nobody more (`contact.called_back`).
+- **Receiving, proven.** `receive_ready` on the posture is true only on
+  a ready line whose number is pointed at the sidecar's inbound door,
+  false when the house says it is not, and null when the house cannot
+  be asked. The sidecar reports the two URLs to point the number at; the
+  Safety screen prints them beside *Check the line*, and each call row
+  says which way it went.
+
 ## [3.0.9] - 2026-09-03
 
 ### Added
@@ -12089,7 +12113,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...HEAD
+[3.0.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...app-v3.0.10
 [3.0.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...app-v3.0.9
 [3.0.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...app-v3.0.8
 [3.0.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.6...app-v3.0.7

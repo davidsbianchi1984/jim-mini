@@ -5159,6 +5159,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ro.posture.down": {
     en: "A phone line is configured but would not ring right now ({word}).", es: "Hay una línea telefónica configurada, pero ahora mismo no sonaría ({word}).", fr: "Une ligne téléphonique est configurée mais ne sonnerait pas pour l'instant ({word}).", de: "Eine Telefonleitung ist eingerichtet, würde aber gerade nicht klingeln ({word}).", pt: "Há uma linha telefónica configurada, mas neste momento não tocaria ({word}).", it: "Una linea telefonica è configurata ma al momento non squillerebbe ({word}).", ja: "電話回線は設定されていますが、今は鳴りません（{word}）。", zh: "已配置电话线路，但目前无法响铃（{word}）。", hi: "फ़ोन लाइन सेट है, लेकिन अभी घंटी नहीं बजेगी ({word})।", ar: "تم إعداد خط هاتفي لكنه لن يرن الآن ({word}).",
   },
+  "ro.posture.point": {
+    en: "For a contact's call back to reach JIM, point your number's voice and status URLs here:", es: "Para que la llamada de vuelta de un contacto llegue a JIM, apunta las URL de voz y de estado de tu número aquí:", fr: "Pour que le rappel d'un contact atteigne JIM, faites pointer les URL de voix et d'état de votre numéro ici :", de: "Damit der Rückruf eines Kontakts JIM erreicht, richte die Sprach- und Status-URLs deiner Nummer hierhin:", pt: "Para que a chamada de retorno de um contacto chegue ao JIM, aponta os URL de voz e de estado do teu número para aqui:", it: "Perché la richiamata di un contatto raggiunga JIM, punta gli URL voce e stato del tuo numero qui:", ja: "連絡先からの折り返しがJIMに届くよう、番号の音声URLと状態URLをここに向けてください：", zh: "要让联系人的回拨到达 JIM，请将号码的语音和状态 URL 指向这里：", hi: "संपर्क का वापस कॉल JIM तक पहुँचे, इसके लिए अपने नंबर के वॉइस और स्थिति URL यहाँ सेट करें:", ar: "لكي يصل اتصال جهة الاتصال المعاود إلى JIM، وجّه عنواني الصوت والحالة لرقمك إلى هنا:",
+  },
+  "ro.posture.pointed": {
+    en: "The number is pointed at JIM: a contact who calls back reaches the conversation.", es: "El número apunta a JIM: un contacto que devuelve la llamada llega a la conversación.", fr: "Le numéro pointe vers JIM : un contact qui rappelle rejoint la conversation.", de: "Die Nummer zeigt auf JIM: Ein Kontakt, der zurückruft, erreicht das Gespräch.", pt: "O número aponta para o JIM: um contacto que liga de volta chega à conversa.", it: "Il numero punta a JIM: un contatto che richiama raggiunge la conversazione.", ja: "番号はJIMに向いています。折り返した連絡先は会話につながります。", zh: "号码已指向 JIM：回拨的联系人会接入对话。", hi: "नंबर JIM की ओर सेट है: वापस कॉल करने वाला संपर्क बातचीत तक पहुँचता है।", ar: "الرقم موجّه إلى JIM: جهة الاتصال التي تعاود الاتصال تصل إلى المحادثة.",
+  },
+  "ro.posture.unpointed": {
+    en: "The number is not pointed at JIM yet, so a call back would not reach the conversation. Point its voice and status URLs here:", es: "El número aún no apunta a JIM, así que una llamada de vuelta no llegaría a la conversación. Apunta sus URL de voz y de estado aquí:", fr: "Le numéro ne pointe pas encore vers JIM, un rappel n'atteindrait donc pas la conversation. Faites pointer ses URL de voix et d'état ici :", de: "Die Nummer zeigt noch nicht auf JIM, ein Rückruf würde das Gespräch also nicht erreichen. Richte ihre Sprach- und Status-URLs hierhin:", pt: "O número ainda não aponta para o JIM, por isso uma chamada de retorno não chegaria à conversa. Aponta os seus URL de voz e de estado para aqui:", it: "Il numero non punta ancora a JIM, quindi una richiamata non raggiungerebbe la conversazione. Punta i suoi URL voce e stato qui:", ja: "番号はまだJIMに向いていないため、折り返しは会話に届きません。音声URLと状態URLをここに向けてください：", zh: "号码尚未指向 JIM，回拨无法接入对话。请将其语音和状态 URL 指向这里：", hi: "नंबर अभी JIM की ओर सेट नहीं है, इसलिए वापस कॉल बातचीत तक नहीं पहुँचेगी। इसके वॉइस और स्थिति URL यहाँ सेट करें:", ar: "الرقم غير موجّه إلى JIM بعد، لذا لن يصل الاتصال المعاود إلى المحادثة. وجّه عنواني الصوت والحالة إلى هنا:",
+  },
   "ro.posture.probe": {
     en: "Check the line", es: "Comprobar la línea", fr: "Vérifier la ligne", de: "Leitung prüfen", pt: "Verificar a linha", it: "Verifica la linea", ja: "回線を確認", zh: "检查线路", hi: "लाइन जाँचें", ar: "فحص الخط",
   },
@@ -5211,6 +5220,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "ro.cs.prepared": {
     en: "Prepared, waiting on a line", es: "Preparada, a la espera de una línea", fr: "Préparé, en attente d'une ligne", de: "Vorbereitet, wartet auf eine Leitung", pt: "Preparada, à espera de uma linha", it: "Preparata, in attesa di una linea", ja: "準備済み、回線待ち", zh: "已准备，等待线路", hi: "तैयार, लाइन की प्रतीक्षा में", ar: "مُجهَّزة، بانتظار خط",
+  },
+  "ro.cs.in": {
+    en: "Called back", es: "Devolvió la llamada", fr: "A rappelé", de: "Hat zurückgerufen", pt: "Ligou de volta", it: "Ha richiamato", ja: "折り返し着信", zh: "回拨来电", hi: "वापस कॉल किया", ar: "عاود الاتصال",
   },
   "ro.cs.unplaced": {
     en: "Not rung", es: "No se llamó", fr: "Non appelé", de: "Nicht gewählt", pt: "Não chamado", it: "Non chiamato", ja: "発信されず", zh: "未拨出", hi: "कॉल नहीं हुई", ar: "لم يُتصل",

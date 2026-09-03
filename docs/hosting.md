@@ -104,6 +104,15 @@ has a number to ring from, can be reached by the house's webhooks, and holds
 the same secret JIM does, and `POST /dialer/{user}/probe` forces that proof
 past its short cache — the *Check the line* button on the Safety screen.
 
+**The line answers.** A contact the cascade rang who rings the number back
+inside a day reaches the conversation about that reach-out; anyone else
+hears one fixed sentence. For that, the number at the house must be pointed
+at the sidecar's inbound doors. The posture read (and *Check the line*)
+prints the two URLs to paste into the number's voice and status settings at
+the house, and — for Twilio, which can be asked — whether the number is
+pointed there already. Other houses answer "cannot say", and the runbook's
+test call is the proof.
+
 ### TLS is not optional
 
 User tokens travel in the `Authorization` header, and what they unlock is

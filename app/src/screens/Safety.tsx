@@ -200,6 +200,21 @@ export function Safety() {
             {posture.standing?.fix && <> · {posture.standing.fix}</>}
           </p>
         )}
+        {posture?.wired && posture.transport_ready && posture.standing?.inbound && (
+          <p className="muted small">
+            {posture.receive_ready === true
+              ? tr("ro.posture.pointed", lang)
+              : posture.receive_ready === false
+                ? tr("ro.posture.unpointed", lang)
+                : tr("ro.posture.point", lang)}
+            {posture.standing.inbound.voice_url && (
+              <> <code>{posture.standing.inbound.voice_url}</code></>
+            )}
+            {posture.standing.inbound.status_url && (
+              <> <code>{posture.standing.inbound.status_url}</code></>
+            )}
+          </p>
+        )}
         {posture && posture.wired && (
           <button className="secondary" disabled={busy}
             onClick={() => run(async () => {
@@ -243,6 +258,7 @@ export function Safety() {
             {r.calls.map((c) => (
               <div key={c.id} className="row">
                 <span>{c.name}</span>
+                {c.direction === "in" && <span className="pill">{tr("ro.cs.in", lang)}</span>}
                 <span className="muted">
                   {c.status === "ringing" && !c.placed
                     ? tr("ro.cs.prepared", lang)
