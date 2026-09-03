@@ -571,7 +571,7 @@ See [docs/hosting.md](docs/hosting.md) for production deployment and
 ## The console, driven
 
 Every picture below was photographed while `tools/walkthrough.py` drove
-the 3.0.0 release gate: a live backend, a member enrolled during the
+the 3.0.10 release gate: a live backend, a member enrolled during the
 run, and whatever the drive put on screen still on it. Nothing here is
 staged — the monitor shows the reading the drip channel actually
 carried, the check-in is the one the harness logged, and the care team
