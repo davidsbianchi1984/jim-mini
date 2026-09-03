@@ -2116,10 +2116,13 @@ def create_app(qrme_client: QRMEClient | None = None,
     def reachout_say(call_id: str, body: ReachOutHeard,
                      _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
+            reachout._call(call_id)
+        except ValueError as exc:
+            raise HTTPException(404, i18n.raised(exc)) from None
+        try:
             out = reachout.say(call_id, body.heard)
         except ValueError as exc:
-            code = 404 if str(exc) == "no such call" else 409
-            raise HTTPException(code, i18n.raised(exc)) from None
+            raise HTTPException(409, i18n.raised(exc)) from None
         phrases = telephony.phrases()
         turns = int((out.get("call") or {}).get("turns") or 0)
         if turns >= telephony.MAX_TURNS:

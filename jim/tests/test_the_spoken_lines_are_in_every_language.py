@@ -47,7 +47,7 @@ def test_the_line_envelope_carries_the_sidecars_branches():
                     "again": "encore", "close": "au revoir",
                     "trouble": telephony.phrases("fr")["trouble"]}
     assert telephony.line("hangup", "bye")["again"] is None
-    with pytest.raises(ValueError, match="a line's then is one of"):
+    with pytest.raises(LookupError, match="not one of the four then words"):
         telephony.line("dance", "no")
 
 

@@ -2913,6 +2913,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'यह ऐसी घटना नहीं जिसकी सूचना फ़ोन लाइन देती है',
         'ar': 'هذا ليس حدثًا يبلّغ عنه خط الهاتف',
     },
+    "a line's then is not one of the four then words": {
+        'es': 'el «then» de una línea no es una de las cuatro palabras «then»',
+        'fr': "le « then » d'une ligne n'est pas l'un des quatre mots « then »",
+        'de': 'das „then“ einer Zeile ist keines der vier „then“-Wörter',
+        'pt': 'o «then» de uma linha não é uma das quatro palavras «then»',
+        'it': 'il «then» di una riga non è una delle quattro parole «then»',
+        'ja': '行の「then」は4つの「then」語のいずれでもありません',
+        'zh': '该行的「then」不是四个「then」词之一',
+        'hi': 'पंक्ति का «then» चार «then» शब्दों में से एक नहीं है',
+        'ar': 'كلمة «then» في السطر ليست واحدة من كلمات «then» الأربع',
+    },
     # The reach-out cascade (jim/reachout.py). JIM calling emergency
     # contacts one after another — these are the three ways that can be
     # asked to do something it cannot.
@@ -6121,7 +6132,7 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 _FIELD_LABELS: dict[str, dict[str, str]] = {
     # The phone line's event body (jim/models.ReachOutEvent) — 3.0.8.
     'event': {'en': 'What the phone line reported', 'es': 'Lo que reportó la línea telefónica', 'fr': 'Ce que la ligne téléphonique a signalé', 'de': 'Was die Telefonleitung gemeldet hat', 'pt': 'O que a linha telefónica reportou', 'it': 'Cosa ha riportato la linea telefonica', 'ja': '電話回線が報告した内容', 'zh': '电话线路报告的内容', 'hi': 'फ़ोन लाइन ने क्या सूचना दी', 'ar': 'ما أبلغ عنه خط الهاتف'},
-    'seconds': {'en': 'How long the call lasted', 'es': 'Cuánto duró la llamada', 'fr': 'Durée de l\'appel', 'de': 'Wie lange der Anruf dauerte', 'pt': 'Quanto durou a chamada', 'it': 'Quanto è durata la chiamata', 'ja': '通話の長さ', 'zh': '通话持续时间', 'hi': 'कॉल कितनी देर चली', 'ar': 'كم استغرقت المكالمة'},
+    'seconds': {'en': 'Seconds', 'es': 'Segundos', 'fr': 'Secondes', 'de': 'Sekunden', 'pt': 'Segundos', 'it': 'Secondi', 'ja': '秒', 'zh': '秒', 'hi': 'सेकंड', 'ar': 'الثواني'},
     'detail': {'en': 'What the phone line said about it', 'es': 'Lo que la línea telefónica dijo al respecto', 'fr': 'Ce que la ligne téléphonique en a dit', 'de': 'Was die Telefonleitung dazu sagte', 'pt': 'O que a linha telefónica disse sobre isso', 'it': 'Cosa ha detto la linea telefonica al riguardo', 'ja': '電話回線の補足', 'zh': '电话线路对此的说明', 'hi': 'फ़ोन लाइन ने इसके बारे में क्या कहा', 'ar': 'ما قاله خط الهاتف عنها'},
     # The hands (jim/hands.py), worded exactly as the sibling product
     # words them. Somebody who read the grant card on one console and

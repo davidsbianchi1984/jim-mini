@@ -321,7 +321,9 @@ def line(then: str, say: str, language: str = "en", *,
     sidecar does after saying it; `again`, `close` and `trouble` are the
     sidecar-only branches' words, so it never composes prose of its own."""
     if then not in THEN:
-        raise ValueError(f"a line's then is one of {', '.join(THEN)}")
+        # A programmer's mistake, never a person's — not a refusal a route
+        # stringifies, so not a ValueError: the four words are THEN.
+        raise LookupError("a line's then is not one of the four then words")
     return {"say": say, "then": then, "language": language,
             "again": again, "close": close,
             "trouble": trouble if trouble is not None
