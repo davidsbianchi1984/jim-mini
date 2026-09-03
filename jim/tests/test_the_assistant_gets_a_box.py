@@ -228,10 +228,18 @@ def test_the_limits_are_finite_and_the_hidden_places_are_the_lives(tmp_path, mon
 
 # --- the refusal that matters ---------------------------------------------------
 
-def test_without_four_walls_the_box_runs_nothing(tmp_path, monkeypatch):
-    src = _tree(tmp_path / "src")
+def _no_box(monkeypatch):
+    """A host that was just found wanting: inside the backoff, the answer
+    stands and nothing re-probes."""
+    import time
     monkeypatch.setattr(workroom, "_AVAILABLE",
                         (False, "the assistant's box is not available on this host"))
+    monkeypatch.setattr(workroom, "_PROBED_AT", time.monotonic())
+
+
+def test_without_four_walls_the_box_runs_nothing(tmp_path, monkeypatch):
+    src = _tree(tmp_path / "src")
+    _no_box(monkeypatch)
     got = workroom.try_draft(FIX, "jim/adder.py", source=src)
     assert got["status"] == "refused"
     assert got["detail"] == "the assistant's box is not available on this host"
@@ -590,8 +598,7 @@ def test_the_door_is_the_owners_and_a_non_diff_is_unapplied(client, monkeypatch)
 
 
 def test_without_a_box_the_door_refuses_in_a_sentence(client, monkeypatch):
-    monkeypatch.setattr(workroom, "_AVAILABLE",
-                        (False, "the assistant's box is not available on this host"))
+    _no_box(monkeypatch)
     uid = enroll(client)
     assert client.get(f"/appedits/{uid}").json()["posture"]["box_available"] is False
     eid = _file(client, uid, FIX)

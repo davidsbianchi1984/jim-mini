@@ -12177,7 +12177,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.11...HEAD
+[3.0.11]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...app-v3.0.11
 [3.0.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.9...app-v3.0.10
 [3.0.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.8...app-v3.0.9
 [3.0.8]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.7...app-v3.0.8
