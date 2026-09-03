@@ -27,8 +27,12 @@ version number names one tested combination of all three.
 
 ## For examination
 
-This page is written to be checked, not believed. Three rules hold
-throughout it:
+This page is written to be checked, not believed, and it is written for
+an examiner. Every section grounds the product in three things: the
+**technical problem** in the machine, the **implementation** as built —
+named modules, named constants, named tests — and a **measurable effect**
+that follows from the implementation and not from a description of it.
+Three rules hold throughout:
 
 - **A photograph outranks a drawing.** Every `.png` under `docs/screens/`
   and `docs/walkthrough/` is a capture of the running console taken by
@@ -37,7 +41,7 @@ throughout it:
   36 watch faces are drawings by design, and each links to the working
   face at jim-mini.com.
 - **Every behaviour stated here is held by a test.** The suite
-  (`python -m pytest`, 3,000-plus cases) reads this file: the release
+  (`python -m pytest`, 3,300-plus cases) reads this file: the release
   banner, the release table, the gallery, the screen numbering, the
   screen count and the closing passage all fail the build when they
   drift from the product.
@@ -98,27 +102,31 @@ system, and each is photographed on the screens below.
 
 ### Where each highlight is proven
 
-| Highlight | Module | Test | Screen |
-|---|---|---|---|
-| Offline is enforced at every socket | `jim/offline.py` | `test_nothing_leaves_the_host.py` | 23 |
-| Ten languages, refusals included | `jim/i18n.py` | `test_the_guardian_refuses_in_one_language.py` | every screen |
-| Ability is not a gate | `app/src/screens/Access.tsx` | `test_ability_is_not_a_gate.py` | 37 |
-| The wrist channel and the watch | `jim/watch.py`, `native/wear/` | `test_watch.py`, `test_the_wrist_is_a_surface.py`, `test_the_watch_you_actually_wear.py` | 12, faces 01–36 |
-| The personal baseline and every limit on one screen | `jim/guardian.py` | `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` | 08, 13 |
-| Bring your own model key | `jim/llm.py` | `test_byo_key.py` | 15 |
-| The coach, grounded in the vault and the watched pages | `jim/coach.py`, `jim/lookout.py` | `test_the_lookout.py`, `test_the_lookout_grows_ears.py` | 07 |
-| The medicine cabinet | `jim/meds.py` | `test_meds.py` | 17 |
-| The care circle | `jim/careteam.py` | `test_careteam.py` | 18 |
-| The money guardian | `jim/money.py` | `test_the_money_guardian.py` | 13 |
-| Beacons and the rota | `jim/beacons.py`, `jim/rota.py` | `test_beacons.py` | 31 |
-| The engaged session and its permits | `jim/engaged.py`, `jim/permits.py` | `test_an_engaged_session_reaches_no_further_than_its_owner.py` | 38, 39 |
-| The agent's hands and look permits | `jim/hands.py` | `test_the_agents_hands_reach_the_look.py`, `test_the_guardian_gets_eyes_and_hands.py` | 42 |
-| Widgets that cannot leave their box | `jim/widgets.py` | `test_the_widget_cannot_leave_its_box.py` | 40 |
-| The moderated mailbox | `jim/mailbox.py` | `test_the_moderated_mailbox.py` | 44 |
-| The training corpus and the learn task | `jim/corpus.py` | `test_the_training_corpus.py`, `test_the_learn_task_plants_itself.py` | 43 |
-| App edits held for company oversight | `jim/appedits.py` | `test_the_held_screens_buttons_match_the_wire.py` | 45 |
-| The coding assistant's box — a draft tried inside four walls before a person judges it | `jim/workroom.py` | `test_the_assistant_gets_a_box.py` | 40, 45 |
-| Two guardians working together | `jim/family.py` | `test_two_guardians_working_together.py` | 25 |
+Each row: the technical problem, the implementation with its own numbers, the test that holds it, and the photograph.
+
+| Highlight | The technical problem | As built, with its numbers | Test | Screen |
+|---|---|---|---|---|
+| Offline is enforced at every socket | A privacy promise made in prose leaks through one forgotten HTTP call. | `jim/offline.py` refuses every non-loopback connect at the socket layer while the gate is up; no module opts in. | `test_nothing_leaves_the_host.py` | 23 |
+| Ten languages, refusals included | A refusal in English to a reader in Arabic is a wall, not an answer. | `jim/i18n.py` keeps every refusal sentence as a constant with ten translations; a refusal raised anywhere is rendered through it. | `test_the_guardian_refuses_in_one_language.py` | every screen |
+| Ability is not a gate | A screen that needs a mouse locks out the person the guardian exists for. | `app/src/screens/Access.tsx` exposes every control to keyboard and reader; the guard reads the markup rather than trusting a checklist. | `test_ability_is_not_a_gate.py` | 37 |
+| The wrist channel and the watch | A watch app needs a store, a phone pairing and a vendor account before it shows one number. | `jim/watch.py` serves the face as one HTTP payload a browser on the wrist reads; 36 faces are drawn from the same rows; `native/wear/` is the same face packaged. | `test_watch.py`, `test_the_wrist_is_a_surface.py`, `test_the_watch_you_actually_wear.py` | 12, faces 01–36 |
+| The personal baseline and every limit on one screen | Population thresholds fire on the wrong person and stay silent on the right one. | `jim/guardian.py` keeps a per-person resting baseline as an exponential average with `_BASELINE_ALPHA = 0.05`, provisional until `_BASELINE_MIN_SAMPLES = 5`; every limit is set on one screen and rounds up. | `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` | 08, 13 |
+| Bring your own model key | A key in the server's configuration is every caller's key. | `jim/llm.py` reads the caller's key from one request header into a context variable for that request only; never stored, never logged. | `test_byo_key.py` | 15 |
+| The coach, grounded in the vault and the watched pages | A model answering from its training answers about somebody else. | `jim/coach.py` conditions every answer on the person's sealed records; `jim/lookout.py` keeps watched pages fresh and says when one changed. | `test_the_lookout.py`, `test_the_lookout_grows_ears.py` | 07 |
+| Signal quality caps the escalation | A loose sensor's plausible reading escalates as if it were true. | `jim/signal.py` carries a trust score per sample and no escalation rises above `TRUST_FLOOR = 0.5`; `jim/freshness.py` expects a heartbeat every `HEARTBEAT_MS = 90000` ms and keeps the last 500 readings for the judgement. | `test_how_old_is_the_reading.py` | 08 |
+| The medicine cabinet | A dose forgotten and a dose doubled look the same to a reminder that only rings. | `jim/meds.py` records each dose taken against its schedule; the next reminder is computed from the record, not the clock alone. | `test_meds.py` | 17 |
+| The care circle | Everyone in a family getting every alarm is nobody getting the right one. | `jim/careteam.py` holds roles and reach order; each escalation step names who was tried and how. | `test_careteam.py` | 18 |
+| The money guardian | A rate limit on a card is a rule the bank keeps, not the person. | `jim/money.py` keeps the person's own ceilings and refuses over them before the request leaves. | `test_the_money_guardian.py` | 13 |
+| Beacons and the rota | A printed code at a door that points somewhere new is a door that lies. | `jim/beacons.py` deactivates rather than deletes; `jim/rota.py` keeps who is on duty when the code is scanned. | `test_beacons.py` | 31 |
+| The engaged session and its permits | An assistant session that outlives its owner's attention acts alone. | `jim/engaged.py` binds a session to a person's presence; `jim/permits.py` grants each reach as a revocable row. | `test_an_engaged_session_reaches_no_further_than_its_owner.py` | 38, 39 |
+| The agent's hands and look permits | An agent that can see the screen can see everything on it. | `jim/hands.py` grants a look per screen per permit; the agent's hands reach the theme and the list switches, and nothing else. | `test_the_agents_hands_reach_the_look.py`, `test_the_guardian_gets_eyes_and_hands.py` | 42 |
+| Widgets that cannot leave their box | A model-written widget runs in the page that holds the session. | `jim/widgets.py` serves each widget in a sandboxed frame with no ambient credential. | `test_the_widget_cannot_leave_its_box.py` | 40 |
+| The moderated mailbox | Mail answered by a model in the person's name leaves before the person sees it. | `jim/mailbox.py` holds every outbound letter in a queue the person approves. | `test_the_moderated_mailbox.py` | 44 |
+| The training corpus and the learn task | A local model cannot learn from exchanges nobody kept. | `jim/corpus.py` banks each exchange; the learn task plants itself when capture is on and archives the bank itself. | `test_the_training_corpus.py`, `test_the_learn_task_plants_itself.py` | 43 |
+| App edits held for company oversight | A change a user proposes to the app lands nowhere, or lands everywhere. | `jim/appedits.py` holds each proposal as a row with a state; the reviewer's queue is a screen; `BOX_SLOTS = 2` bounds how many are tried at once. | `test_the_held_screens_buttons_match_the_wire.py` | 45 |
+| The coding assistant's box — a draft tried inside four walls before a person judges it | A model's patch run on the server is the model running the server. | `jim/workroom.py` runs each draft under `unshare -rmnp` as `nobody`, with `LIMITS` of 300 s wall, 240 s CPU, 2 GiB address space, 32 processes above the account's running count, 16 MiB per file and 64 KiB of output; the tree is read-only, hidden places are covered by a 64 MiB tmpfs, scratch is 256 MiB; at most `MAX_ROUNDS = 3` tries; a probe forks 400 processes before the box is trusted. | `test_the_assistant_gets_a_box.py`, `test_the_box_opens_on_the_hosted_cloud.py` | 40, 45 |
+| The dialer is built to the send, and held shut | An emergency call placed by software is either impossible or already happening. | `jim/dialer.py` carries the whole cascade to a real telephony transport and keeps `SEND_ENABLED = False` in source; no setting, plan or waiver opens it. | `test_the_dialer_posture_is_proven.py` | — |
+| Two guardians working together | Two people's guardians that cannot see each other cannot cover for each other. | `jim/family.py` links two guardians with a mutual, revocable grant; each sees only what the other allowed. | `test_two_guardians_working_together.py` | 25 |
 
 ## Who it is for
 
