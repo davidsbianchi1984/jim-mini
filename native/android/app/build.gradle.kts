@@ -12,7 +12,7 @@ android {
         applicationId = "app.jim.guardian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3010000
+        versionCode = 3001000
         versionName = "3.1.0"
 
         // Where content-free problem reports go, and the token to post them
