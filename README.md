@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.0.10** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.11** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -57,6 +57,7 @@ throughout it:
 | Wrist channel | `jim/watch.py` | A deposit-only drip URL a phone automation posts readings to; a health export seeds weeks of baseline. |
 | The safety ladder | `jim/crashwatch.py`, `jim/vigil.py`, `jim/escalation.py`, `jim/reachout.py`, `jim/dialer.py`, `jim/ticker.py` | Detection, the question, the contacts rung in turn, the held 911 send, and the clock that advances without a read. |
 | The phone line | `jim/telephony.py` and the voice sidecar (`docker/voice` in the QRME repository) | JIM's half of a stateless sidecar that holds the phone house's credential and speaks one small protocol; five houses behind one interface. |
+| The coding assistant and its box | `jim/appedits.py`, `jim/workroom.py` | A model drafts a change to the app as a diff; the box tries it inside four kernel-held walls; oversight reads the outcome beside the diff and nothing applies until the next publish-merge. |
 | The model layer | `jim/llm.py`, `jim/loadouts.py`, `jim/cloud.py` | Provider menu by region, bring-your-own key per request, the offline stub, the cloud gateway; who answered is on the record. |
 | Memory and the vault | `jim/recall.py`, `jim/storage.py`, `jim/pdi_client.py` | Long-term memory sealed in the PDI vault, shown and forgettable down to the vectors. |
 | The tandem | `jim/qrme_client.py`, `jim/specialists.py` | QRME's specialist profiles reached from the coach. |
@@ -111,6 +112,7 @@ each lives:
 | The moderated mailbox | `jim/mailbox.py` | `test_the_moderated_mailbox.py` | 44 |
 | The training corpus and the learn task | `jim/corpus.py` | `test_the_training_corpus.py`, `test_the_learn_task_plants_itself.py` | 43 |
 | App edits held for company oversight | `jim/appedits.py` | `test_the_held_screens_buttons_match_the_wire.py` | 45 |
+| The coding assistant's box — a draft tried inside four walls before a person judges it | `jim/workroom.py` | `test_the_assistant_gets_a_box.py` | 40, 45 |
 | Two guardians working together | `jim/family.py` | `test_two_guardians_working_together.py` | 25 |
 
 ## Who it is for
@@ -549,6 +551,7 @@ Everything is environment-driven; the defaults run locally with no keys.
 | `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
 | `JIM_VOICE_URL` / `JIM_VOICE_SECRET` / `JIM_TELEPHONY_PROVIDER` | The phone line: the voice sidecar's address, the secret both containers share, and which house it is keyed for. Unset, every contact call is prepared and documented and nothing rings. |
 | `JIM_TICK_SECONDS` | How often JIM's own clock sweeps the running clocks (default 30; `0` turns the ticker off). |
+| `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms (default: the system temp directory); it must sit outside the places the box hides. |
 | `JIM_CORS_ORIGINS` | Allowed console origins. |
 
 See [docs/hosting.md](docs/hosting.md) for production deployment and
@@ -601,6 +604,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.0.11** | **The coding assistant gets a box** — a drafted app edit is tried before a person is asked to judge it: the diff applied to a copy of the tree, the tests it names run with the network cut, every other life on the disk hidden, processes counted, time and memory finite. A red run goes back to the assistant up to three times, and every round is filed beside the diff, so oversight reads a fact and not a guess. The Studio has the button and the outcome, the Oversight desk reads the same, and a host without user namespaces gets a sentence instead of a button. The box decides nothing: an approved edit still rides the next publish-merge. |
 | **3.0.10** | **The line answers** — a contact the cascade rang who rings the number back inside a day reaches the conversation about that reach-out: a leg of its own, consented by the act of calling, opened with what they are calling back about, then the same grounded turns. Anyone else hears one fixed sentence in their language, and nothing is kept but the audit. A call back never advances the cascade, and a cascade a call back reached rings nobody more. Receiving is proven the way placing is: the posture says whether the number is pointed at the line, and the Safety screen prints the two URLs to point it with. |
 | **3.0.9** | **The ticker** — JIM's clock advances without a read. The crash watch's re-ask and trip, the vigil's silence check, and the settlement of a placed call the phone line never reported on used to move only while a screen or a status read was looking. One daemon thread now sweeps exactly the users whose clocks are running, every thirty seconds by default, through the same functions the reads call; a tick is a read nobody had to make. The crash watch's status carries the ticker's posture and the Safety screen says whether JIM checks on its own. |
 | **3.0.8** | **A real telephony transport for the reach-out cascade** — the cascade ran to the ring and held there; it rings now, through a voice sidecar in the compose stack that holds the house's credential and speaks one small protocol to JIM. A leg is placed and the house's reference recorded on the row, or left honestly *unplaced* with the door's sentence when the door refuses or does not answer, and the next person rung — never a pretended ring. The line's own word decides reached or unreached at one door, once, however many times the house repeats itself; every spoken sentence rides an envelope so the sidecar composes no prose; the call-id doors take a shared secret; and the posture is proven by asking the door, with *Check the line* on the Safety screen. The 911 send stays held shut in source, its path never names the transport, and the transport refuses an emergency short code before a request is built. |

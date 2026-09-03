@@ -29,6 +29,7 @@ other and goes through the same lane.
 
 from __future__ import annotations
 
+import json
 import os
 
 from . import audit, corpus, db, llm, loadouts
@@ -45,9 +46,13 @@ def lane() -> str:
 
 
 def posture() -> dict:
+    from . import workroom
     which = lane()
     return {
         "lane": which,
+        # Whether a drafted edit can be tried in the assistant's box on this
+        # host (jim/workroom.py): all four walls or nothing.
+        "box_available": workroom.available()[0],
         "free_rein": which == "self_hosted",
         "held_for_approval": which == "cloud",
         # The honest seam: nothing here applies a change to running code or
@@ -63,10 +68,13 @@ def posture() -> dict:
 
 
 def _public(r: dict) -> dict:
+    from . import workroom
     return {"id": r["id"], "title": r["title"], "description": r["description"],
             "target": r["target"], "patch": r["patch"], "model": r["model"],
             "lane": r["lane"], "state": r["state"], "note": r["note"],
-            "decided_at": r["decided_at"], "created_at": r["created_at"]}
+            "decided_at": r["decided_at"], "created_at": r["created_at"],
+            # What the assistant's box made of it, or null when never tried.
+            "box": workroom.summary(workroom.loads(r.get("box")))}
 
 
 def _row(edit_id: str) -> dict:
@@ -111,10 +119,64 @@ def _system(target: str) -> str:
     where = f" The change is to: {target}." if target else ""
     return ("You are a careful software engineer making a change to the "
             "JIM-mini app on the person's behalf." + where + " Write the "
-            "change as a unified diff where you can, or as precise code with "
-            "the file it belongs in. Keep it minimal, explain the change in "
-            "two sentences first, and never touch safety, consent, or billing "
-            "paths — those need a human. Plain text only.")
+            "change as a git-style unified diff (--- a/path, +++ b/path, @@ "
+            "hunks) against the repository's files, so it can be tried in a "
+            "box before a person reads it; explain the change in two "
+            "sentences above the diff. Keep it minimal, and never touch "
+            "safety, consent, or billing paths — those need a human. Plain "
+            "text only.")
+
+
+def _again(user_id: str, model_choice: str):
+    """The assistant asked once more, with what the tests said."""
+    def revise(patch: str, output: str) -> str:
+        system = ("You are a careful software engineer. Your earlier diff was "
+                  "tried in a box and its tests failed. Answer with a revised "
+                  "git-style unified diff against the ORIGINAL files — the "
+                  "whole change again, not a diff of your diff — and nothing "
+                  "else after the two-sentence explanation.")
+        prompt = (f"Your diff:\n\n{patch}\n\nWhat the tests said:\n\n"
+                  f"{output[-4000:]}")
+        if model_choice == "auto":
+            return llm.generate_for_user(user_id, system, prompt,
+                                         source="appedit")["text"]
+        provider = llm.get_provider(choice=model_choice)
+        return provider.generate(system, prompt)
+    return revise
+
+
+def box(user_id: str, edit_id: str, *, model: str = "") -> dict:
+    """Try a drafted edit in the assistant's box (jim/workroom.py): the
+    diff applied to a copy of the tree, the tests it names run inside four
+    walls, the assistant asked again on a red run up to MAX_ROUNDS times,
+    and every round filed beside the diff for oversight. The box decides
+    nothing: an approved edit still rides the next publish-merge."""
+    from . import workroom
+    try:
+        row = _row(edit_id)
+    except ValueError:
+        row = None
+    # Somebody else's edit reads as no edit: the box is the owner's to ask.
+    if row is None or row["user_id"] != user_id:
+        raise ValueError("no such edit")
+    ok, why = workroom.available()
+    if not ok:
+        audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
+        raise ValueError(why)
+    choice = (model or "").strip() or "auto"
+    if not loadouts.allowed(user_id, choice):
+        raise ValueError("that model is not on the menu for your region")
+    got = workroom.iterate(row["patch"], row["target"], _again(user_id, choice))
+    conn = db.connect()
+    conn.execute("UPDATE app_edits SET box=?, patch=?, updated_at=? WHERE id=?",
+                 (json.dumps(got), got["patch"], db.utcnow(), edit_id))
+    conn.commit()
+    if got["status"] == "unapplied":
+        audit.record("appedit.box_refused", user_id=user_id, ref=edit_id)
+    else:
+        audit.record("appedit.boxed", user_id=user_id,
+                     ref=f"{edit_id}:{got['status']}")
+    return _public(_row(edit_id))
 
 
 def draft(user_id: str, *, target: str = "", instruction: str,

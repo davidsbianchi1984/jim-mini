@@ -88,6 +88,8 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "mail.staged": ("life", "a moderator approved a drafted email but no mail transport is wired, so it is held composed rather than sent"),
     "mail.discarded": ("life", "a moderator discarded a drafted email; nothing was sent and the draft was thrown away"),
     "corpus.consent": ("life", "the person turned offline training-data capture on or off for their own model"),
+    "appedit.boxed": ("life", "a drafted app edit was tried in the assistant's box — applied to a copy of the tree, its tests run inside four walls — and the result filed beside the diff for oversight"),
+    "appedit.box_refused": ("life", "the assistant's box refused to try a drafted edit: no walls on this host, or a draft that is not a diff"),
     "corpus.archived": ("life", "the banked training corpus was sealed into the vault so it survives this machine"),
     "corpus.purged": ("life", "the person cleared their banked training corpus — the forget door for offline training data"),
     "corpus.planted": ("life", "a standing learn task was planted in the vault for this person's corpus — the resident indexes it on its own"),

@@ -69,7 +69,7 @@ from .models import (
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
     ReachOutBegin, ReachOutDigit, ReachOutHeard, ReachOutEvent, ReachOutInbound, ReachOutInboundStatus,
     MailReceive, MailCompose, MailModerate, CorpusConsent,
-    RegionChoice, AppEditPropose, AppEditDraft, AppEditDecide,
+    RegionChoice, AppEditPropose, AppEditBox, AppEditDraft, AppEditDecide,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
     FeatureFlip, CircleInviteIn, CircleMessageIn, HomepageIn,
     AccessReportSubmit,
@@ -121,7 +121,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.10",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.11",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2389,6 +2389,20 @@ def create_app(qrme_client: QRMEClient | None = None,
                                   model=body.model)
         except ValueError as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
+
+    @app.post("/appedits/{user_id}/{edit_id}/box")
+    def appedits_box(user_id: str, edit_id: str, body: AppEditBox,
+                     request: Request) -> dict:
+        """Try the drafted edit in the assistant's box: the diff applied to
+        a copy of the tree, its tests run inside four walls, the assistant
+        asked again on a red run, and the result filed beside the diff.
+        Nothing is applied; oversight still stands in front of the merge."""
+        _user_or_404(user_id, request)
+        try:
+            return appedits.box(user_id, edit_id, model=body.model)
+        except ValueError as exc:
+            code = 404 if str(exc) == "no such edit" else 422
+            raise HTTPException(code, i18n.raised(exc)) from None
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------
     # What the user takes, in their words. JIM is not a pharmacist: it

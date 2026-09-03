@@ -276,10 +276,52 @@ export function Studio() {
         }}>{tr("edit.propose", lang)}</button>
         <h3>{tr("edit.mine", lang)}</h3>
         {edits.length === 0 && <p className="muted small">{tr("edit.none", lang)}</p>}
+        {/* The assistant's box (jim/workroom.py): a drafted diff applied to
+            a copy of the tree, its tests run with the network cut and every
+            other life on the disk hidden, the assistant asked again on a
+            red run. What it made of the draft is filed beside the diff for
+            oversight — it decides nothing. No button at all on a host that
+            cannot raise all four walls; the sentence says so instead. */}
+        {editPosture && !editPosture.box_available && (
+          <p className="muted small">{tr("edit.box.none", lang)}</p>
+        )}
         {edits.map((e) => (
-          <div key={e.id} className="row">
-            <span>{e.title}</span>
-            <span className="muted small">{tr(`edit.state.${e.state}`, lang)}</span>
+          <div key={e.id} className="card">
+            <div className="row">
+              <span>{e.title}</span>
+              <span className="muted small">{tr(`edit.state.${e.state}`, lang)}</span>
+            </div>
+            {e.box ? (
+              <p className="muted small">
+                <b>{tr(`edit.box.status.${e.box.status}`, lang)}</b>
+                {" · "}{e.box.rounds} {tr("edit.box.rounds", lang)}
+                {" · "}{e.box.tests.length} {tr("edit.box.tests", lang)}
+                {e.box.passed != null && <> · {e.box.passed} {tr("edit.box.passed", lang)}</>}
+                {e.box.failed != null && e.box.failed > 0 && <> · {e.box.failed} {tr("edit.box.failed", lang)}</>}
+                {e.box.detail && <> · {e.box.detail}</>}
+              </p>
+            ) : (
+              <p className="muted small">{tr("edit.box.untried", lang)}</p>
+            )}
+            {e.box?.output && (
+              <details>
+                <summary className="muted small">{tr("edit.box.output", lang)}</summary>
+                <pre style={{ whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto" }}>{e.box.output}</pre>
+              </details>
+            )}
+            {editPosture?.box_available && e.patch && (
+              <button disabled={busy} className="secondary" onClick={async () => {
+                if (!uid || !token) return;
+                setBusy(true); setError(null);
+                try {
+                  await api.boxAppEdit(uid, e.id, {
+                    model: editModel === "auto" ? "" : editModel,
+                  }, token);
+                  load();
+                } catch (err) { setError((err as Error).message); }
+                finally { setBusy(false); }
+              }}>{tr("edit.box", lang)}</button>
+            )}
           </div>
         ))}
       </div>

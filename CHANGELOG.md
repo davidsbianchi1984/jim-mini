@@ -6,6 +6,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.11] - 2026-09-03
+
+### Added
+
+- **The coding assistant gets a box.** Until now the assistant wrote a
+  diff and never ran a line; oversight read text and guessed. A drafted
+  app edit can be tried (`POST /appedits/{user_id}/{edit_id}/box`):
+  the diff applied to a copy of the tree in a workroom under
+  `JIM_WORKROOMS`, the tests whose names match the files it changes run
+  inside four walls — the network cut and every other life on the disk
+  hidden by `unshare -rmn` with an empty mount over `/home`, `/root`,
+  `/srv` and `/data`; processes, CPU seconds, address space and wall
+  time capped before the interpreter starts; the output a person reads
+  capped at a byte count. A red run goes back to the assistant with what
+  the tests said, up to `MAX_ROUNDS` (3) times, and every round is filed
+  beside the diff (`app_edits.box`), so the draft on file is the revised
+  one and the path to it is kept. Audit: `appedit.boxed`,
+  `appedit.box_refused`.
+- **The refusal that matters.** On a host that cannot raise all four
+  walls the box runs nothing and says so in a sentence; the posture
+  carries `box_available`, the Studio shows the sentence instead of a
+  button, and a draft that is not a unified diff, reaches outside the
+  tree, or does not fit the file it changes is `unapplied` with the
+  reason.
+- **On the screens.** The Studio's own edits carry *Try it in the box*
+  and the outcome — green, red, stopped, timed out, refused, unapplied —
+  with the rounds, the tests, the counts and the tail of what the tests
+  said; the Oversight desk reads the same beside each awaiting diff, and
+  a draft nobody tried says so. Ten languages.
+
+### Unchanged, and pinned
+
+- The box decides nothing. It never approves, never applies, never
+  deploys; `apply_wired` is still false and an approved edit still rides
+  the next publish-merge. The module names no deploy and never writes to
+  the repository it copies from, and a test reads the source to prove it.
+
 ## [3.0.10] - 2026-09-03
 
 ### Added

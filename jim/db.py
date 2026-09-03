@@ -1989,6 +1989,11 @@ _NEW_COLUMNS = [
     # is a contact ringing the line back — matched to the reach-out they
     # were part of, and carrying its own conversation.
     ("reachout_calls", "direction", "TEXT NOT NULL DEFAULT 'out'"),
+    # What the assistant's box made of a drafted edit (jim/workroom.py):
+    # every round tried, the tests named, and the tail of what they said —
+    # JSON, kept beside the diff so oversight reads both. NULL is never
+    # tried.
+    ("app_edits", "box", "TEXT"),
 ]
 
 

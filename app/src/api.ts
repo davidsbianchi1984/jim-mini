@@ -1133,6 +1133,15 @@ export interface ProviderRow {
   configured: boolean; origin?: string;
 }
 export interface VideoProviderRow { name: string; label: string; origin: string; }
+/** What the assistant's box made of a drafted edit (jim/workroom.py):
+ *  the diff applied to a copy of the tree, its tests run inside four
+ *  walls, the assistant asked again on a red run. Never a decision. */
+export interface AppEditBox {
+  status: string;               // green | red | killed | timeout | refused | unapplied
+  rounds: number; tests: string[]; changed: string[];
+  passed: number | null; failed: number | null;
+  detail: string; output: string; ms: number | null; ran_at: string | null;
+}
 /** A proposed change to the app itself, in the deployment's lane. */
 export interface AppEdit {
   id: string; title: string; description: string; target: string;
@@ -1140,10 +1149,11 @@ export interface AppEdit {
   lane: string;                 // self_hosted | cloud
   state: string;                // proposed | approved | rejected
   note: string; decided_at: string | null; created_at: string;
+  box: AppEditBox | null;       // null until tried in the box
 }
 export interface AppEditPosture {
   lane: string; free_rein: boolean; held_for_approval: boolean;
-  apply_wired: boolean; note: string;
+  apply_wired: boolean; box_available: boolean; note: string;
 }
 export interface MealRow {
   id: string;
@@ -1932,6 +1942,11 @@ export const api = {
     target?: string; instruction: string; model?: string;
   }, token: string) =>
     req<AppEdit>(`/appedits/${uid}/draft`, { method: "POST", body, token }),
+  // Try a drafted edit in the assistant's box — applied to a copy of the
+  // tree, its tests run with the network cut, the assistant asked again on
+  // a red run — and file what came of it beside the diff. Decides nothing.
+  boxAppEdit: (uid: string, editId: string, body: { model?: string }, token: string) =>
+    req<AppEdit>(`/appedits/${uid}/${editId}/box`, { method: "POST", body, token }),
 
   // The journal: text or spoken, sealed on private plans.
   addJournal: (uid: string, text: string, token: string) =>

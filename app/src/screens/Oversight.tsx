@@ -96,6 +96,29 @@ export function Oversight() {
             {e.model && (
               <p className="muted small">{tr("ov.by", lang)} <code>{e.model}</code></p>
             )}
+            {/* What the assistant's box made of the draft, when it was
+                tried: the outcome, the rounds, the tests it named and the
+                tail of what they said — a fact beside the diff, never a
+                decision. A draft nobody tried says so. */}
+            {e.box ? (<>
+              <p className="muted small">
+                {tr("ov.box", lang)}{" "}
+                <b>{tr(`edit.box.status.${e.box.status}`, lang)}</b>
+                {" · "}{e.box.rounds} {tr("edit.box.rounds", lang)}
+                {" · "}{e.box.tests.length} {tr("edit.box.tests", lang)}
+                {e.box.passed != null && <> · {e.box.passed} {tr("edit.box.passed", lang)}</>}
+                {e.box.failed != null && e.box.failed > 0 && <> · {e.box.failed} {tr("edit.box.failed", lang)}</>}
+                {e.box.detail && <> · {e.box.detail}</>}
+              </p>
+              {e.box.output && (
+                <details>
+                  <summary className="muted small">{tr("edit.box.output", lang)}</summary>
+                  <pre style={{ whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto" }}>{e.box.output}</pre>
+                </details>
+              )}
+            </>) : (
+              <p className="muted small">{tr("ov.box", lang)} {tr("edit.box.untried", lang)}</p>
+            )}
             <textarea rows={2} placeholder={tr("ov.note.ph", lang)}
                       value={notes[e.id] || ""}
                       onChange={(ev) => setNotes({ ...notes, [e.id]: ev.target.value })} />

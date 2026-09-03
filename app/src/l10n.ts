@@ -5499,6 +5499,51 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "edit.propose.desc.ph": {
     en: "What changes, and why", es: "Qué cambia y por qué", fr: "Ce qui change, et pourquoi", de: "Was sich ändert, und warum", pt: "O que muda, e porquê", it: "Cosa cambia, e perché", ja: "何がどう変わるか、その理由", zh: "改什么，为什么", hi: "क्या बदलता है, और क्यों", ar: "ما الذي يتغير، ولماذا",
   },
+  "edit.box": {
+    en: "Try it in the box", es: "Probarlo en la caja", fr: "L'essayer dans la boîte", de: "In der Box ausprobieren", pt: "Experimentar na caixa", it: "Provalo nella scatola", ja: "ボックスで試す", zh: "在盒子里试一试", hi: "बॉक्स में आज़माएँ", ar: "جرّبه في الصندوق",
+  },
+  "edit.box.none": {
+    en: "The assistant's box is not available on this host, so drafts go to oversight untried.", es: "La caja del asistente no está disponible en este servidor, así que los borradores llegan a la supervisión sin probar.", fr: "La boîte de l'assistant n'est pas disponible sur cet hôte ; les brouillons partent à la supervision sans avoir été essayés.", de: "Die Box des Assistenten ist auf diesem Host nicht verfügbar; Entwürfe gehen ungeprüft an die Prüfung.", pt: "A caixa do assistente não está disponível neste servidor, por isso os rascunhos vão para a supervisão sem serem experimentados.", it: "La scatola dell'assistente non è disponibile su questo host, quindi le bozze vanno alla supervisione senza essere provate.", ja: "このホストではアシスタントのボックスが使えないため、下書きは試されないまま監督に回ります。", zh: "此主机上没有助手的盒子，草稿会未经试验直接交给监督。", hi: "इस होस्ट पर सहायक का बॉक्स उपलब्ध नहीं है, इसलिए मसौदे बिना आज़माए निगरानी को जाते हैं।", ar: "صندوق المساعد غير متاح على هذا المضيف، لذا تذهب المسودات إلى الإشراف دون تجربة.",
+  },
+  "edit.box.untried": {
+    en: "Not yet tried in the box.", es: "Aún no probado en la caja.", fr: "Pas encore essayé dans la boîte.", de: "Noch nicht in der Box ausprobiert.", pt: "Ainda não experimentado na caixa.", it: "Non ancora provato nella scatola.", ja: "まだボックスで試していません。", zh: "尚未在盒子里试过。", hi: "अभी बॉक्स में आज़माया नहीं गया।", ar: "لم يُجرَّب في الصندوق بعد.",
+  },
+  "edit.box.rounds": {
+    en: "rounds", es: "rondas", fr: "tours", de: "Runden", pt: "rondas", it: "giri", ja: "ラウンド", zh: "轮", hi: "दौर", ar: "جولات",
+  },
+  "edit.box.tests": {
+    en: "tests", es: "pruebas", fr: "tests", de: "Tests", pt: "testes", it: "test", ja: "テスト", zh: "个测试", hi: "परीक्षण", ar: "اختبارات",
+  },
+  "edit.box.passed": {
+    en: "passed", es: "superadas", fr: "réussis", de: "bestanden", pt: "passaram", it: "superati", ja: "合格", zh: "通过", hi: "उत्तीर्ण", ar: "نجحت",
+  },
+  "edit.box.failed": {
+    en: "failed", es: "fallidas", fr: "échoués", de: "fehlgeschlagen", pt: "falharam", it: "falliti", ja: "不合格", zh: "失败", hi: "विफल", ar: "فشلت",
+  },
+  "edit.box.output": {
+    en: "What the tests said", es: "Lo que dijeron las pruebas", fr: "Ce que les tests ont dit", de: "Was die Tests sagten", pt: "O que os testes disseram", it: "Cosa hanno detto i test", ja: "テストの出力", zh: "测试的输出", hi: "परीक्षणों ने क्या कहा", ar: "ما قالته الاختبارات",
+  },
+  "edit.box.status.green": {
+    en: "Green — the tests passed", es: "Verde — las pruebas pasaron", fr: "Vert — les tests sont passés", de: "Grün — die Tests bestanden", pt: "Verde — os testes passaram", it: "Verde — i test sono passati", ja: "グリーン — テスト合格", zh: "绿色 — 测试通过", hi: "हरा — परीक्षण पास", ar: "أخضر — نجحت الاختبارات",
+  },
+  "edit.box.status.red": {
+    en: "Red — the tests failed", es: "Rojo — las pruebas fallaron", fr: "Rouge — les tests ont échoué", de: "Rot — die Tests schlugen fehl", pt: "Vermelho — os testes falharam", it: "Rosso — i test sono falliti", ja: "レッド — テスト不合格", zh: "红色 — 测试失败", hi: "लाल — परीक्षण विफल", ar: "أحمر — فشلت الاختبارات",
+  },
+  "edit.box.status.killed": {
+    en: "Stopped — the run hit a wall", es: "Detenido — la ejecución chocó con un muro", fr: "Arrêté — l'exécution a heurté un mur", de: "Gestoppt — der Lauf stieß an eine Wand", pt: "Parado — a execução bateu numa parede", it: "Fermato — l'esecuzione ha urtato un muro", ja: "停止 — 実行が壁に当たりました", zh: "已终止 — 运行撞到了墙", hi: "रोका गया — रन दीवार से टकराया", ar: "أُوقف — اصطدم التشغيل بجدار",
+  },
+  "edit.box.status.timeout": {
+    en: "Timed out — the tests ran too long", es: "Tiempo agotado — las pruebas tardaron demasiado", fr: "Délai dépassé — les tests ont duré trop longtemps", de: "Zeit abgelaufen — die Tests liefen zu lange", pt: "Tempo esgotado — os testes demoraram demasiado", it: "Tempo scaduto — i test hanno impiegato troppo", ja: "タイムアウト — テストが長すぎました", zh: "超时 — 测试运行太久", hi: "समय समाप्त — परीक्षण बहुत देर चले", ar: "انتهت المهلة — طالت الاختبارات",
+  },
+  "edit.box.status.refused": {
+    en: "Refused — the box could not be raised", es: "Rechazado — la caja no pudo levantarse", fr: "Refusé — la boîte n'a pas pu être dressée", de: "Abgelehnt — die Box konnte nicht errichtet werden", pt: "Recusado — a caixa não pôde ser erguida", it: "Rifiutato — la scatola non si è potuta alzare", ja: "拒否 — ボックスを用意できませんでした", zh: "已拒绝 — 无法搭起盒子", hi: "अस्वीकृत — बॉक्स खड़ा नहीं हो सका", ar: "مرفوض — تعذّر إقامة الصندوق",
+  },
+  "edit.box.status.unapplied": {
+    en: "Unapplied — the draft did not fit the tree", es: "Sin aplicar — el borrador no encajó en el árbol", fr: "Non appliqué — le brouillon ne s'ajustait pas à l'arbre", de: "Nicht angewendet — der Entwurf passte nicht in den Baum", pt: "Não aplicado — o rascunho não encaixou na árvore", it: "Non applicato — la bozza non si adattava all'albero", ja: "未適用 — 下書きがツリーに合いませんでした", zh: "未应用 — 草稿与代码树不匹配", hi: "लागू नहीं — मसौदा ट्री में फ़िट नहीं हुआ", ar: "غير مطبَّق — لم تناسب المسودة الشجرة",
+  },
+  "ov.box": {
+    en: "In the box:", es: "En la caja:", fr: "Dans la boîte :", de: "In der Box:", pt: "Na caixa:", it: "Nella scatola:", ja: "ボックスでは:", zh: "盒子里:", hi: "बॉक्स में:", ar: "في الصندوق:",
+  },
   "edit.propose": {
     en: "File it", es: "Presentarlo", fr: "Déposer", de: "Einreichen", pt: "Submeter", it: "Presenta", ja: "提出する", zh: "提交", hi: "दर्ज करें", ar: "قدّمه",
   },

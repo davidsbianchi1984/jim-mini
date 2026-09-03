@@ -76,6 +76,22 @@ or any container platform is the right shape.
 |---|---|
 | `JIM_TICK_SECONDS` | How often JIM's own ticker sweeps the running clocks: an open crash-watch question, an armed vigil, a placed reach-out call the phone line has not reported on. Default `30`. Set `0` to turn it off, in which case those clocks advance only while a screen or a status read looks at them, and the Safety screen says so. |
 
+### The assistant's box (optional)
+
+| Variable | Why |
+|---|---|
+| `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms — a copy of the tree with a draft applied, its tests run inside four walls. Default: `jim-workrooms` under the system temp directory. It must sit outside `/home`, `/root`, `/srv` and `/data`, because those are hidden inside the box and a room under one of them cannot see itself. |
+
+**The assistant's box.** A drafted app edit can be tried before oversight
+reads it: the diff applied to a copy of the repository, the tests it names
+run with the network cut (`unshare -rmn`), every other life on the disk
+hidden under an empty mount, processes counted, CPU and memory and wall
+time capped. A red run goes back to the assistant up to three times and
+every round is filed beside the diff. On a host without user namespaces
+the box refuses to run anything and says so in a sentence — it never tries
+a draft with three walls instead of four. Nothing the box does applies an
+edit or deploys; an approved edit still rides the next publish-merge.
+
 ### The phone line (optional)
 
 The reach-out cascade — JIM ringing the emergency contacts one after another

@@ -1387,3 +1387,10 @@ class ReachOutInboundStatus(BaseModel):
                    "failed", "canceled"]
     seconds: int = 0
     detail: str = ""
+
+
+class AppEditBox(BaseModel):
+    """Try a drafted edit in the assistant's box, with the model that may
+    be asked again on a red run (auto = the beta default)."""
+
+    model: str = ""
