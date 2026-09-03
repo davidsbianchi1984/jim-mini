@@ -103,8 +103,48 @@ def build_console() -> None:
             f"photograph:\n{done.stdout[-2000:]}\n{done.stderr[-2000:]}")
 
 
+#: The sibling product, when it is checked out beside this one. The feed
+#: JIM shows is QRME's, through the tandem: without a QRME backend the
+#: feed tab draws only its error, and screen 34 — the card that says whose
+#: feed this is and what this tab won't do — never appears.
+SIBLING = REPO.parent / "qrme"
+SIBLING_PORT = 8094
+SIBLING_HERE = False
+
+
+def start_sibling() -> subprocess.Popen | None:
+    """A QRME backend beside JIM's, seeded with its starter collection, so
+    the feed has cards to show. None when the sibling is not here."""
+    if not (SIBLING / "qrme" / "api.py").exists():
+        return None
+    env = dict(os.environ)
+    env["QRME_DB"] = "/tmp/jim-shots/qrme.db"
+    env["QRME_MEDIA_DIR"] = "/tmp/jim-shots/qrme-media"
+    Path("/tmp/jim-shots").mkdir(exist_ok=True)
+    Path("/tmp/jim-shots/qrme.db").unlink(missing_ok=True)
+    subprocess.run([sys.executable, "-m", "qrme.seed"], cwd=SIBLING, env=env,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                   timeout=600)
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "qrme.api:create_app",
+         "--factory", "--port", str(SIBLING_PORT)],
+        cwd=SIBLING, env=env,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for _ in range(120):
+        try:
+            with urllib.request.urlopen(
+                    f"http://localhost:{SIBLING_PORT}/health", timeout=2):
+                return proc
+        except Exception:
+            time.sleep(0.5)
+    proc.terminate()
+    return None
+
+
 def start_backend() -> subprocess.Popen:
     env = dict(os.environ)
+    if SIBLING_HERE:
+        env["JIM_QRME_URL"] = f"http://localhost:{SIBLING_PORT}"
     # The database in a directory of its own: the assistant's box hides the
     # database's directory inside its walls, and a database sitting bare in
     # /tmp would hide /tmp — including the workrooms — and refuse the box.
@@ -629,6 +669,9 @@ def main(shots: list[tuple[str, str, str]]) -> None:
     from playwright.sync_api import sync_playwright
 
     build_console()
+    global SIBLING_HERE
+    sibling = start_sibling()
+    SIBLING_HERE = sibling is not None
     proc = start_backend()
     written = 0
     try:
@@ -766,6 +809,8 @@ def main(shots: list[tuple[str, str, str]]) -> None:
             browser.close()
     finally:
         proc.terminate()
+        if sibling is not None:
+            sibling.terminate()
     print(f"{written} screen(s) photographed")
 
 
