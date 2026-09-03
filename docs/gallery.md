@@ -97,3 +97,147 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
 
 The first-run journey runs **01 Welcome → 42 Log In → 43 Permissions → 44 About You → 45 Emergency Contacts → 72 Pick a Plan → 73 Payment → 46 All Set**, landing on **78 You're on Free** — or **74 You're on Basic** if the plan step was paid — then hands off to the daily app and, at the other end, **41 End Session**.
 
+## Long screens, in parts
+
+Screens taller than the glass they are read on, sliced a phone height at a time so every part reads at full size. The whole-screen capture of each is in the tour above.
+
+<!-- long-screens:begin -->
+**02** · settings
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/02-settings-part1.png"><img src="screens/02-settings-part1.png" width="150" alt="settings part 1"></a><br><sub>part 1 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part2.png"><img src="screens/02-settings-part2.png" width="150" alt="settings part 2"></a><br><sub>part 2 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part3.png"><img src="screens/02-settings-part3.png" width="150" alt="settings part 3"></a><br><sub>part 3 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part4.png"><img src="screens/02-settings-part4.png" width="150" alt="settings part 4"></a><br><sub>part 4 of 10</sub></td></tr>
+</table>
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/02-settings-part5.png"><img src="screens/02-settings-part5.png" width="150" alt="settings part 5"></a><br><sub>part 5 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part6.png"><img src="screens/02-settings-part6.png" width="150" alt="settings part 6"></a><br><sub>part 6 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part7.png"><img src="screens/02-settings-part7.png" width="150" alt="settings part 7"></a><br><sub>part 7 of 10</sub></td><td align="center" width="25%" valign="top"><a href="screens/02-settings-part8.png"><img src="screens/02-settings-part8.png" width="150" alt="settings part 8"></a><br><sub>part 8 of 10</sub></td></tr>
+</table>
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/02-settings-part9.png"><img src="screens/02-settings-part9.png" width="150" alt="settings part 9"></a><br><sub>part 9 of 10</sub></td><td align="center" width="50%" valign="top"><a href="screens/02-settings-part10.png"><img src="screens/02-settings-part10.png" width="150" alt="settings part 10"></a><br><sub>part 10 of 10</sub></td></tr>
+</table>
+
+**06** · journal
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/06-journal-part1.png"><img src="screens/06-journal-part1.png" width="150" alt="journal part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/06-journal-part2.png"><img src="screens/06-journal-part2.png" width="150" alt="journal part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**09** · sign in
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/09-sign-in-part1.png"><img src="screens/09-sign-in-part1.png" width="150" alt="sign-in part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/09-sign-in-part2.png"><img src="screens/09-sign-in-part2.png" width="150" alt="sign-in part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**12** · channel
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/12-channel-part1.png"><img src="screens/12-channel-part1.png" width="150" alt="channel part 1"></a><br><sub>part 1 of 7</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-channel-part2.png"><img src="screens/12-channel-part2.png" width="150" alt="channel part 2"></a><br><sub>part 2 of 7</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-channel-part3.png"><img src="screens/12-channel-part3.png" width="150" alt="channel part 3"></a><br><sub>part 3 of 7</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-channel-part4.png"><img src="screens/12-channel-part4.png" width="150" alt="channel part 4"></a><br><sub>part 4 of 7</sub></td></tr>
+</table>
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/12-channel-part5.png"><img src="screens/12-channel-part5.png" width="150" alt="channel part 5"></a><br><sub>part 5 of 7</sub></td><td align="center" width="33%" valign="top"><a href="screens/12-channel-part6.png"><img src="screens/12-channel-part6.png" width="150" alt="channel part 6"></a><br><sub>part 6 of 7</sub></td><td align="center" width="33%" valign="top"><a href="screens/12-channel-part7.png"><img src="screens/12-channel-part7.png" width="150" alt="channel part 7"></a><br><sub>part 7 of 7</sub></td></tr>
+</table>
+
+**14** · coach out loud
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/14-coach-out-loud-part1.png"><img src="screens/14-coach-out-loud-part1.png" width="150" alt="coach-out-loud part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/14-coach-out-loud-part2.png"><img src="screens/14-coach-out-loud-part2.png" width="150" alt="coach-out-loud part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**18** · careteam
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/18-careteam-part1.png"><img src="screens/18-careteam-part1.png" width="150" alt="careteam part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/18-careteam-part2.png"><img src="screens/18-careteam-part2.png" width="150" alt="careteam part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**21** · community
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/21-community-part1.png"><img src="screens/21-community-part1.png" width="150" alt="community part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/21-community-part2.png"><img src="screens/21-community-part2.png" width="150" alt="community part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/21-community-part3.png"><img src="screens/21-community-part3.png" width="150" alt="community part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**24** · aims
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/24-aims-part1.png"><img src="screens/24-aims-part1.png" width="150" alt="aims part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/24-aims-part2.png"><img src="screens/24-aims-part2.png" width="150" alt="aims part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**26** · held
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/26-held-part1.png"><img src="screens/26-held-part1.png" width="150" alt="held part 1"></a><br><sub>part 1 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/26-held-part2.png"><img src="screens/26-held-part2.png" width="150" alt="held part 2"></a><br><sub>part 2 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/26-held-part3.png"><img src="screens/26-held-part3.png" width="150" alt="held part 3"></a><br><sub>part 3 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/26-held-part4.png"><img src="screens/26-held-part4.png" width="150" alt="held part 4"></a><br><sub>part 4 of 4</sub></td></tr>
+</table>
+
+**27** · attending
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/27-attending-part1.png"><img src="screens/27-attending-part1.png" width="150" alt="attending part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/27-attending-part2.png"><img src="screens/27-attending-part2.png" width="150" alt="attending part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/27-attending-part3.png"><img src="screens/27-attending-part3.png" width="150" alt="attending part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**28** · reach
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/28-reach-part1.png"><img src="screens/28-reach-part1.png" width="150" alt="reach part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/28-reach-part2.png"><img src="screens/28-reach-part2.png" width="150" alt="reach part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**29** · bearing
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/29-bearing-part1.png"><img src="screens/29-bearing-part1.png" width="150" alt="bearing part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/29-bearing-part2.png"><img src="screens/29-bearing-part2.png" width="150" alt="bearing part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/29-bearing-part3.png"><img src="screens/29-bearing-part3.png" width="150" alt="bearing part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**31** · safety
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/31-safety-part1.png"><img src="screens/31-safety-part1.png" width="150" alt="safety part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/31-safety-part2.png"><img src="screens/31-safety-part2.png" width="150" alt="safety part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/31-safety-part3.png"><img src="screens/31-safety-part3.png" width="150" alt="safety part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**35** · presence
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/35-presence-part1.png"><img src="screens/35-presence-part1.png" width="150" alt="presence part 1"></a><br><sub>part 1 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/35-presence-part2.png"><img src="screens/35-presence-part2.png" width="150" alt="presence part 2"></a><br><sub>part 2 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/35-presence-part3.png"><img src="screens/35-presence-part3.png" width="150" alt="presence part 3"></a><br><sub>part 3 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/35-presence-part4.png"><img src="screens/35-presence-part4.png" width="150" alt="presence part 4"></a><br><sub>part 4 of 4</sub></td></tr>
+</table>
+
+**37** · access
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/37-access-part1.png"><img src="screens/37-access-part1.png" width="150" alt="access part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/37-access-part2.png"><img src="screens/37-access-part2.png" width="150" alt="access part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**38** · permits
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/38-permits-part1.png"><img src="screens/38-permits-part1.png" width="150" alt="permits part 1"></a><br><sub>part 1 of 5</sub></td><td align="center" width="25%" valign="top"><a href="screens/38-permits-part2.png"><img src="screens/38-permits-part2.png" width="150" alt="permits part 2"></a><br><sub>part 2 of 5</sub></td><td align="center" width="25%" valign="top"><a href="screens/38-permits-part3.png"><img src="screens/38-permits-part3.png" width="150" alt="permits part 3"></a><br><sub>part 3 of 5</sub></td><td align="center" width="25%" valign="top"><a href="screens/38-permits-part4.png"><img src="screens/38-permits-part4.png" width="150" alt="permits part 4"></a><br><sub>part 4 of 5</sub></td></tr>
+</table>
+<table>
+  <tr><td align="center" width="100%" valign="top"><a href="screens/38-permits-part5.png"><img src="screens/38-permits-part5.png" width="150" alt="permits part 5"></a><br><sub>part 5 of 5</sub></td></tr>
+</table>
+
+**40** · widgets
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/40-widgets-part1.png"><img src="screens/40-widgets-part1.png" width="150" alt="widgets part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/40-widgets-part2.png"><img src="screens/40-widgets-part2.png" width="150" alt="widgets part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/40-widgets-part3.png"><img src="screens/40-widgets-part3.png" width="150" alt="widgets part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**42** · hands
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/42-hands-part1.png"><img src="screens/42-hands-part1.png" width="150" alt="hands part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/42-hands-part2.png"><img src="screens/42-hands-part2.png" width="150" alt="hands part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/42-hands-part3.png"><img src="screens/42-hands-part3.png" width="150" alt="hands part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**43** · capabilities
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/43-capabilities-part1.png"><img src="screens/43-capabilities-part1.png" width="150" alt="capabilities part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/43-capabilities-part2.png"><img src="screens/43-capabilities-part2.png" width="150" alt="capabilities part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/43-capabilities-part3.png"><img src="screens/43-capabilities-part3.png" width="150" alt="capabilities part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**44** · mail
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/44-mail-part1.png"><img src="screens/44-mail-part1.png" width="150" alt="mail part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/44-mail-part2.png"><img src="screens/44-mail-part2.png" width="150" alt="mail part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**45** · oversight
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/45-oversight-part1.png"><img src="screens/45-oversight-part1.png" width="150" alt="oversight part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/45-oversight-part2.png"><img src="screens/45-oversight-part2.png" width="150" alt="oversight part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+<!-- long-screens:end -->
