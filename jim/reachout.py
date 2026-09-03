@@ -75,6 +75,9 @@ EVENTS = ("answered",) + TERMINAL_EVENTS
 #: call time since the last turn.
 STALE_RING_GRACE_S = 90
 STALE_TALK_GRACE_S = 60
+#: How long after a reach-out a contact's call back still reaches its
+#: conversation. Beyond it the caller is nobody the line knows.
+INBOUND_WINDOW_HOURS = 24
 
 
 def opted_out(user_id: str, channel: str) -> bool:
@@ -198,6 +201,10 @@ def _place_next(reachout: dict) -> dict:
     answer means this leg was never rung: the row says *unplaced* with the
     door's sentence, and the next person is rung. Never a pretended ring.
     """
+    if _load(reachout["id"])["status"] == "reached":
+        # A person was reached — by a call back (the line answers) or by a
+        # leg that ended while another was ringing. Nobody more is rung.
+        return {"status": "reached", "reachout_id": reachout["id"]}
     contact = _next_contact(_load(reachout["id"]))
     if contact is None:
         return _exhaust(_load(reachout["id"]))
@@ -368,6 +375,12 @@ def unreached(call_id: str, ended: str | None = None, *,
     if not _claim(call_id, only_from, "unreached", **extra):
         return _already(_call(call_id))
     audit.record("contact.unreached", user_id=call["user_id"], ref=call["name"])
+    if call.get("direction") == "in":
+        # A call back that ended before a word: that leg is over, and the
+        # cascade it belongs to is exactly where it was — nobody is rung
+        # because a contact hung up on their own call.
+        return {"status": "ended", "call": _call(call_id),
+                "reachout_id": call["reachout_id"]}
     return _place_next(_load(call["reachout_id"]))
 
 
@@ -476,6 +489,86 @@ def _parse(stamp: str | None) -> datetime | None:
 
 
 # --------------------------------------------------------------------------- #
+# the line answers
+# --------------------------------------------------------------------------- #
+
+def _opening_back(situation: dict, name: str) -> str:
+    """The words a contact hears when they ring the line back: who this is
+    for, what they are calling back about, and that they can ask."""
+    who = situation.get("who") or "someone"
+    about = situation.get("about") or situation.get("concern") or "a situation"
+    return (f"This is JIM for {who}. {name}, you are calling back about "
+            f"{about}. I will tell you where things stand, and you can ask "
+            "me anything.")
+
+
+def _caller_leg(caller: str) -> dict | None:
+    """The most recent outbound leg, inside the window, whose contact is
+    the number calling — the reach-out this call belongs to. None when the
+    caller is nobody the line rang."""
+    from . import telephony
+    since = (datetime.now(timezone.utc)
+             - timedelta(hours=INBOUND_WINDOW_HOURS)).isoformat()
+    rows = db.connect().execute(
+        "SELECT * FROM reachout_calls WHERE direction='out' AND created_at>=?"
+        " ORDER BY created_at DESC", (since,)).fetchall()
+    want = telephony.normalize(caller)
+    for r in rows:
+        if telephony.normalize(r["channel"]) == want:
+            return dict(r)
+    return None
+
+
+def inbound(caller: str, called: str = "", house: str = "",
+            vendor_ref: str = "") -> dict:
+    """A call arrived on the line. A contact the cascade rang inside the
+    window reaches the conversation about that reach-out: a new leg,
+    direction ``in``, consented by the act of calling, answered now, with
+    the opening that says what they are calling back about; the line then
+    speaks first through :func:`say`. Anyone else hears one fixed sentence
+    and nothing is kept but the audit — the line is not a phone number."""
+    from . import telephony
+    matched = _caller_leg(caller)
+    if matched is None:
+        audit.record("call.unknown_caller",
+                     ref=telephony.normalize(caller) or None)
+        phrases = telephony.phrases()
+        return {"matched": False, "call": None,
+                "line": telephony.line("hangup", phrases["unknown_caller"])}
+    reachout = _load(matched["reachout_id"])
+    situation = json.loads(reachout["situation"])
+    cid = db.new_id("rcl")
+    now = db.utcnow()
+    db.connect().execute(
+        "INSERT INTO reachout_calls (id, reachout_id, user_id, name, channel,"
+        " status, transcript, created_at, updated_at, direction, placed,"
+        " provider, provider_call_id, placed_at, answered_at)"
+        " VALUES (?,?,?,?,?, 'consented', '[]', ?, ?, 'in', 1, ?, ?, ?, ?)",
+        (cid, reachout["id"], reachout["user_id"], matched["name"],
+         matched["channel"], now, now, house or None, vendor_ref or None,
+         now, now))
+    db.connect().commit()
+    audit.record("contact.called_back", user_id=reachout["user_id"],
+                 ref=matched["name"])
+    opening = _opening_back(situation, matched["name"])
+    return {"matched": True, "call": _call(cid), "reachout_id": reachout["id"],
+            "line": telephony.line("speak_first", opening)}
+
+
+def inbound_status(house: str, vendor_ref: str, event: str,
+                   seconds: int = 0, detail: str = "") -> dict:
+    """The line's word on a call that came in, keyed on the house's own
+    reference — the one thing a number's status callback carries."""
+    row = db.connect().execute(
+        "SELECT id FROM reachout_calls WHERE direction='in'"
+        " AND provider_call_id=? AND (provider=? OR provider IS NULL)"
+        " ORDER BY created_at DESC LIMIT 1", (vendor_ref, house or None)).fetchone()
+    if row is None:
+        raise ValueError("no call answers to that reference")
+    return globals()["event"](row["id"], event, seconds, detail)
+
+
+# --------------------------------------------------------------------------- #
 # reads
 # --------------------------------------------------------------------------- #
 
@@ -513,7 +606,7 @@ def status(reachout_id: str) -> dict:
     r = _load(reachout_id)
     calls = [dict(c) for c in db.connect().execute(
         "SELECT id, name, status, placed, provider, provider_call_id, ended,"
-        " placement, turns, answered_at FROM reachout_calls"
+        " placement, turns, answered_at, direction FROM reachout_calls"
         " WHERE reachout_id=? ORDER BY created_at", (reachout_id,)).fetchall()]
     for c in calls:
         c["placed"] = bool(c["placed"])

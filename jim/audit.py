@@ -79,6 +79,8 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "contact.unplaced": ("safety", "the voice door refused or did not answer for an emergency contact, so that leg was never rung; the cascade moves to the next person without pretending it was"),
     "contact.answered": ("safety", "the phone line reported an emergency contact picked up — the keypad choice is theirs now"),
     "voice.refused": ("safety", "a caller presented the wrong voice-adapter secret on a reach-out call door and was turned away"),
+    "contact.called_back": ("safety", "an emergency contact rang the line back inside the window and reached the conversation about the reach-out they were part of"),
+    "call.unknown_caller": ("safety", "a number the line never rang called it; they heard the one fixed sentence and nothing was kept"),
     "reachout.exhausted": ("safety", "every emergency contact was tried without reaching one; the held 911 rung is where the cascade ends"),
     "mail.received": ("life", "an inbound email was taken into the moderated mailbox for the agent to answer"),
     "mail.drafted": ("life", "the agent composed an email reply and held it for a person to approve before sending"),

@@ -243,6 +243,14 @@ def call_contact(to: str, opening: str, *, call_id: str | None = None) -> dict:
             "reason": f"the contact call rings through {live['provider']}"}
 
 
+def _receive_ready(wired: bool, standing: dict) -> bool | None:
+    if not wired or standing.get("word") != "ready":
+        return False
+    inbound = standing.get("inbound") or {}
+    pointed = inbound.get("pointed")
+    return None if pointed is None else bool(pointed)
+
+
 def posture() -> dict:
     """What the dialer is, said plainly for a status screen or a reviewer.
 
@@ -274,6 +282,10 @@ def posture() -> dict:
         # one, speaking to its assigned task or profession. Placing rings
         # through the voice door once it is wired; answering waits.
         "directions": ["place", "receive"],
+        # Receiving is proven the same way placing is: the line ready, and
+        # the number pointed at the line's inbound door — True, False, or
+        # None when the house cannot be asked and only the runbook can say.
+        "receive_ready": _receive_ready(wired, standing),
         "note": ("emergency contacts are called through the voice door when it "
                  "is wired and ready — it rings through "
                  f"{chosen_provider()} — and their calls are prepared and "

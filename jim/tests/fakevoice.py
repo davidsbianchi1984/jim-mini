@@ -19,7 +19,8 @@ class FakeVoice:
                  from_number: bool = True, webhooks: str = "reachable",
                  refuse_to: tuple[str, ...] = (), place_status: int = 201,
                  place_detail: str | None = None,
-                 note: str | None = None, fix: str | None = None):
+                 note: str | None = None, fix: str | None = None,
+                 inbound: dict | None = None):
         self.word = word
         self.provider = provider
         self.down = down
@@ -32,6 +33,7 @@ class FakeVoice:
         self.place_detail = place_detail
         self.note = note
         self.fix = fix
+        self.inbound = inbound
         self.seen: list[tuple[str, str, dict | None]] = []
         self.placed: list[dict] = []
         self.standing_reads = 0
@@ -57,6 +59,7 @@ class FakeVoice:
                          "webhooks": self.webhooks,
                          "jim_secret_accepted": self.jim_secret_accepted,
                          "detail": self.note, "fix": self.fix,
+                         "inbound": self.inbound,
                          "checked_at": "2026-09-03T00:00:00+00:00"}
         if method == "POST" and path == "/calls":
             body = body or {}

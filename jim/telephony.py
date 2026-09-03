@@ -246,7 +246,7 @@ _STANDING: dict = {"at": 0.0, "value": None}
 def _held(word: str, note: str, fix: str | None = None) -> dict:
     return {"word": word, "reachable": False, "authenticated": None,
             "provider_reported": None, "from_number": False, "webhooks": None,
-            "note": note, "fix": fix, "checked_at": None}
+            "inbound": None, "note": note, "fix": fix, "checked_at": None}
 
 
 def standing(force: bool = False) -> dict:
@@ -303,6 +303,12 @@ def standing(force: bool = False) -> dict:
                      "provider_reported": reported,
                      "from_number": bool(body.get("from_number")),
                      "webhooks": body.get("webhooks"),
+                     # The number's own doors (3.0.10): where the house must
+                     # point it for a call back to reach JIM, and — when the
+                     # house can be asked — whether it is pointed there.
+                     "inbound": (body.get("inbound")
+                                 if isinstance(body.get("inbound"), dict)
+                                 else None),
                      "note": None if word == "ready" else note,
                      "fix": None if word == "ready" else fix,
                      "checked_at": body.get("checked_at")}

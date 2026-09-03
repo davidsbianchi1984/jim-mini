@@ -2924,6 +2924,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'पंक्ति का «then» चार «then» शब्दों में से एक नहीं है',
         'ar': 'كلمة «then» في السطر ليست واحدة من كلمات «then» الأربع',
     },
+    'no call answers to that reference': {
+        'es': 'ninguna llamada responde a esa referencia',
+        'fr': "aucun appel ne répond à cette référence",
+        'de': 'kein Anruf antwortet auf diese Referenz',
+        'pt': 'nenhuma chamada responde a essa referência',
+        'it': 'nessuna chiamata risponde a quel riferimento',
+        'ja': 'その参照に該当する通話はありません',
+        'zh': '没有与该参考号对应的通话',
+        'hi': 'उस संदर्भ से कोई कॉल मेल नहीं खाती',
+        'ar': 'لا توجد مكالمة تطابق ذلك المرجع',
+    },
     # The reach-out cascade (jim/reachout.py). JIM calling emergency
     # contacts one after another — these are the three ways that can be
     # asked to do something it cannot.
@@ -6131,6 +6142,10 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
     # The phone line's event body (jim/models.ReachOutEvent) — 3.0.8.
+    'caller': {'en': 'The number calling', 'es': 'El número que llama', 'fr': 'Le numéro qui appelle', 'de': 'Die anrufende Nummer', 'pt': 'O número que liga', 'it': 'Il numero che chiama', 'ja': '発信元の番号', 'zh': '来电号码', 'hi': 'कॉल करने वाला नंबर', 'ar': 'الرقم المتصل'},
+    'called': {'en': 'The number they rang', 'es': 'El número al que llamaron', 'fr': 'Le numéro composé', 'de': 'Die gewählte Nummer', 'pt': 'O número para que ligaram', 'it': 'Il numero chiamato', 'ja': 'かけられた番号', 'zh': '被叫号码', 'hi': 'जिस नंबर पर कॉल की गई', 'ar': 'الرقم الذي اتصلوا به'},
+    'house': {'en': 'The phone house', 'es': 'La operadora telefónica', 'fr': "L'opérateur téléphonique", 'de': 'Der Telefonanbieter', 'pt': 'A operadora telefónica', 'it': "L'operatore telefonico", 'ja': '電話事業者', 'zh': '电话服务商', 'hi': 'फ़ोन सेवा प्रदाता', 'ar': 'مزوّد خدمة الهاتف'},
+    'vendor_ref': {'en': "The phone house's reference for the call", 'es': 'La referencia de la operadora para la llamada', 'fr': "La référence de l'opérateur pour l'appel", 'de': 'Die Referenz des Anbieters für den Anruf', 'pt': 'A referência da operadora para a chamada', 'it': "Il riferimento dell'operatore per la chiamata", 'ja': '事業者側の通話参照番号', 'zh': '服务商的通话参考号', 'hi': 'कॉल के लिए सेवा प्रदाता का संदर्भ', 'ar': 'مرجع مزوّد الخدمة للمكالمة'},
     'event': {'en': 'What the phone line reported', 'es': 'Lo que reportó la línea telefónica', 'fr': 'Ce que la ligne téléphonique a signalé', 'de': 'Was die Telefonleitung gemeldet hat', 'pt': 'O que a linha telefónica reportou', 'it': 'Cosa ha riportato la linea telefonica', 'ja': '電話回線が報告した内容', 'zh': '电话线路报告的内容', 'hi': 'फ़ोन लाइन ने क्या सूचना दी', 'ar': 'ما أبلغ عنه خط الهاتف'},
     'seconds': {'en': 'Seconds', 'es': 'Segundos', 'fr': 'Secondes', 'de': 'Sekunden', 'pt': 'Segundos', 'it': 'Secondi', 'ja': '秒', 'zh': '秒', 'hi': 'सेकंड', 'ar': 'الثواني'},
     "detail": {"en": "The move's argument", "es": "El argumento del movimiento", "fr": "L'argument du geste", "de": "Das Argument der Bewegung", "pt": "O argumento do movimento", "it": "L'argomento della mossa", "ja": "動作の引数", "zh": "该动作的参数", "hi": "चाल का तर्क", "ar": "معطى الحركة"},
@@ -6788,6 +6803,18 @@ def circle_labels(language: str) -> dict[str, str]:
 #: cannot be reached mid-call. Everything else the line says comes from JIM
 #: turn by turn; these are what the voice sidecar may say without asking.
 _SPOKEN_LINES: dict[str, dict[str, str]] = {
+    "unknown_caller": {
+        "en": "This is a guardian line that cannot take calls. If this is an emergency, please call your local emergency number. Goodbye.",
+        "es": "Esta es una línea de guardián que no puede atender llamadas. Si se trata de una emergencia, llama al número de emergencias de tu zona. Adiós.",
+        "fr": "Ceci est une ligne de gardien qui ne peut pas prendre d'appels. En cas d'urgence, appelez le numéro d'urgence de votre région. Au revoir.",
+        "de": "Dies ist eine Wächterleitung, die keine Anrufe entgegennehmen kann. Im Notfall rufen Sie bitte Ihre örtliche Notrufnummer an. Auf Wiederhören.",
+        "pt": "Esta é uma linha de guardião que não pode atender chamadas. Se for uma emergência, ligue para o número de emergência da sua região. Adeus.",
+        "it": "Questa è una linea di custode che non può ricevere chiamate. In caso di emergenza, chiama il numero di emergenza della tua zona. Arrivederci.",
+        "ja": "こちらは見守り用の回線で、通話をお受けできません。緊急の場合は、お住まいの地域の緊急番号におかけください。失礼します。",
+        "zh": "这是一条守护专线，无法接听来电。如遇紧急情况，请拨打当地的紧急电话。再见。",
+        "hi": "यह एक संरक्षक लाइन है जो कॉल नहीं ले सकती। यदि यह आपातकाल है, तो कृपया अपने स्थानीय आपातकालीन नंबर पर कॉल करें। अलविदा।",
+        "ar": "هذا خط حارس لا يمكنه تلقي المكالمات. إذا كانت هذه حالة طارئة، فيرجى الاتصال برقم الطوارئ المحلي. مع السلامة.",
+    },
     "repeat": {
         "en": "I did not catch a key. Press 1 to hear the message, or 2 to not be called this way again.",
         "es": "No detecté ninguna tecla. Pulsa 1 para escuchar el mensaje, o 2 para que no te llamen así de nuevo.",

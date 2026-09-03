@@ -1985,6 +1985,10 @@ _NEW_COLUMNS = [
     ("reachout_calls", "placed_at", "TEXT"),
     ("reachout_calls", "answered_at", "TEXT"),
     ("reachout_calls", "turns", "INTEGER NOT NULL DEFAULT 0"),
+    # Which way the leg went (3.0.10): 'out' is JIM ringing a contact, 'in'
+    # is a contact ringing the line back — matched to the reach-out they
+    # were part of, and carrying its own conversation.
+    ("reachout_calls", "direction", "TEXT NOT NULL DEFAULT 'out'"),
 ]
 
 

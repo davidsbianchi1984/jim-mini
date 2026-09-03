@@ -1363,3 +1363,27 @@ class ReachOutEvent(BaseModel):
                    "failed", "canceled"]
     seconds: int = 0
     detail: str = ""
+
+
+
+class ReachOutInbound(BaseModel):
+    """A call that came in on the line, from the voice sidecar: who is
+    calling, which number they rang, which house carried it and under what
+    reference."""
+
+    caller: str
+    called: str = ""
+    house: str = ""
+    vendor_ref: str = ""
+
+
+class ReachOutInboundStatus(BaseModel):
+    """The line's word on a call that came in, keyed on the house's own
+    reference, which is all a number's status callback carries."""
+
+    house: str = ""
+    vendor_ref: str
+    event: Literal["answered", "completed", "voicemail", "no-answer", "busy",
+                   "failed", "canceled"]
+    seconds: int = 0
+    detail: str = ""

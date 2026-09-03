@@ -642,6 +642,8 @@ NOT_A_CLIENT_CALL = (
     "/reachout/call/{call_id}/consent",
     "/reachout/call/{call_id}/say",
     "/reachout/call/{call_id}/event",
+    "/reachout/line/inbound",
+    "/reachout/line/inbound/status",
     "/reachout/call/{call_id}/reached",
     "/reachout/call/{call_id}/unreached",
 )

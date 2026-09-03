@@ -12,7 +12,8 @@ import pytest
 
 from jim import i18n, telephony
 
-KEYS = {"repeat", "declined", "no_choice", "silence", "closing", "trouble"}
+KEYS = {"repeat", "declined", "no_choice", "silence", "closing", "trouble",
+        "unknown_caller"}
 
 
 def test_the_six_lines_exist_in_all_ten_languages():

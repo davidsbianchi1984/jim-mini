@@ -67,7 +67,7 @@ from .models import (
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    ReachOutBegin, ReachOutDigit, ReachOutHeard, ReachOutEvent,
+    ReachOutBegin, ReachOutDigit, ReachOutHeard, ReachOutEvent, ReachOutInbound, ReachOutInboundStatus,
     MailReceive, MailCompose, MailModerate, CorpusConsent,
     RegionChoice, AppEditPropose, AppEditDraft, AppEditDecide,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
@@ -2176,6 +2176,24 @@ def create_app(qrme_client: QRMEClient | None = None,
                            _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
             return reachout.unreached(call_id)
+        except ValueError as exc:
+            raise HTTPException(404, i18n.raised(exc)) from None
+
+    @app.post("/reachout/line/inbound")
+    def reachout_inbound(body: ReachOutInbound,
+                         _: None = Depends(auth.require_voice_adapter)) -> dict:
+        """A call came in on the line. A contact the cascade rang inside the
+        window reaches its conversation; anyone else hears one sentence."""
+        return reachout.inbound(body.caller, body.called, body.house,
+                                body.vendor_ref)
+
+    @app.post("/reachout/line/inbound/status")
+    def reachout_inbound_status(body: ReachOutInboundStatus,
+                                _: None = Depends(auth.require_voice_adapter)) -> dict:
+        """The line's word on a call that came in, by the house's reference."""
+        try:
+            return reachout.inbound_status(body.house, body.vendor_ref,
+                                           body.event, body.seconds, body.detail)
         except ValueError as exc:
             raise HTTPException(404, i18n.raised(exc)) from None
 

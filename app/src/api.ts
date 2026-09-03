@@ -1004,6 +1004,9 @@ export interface DialerPosture {
   /** True only on a proven `ready`. */
   transport_ready: boolean;
   directions: string[];
+  /** Receiving, proven the way placing is: true, false, or null when the
+   * house cannot be asked and only the runbook can say. */
+  receive_ready?: boolean | null;
   note: string;
 }
 /** What the voice door said about itself when JIM asked (jim/telephony.py).
@@ -1017,6 +1020,9 @@ export interface DialerStanding {
   provider_reported: string | null;
   from_number: boolean;
   webhooks: string | null;
+  /** The number's own doors: where the house must point it for a call back
+   * to reach JIM, and whether it is pointed there when the house can say. */
+  inbound?: { voice_url?: string; status_url?: string; pointed?: boolean | null } | null;
   note: string | null;
   fix: string | null;
   checked_at: string | null;
@@ -1024,6 +1030,8 @@ export interface DialerStanding {
 export interface ReachOutCall {
   id: string;
   name: string;
+  /** out: JIM rang the contact; in: the contact rang the line back (3.0.10). */
+  direction?: string;
   status: string;         // ringing | consented | talking | reached | unreached | declined | unplaced
   /** Whether a phone house actually took this leg; false for a leg that was
    * only prepared (no line wired) or never rung (unplaced). */
@@ -1061,6 +1069,9 @@ export interface MailboxPosture {
   inbound_ready: boolean;
   moderated: boolean;
   directions: string[];
+  /** Receiving, proven the way placing is: true, false, or null when the
+   * house cannot be asked and only the runbook can say. */
+  receive_ready?: boolean | null;
   note: string;
 }
 export interface MailMessage {
