@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.4] - 2026-09-03
+
+### Fixed
+
+- **A screenshot was only the first screenful.** The console is a
+  fixed-height shell whose content column scrolls, so a full-page capture
+  measured one phone height whatever the screen actually held. The camera
+  unrolls the column before the shutter, so a capture is the whole screen;
+  screens taller than the glass are also sliced a phone height at a time
+  (72 slices), listed in a gallery section written from what is on disk.
+  The count guard learns that a slice is not a screen and holds the slices
+  to their own rule.
+
+### Changed
+
+- Cut with the siblings: the three products keep one number.
+
 ## [3.1.3] - 2026-09-03
 
 ### Documentation
@@ -12243,7 +12260,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.4...HEAD
+[3.1.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.3...app-v3.1.4
 [3.1.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.2...app-v3.1.3
 [3.1.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.1...app-v3.1.2
 [3.1.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.0...app-v3.1.1
