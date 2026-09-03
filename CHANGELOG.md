@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-09-03
+
+### Documentation
+
+- **Photographs where drawings stood.** Screens 14 (the coach, out loud —
+  the sphere veil up, "speaking — interrupt any time"), 44 (Correspondence)
+  and 45 (Company oversight, the desk showing a box result) are captures
+  of the running console now; the drawings are gone. `tools/shoot_screens.py`
+  furnishes the console for them: two letters received, an edit proposed
+  and put in the box, the reviewer's queue opened.
+- **The mechanisms, in the shape an examiner reads.** The seven mechanisms
+  on file are each set out as the technical problem in the machine, the
+  particular solution as built, what it changes in the machine, and where
+  it is reduced to practice and held by a test.
+- Cut with the siblings: the three products keep one number.
+
 ## [3.1.1] - 2026-09-03
 
 ### Fixed
@@ -12219,7 +12235,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.2...HEAD
+[3.1.2]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.1...app-v3.1.2
 [3.1.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.0...app-v3.1.1
 [3.1.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.11...app-v3.1.0
 [3.0.11]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.0.10...app-v3.0.11

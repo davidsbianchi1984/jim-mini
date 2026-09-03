@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.1.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.2** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -66,18 +66,23 @@ throughout it:
 
 ### The mechanisms on file
 
-The seven numbered mechanisms in the invention disclosure, with where
-each lives:
+The seven numbered mechanisms in the invention disclosure. Each row names
+the technical problem in the machine, the particular structure this code
+uses to solve it, what that structure changes about how the machine
+behaves, and where the structure is reduced to practice and held by a
+test. None of them is a rule a person could follow with a pen; each is a
+specific arrangement of data, channels and checks inside a running
+system, and each is photographed on the screens below.
 
-| § | Mechanism | Reduced to practice in |
-|---|---|---|
-| 1 | Wearable-to-guardian bridge requiring no vendor app store | `jim/watch.py` — the deposit-only drip channel and the export-as-baseline fold |
-| 2 | Personal drift bands distinct from a clinical alarm layer | `jim/guardian.py`, `jim/earlywarning.py`, `jim/conditions.py` |
-| 3 | Signal-quality-capped escalation | `jim/escalation.py`, `jim/signal.py`, `jim/freshness.py` |
-| 4 | Degrade-not-fail model layer with disclosed provenance | `jim/llm.py` — every answer names who answered |
-| 5 | Version-matched backend adoption in the desktop shell | the desktop launcher under `python -m jim` |
-| 6 | The vigil — an alarm on the absence of signals | `jim/vigil.py` |
-| 7 | Interoperating three-product architecture | `jim/qrme_client.py`, `jim/pdi_client.py`, one version number across the three |
+| § | The technical problem | The particular solution, as built | What it changes in the machine | Reduced to practice in |
+|---|---|---|---|---|
+| 1 | A wrist sensor's readings are held inside a vendor's phone application and reach no other program without an application-store app. | A **deposit-only channel**: one URL per person carrying a per-person token, accepting a forgiving reading payload from the phone's own automation, with no read door on the same channel; and a **fold** that parses the phone's health export into the person's baseline without generating events. | Readings arrive at the guardian from a device the guardian has no application on, over a channel that cannot be read back, and the baseline exists before the first live reading. | `jim/watch.py` — `test_watch.py`, `test_the_wrist_is_a_surface.py` |
+| 2 | Fixed clinical thresholds fire on an individual whose normal sits far from the population's, and stay silent on drift inside the population's range. | Two independent evaluation layers over every sample: a **personal drift band** computed from the person's own readings and a sensitivity setting, and a **clinical alarm layer** of fixed condition rules; each layer decides alone and both land on the escalation ladder. | A drift inside clinical range can open a check-in, and a clinical alarm can never be lowered by a personal setting; the two cannot mask each other. | `jim/guardian.py`, `jim/earlywarning.py`, `jim/conditions.py` — `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` |
+| 3 | A plausible but wrong reading from a loose sensor, or a reading delayed for minutes in transit, drives an escalation as if it were true and current. | Every sample carries a **quality** and a **staleness contract** (device-stamped observation and send times, so device clock skew cancels out of the age); the escalation ladder reads both and **caps the highest reachable rung** by them, and a stranger's beacon scan is capped below contacting the person's own circle. | A poor or old signal can still open a check-in, and can never ring a contact or reach the held emergency send; the ladder's path is written down step by step and replayable. | `jim/signal.py`, `jim/freshness.py`, `jim/escalation.py` — `test_escalation_tree.py`, `test_signal_quality.py`, `test_how_old_is_the_reading.py` |
+| 4 | A model served over a network fails, is rate-limited, or is unreachable exactly when a health assistant is being asked for guidance. | A **provider chain with a deterministic local floor**: every provider error degrades to the offline stub rather than raising; every answer carries **provenance** — which provider produced it and, if degraded, from what — and the degrade is logged. | The assistant always answers, and the person and the record can tell a model's words from the stub's. | `jim/llm.py` — `test_byo_key.py`, `test_the_study_says_who_answered.py` |
+| 5 | A desktop shell can adopt whatever backend answers its port, including a stale one left running from an earlier version. | The shell reads the backend's **version from `/health`** and compares it to its own before adopting it; a mismatch is refused and shown. | A stale backend cannot be mistaken for the current one. | `jim/__main__.py`, `app/src` (`VersionGuard`) — `test_accounts.py` (`test_health_reports_the_version`) |
+| 6 | Every alarm in a monitor fires on a reading; a person on the floor with the sensor on its charger produces no reading and no alarm. | The **vigil** measures silence itself against the person's own event table — any sign of life is already an event, so activity resets the clock with no bookkeeping — and a **ticker** advances that clock on the server without anything reading it. | The absence of signals becomes an alarm condition that fires at three in the morning with every screen closed. | `jim/vigil.py`, `jim/ticker.py` — `test_vigil.py`, `test_the_clock_advances_without_a_read.py` |
+| 7 | Three products that must share a person's memory, specialists and custody without sharing code or a database. | Three separately deployable services that interoperate over **HTTP only** with **one tenant and one token per integration**; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three. | A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database. | `jim/qrme_client.py`, `jim/pdi_client.py` — `test_pdi_tandem.py`, `test_tandem.py` |
 
 ### The safety path, as built
 
@@ -259,13 +264,13 @@ faces have their own gallery below.
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/07-coach.png"><img src="docs/screens/07-coach.png" width="165" alt="Life coach"></a><br><sub><b>07</b> · Life coach<br>career, relationships, mental health — grounded in the vault</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/14-coach-out-loud.svg"><img src="docs/screens/14-coach-out-loud.svg" width="165" alt="Coach out loud"></a><br><sub><b>14</b> · Coach out loud<br>the coach speaks, and follows the earbud</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/14-coach-out-loud.png"><img src="docs/screens/14-coach-out-loud.png" width="165" alt="Coach out loud"></a><br><sub><b>14</b> · Coach out loud<br>the coach speaks, and follows the earbud</sub></td>
     <td align="center" width="25%"><a href="docs/screens/15-which-model-answers.png"><img src="docs/screens/15-which-model-answers.png" width="165" alt="83 Which Model Answers"></a><br><sub><b>15</b> · 83 Which Model Answers</sub></td>
     <td align="center" width="25%"><a href="docs/screens/39-engaged.png"><img src="docs/screens/39-engaged.png" width="165" alt="Talk"></a><br><sub><b>39</b> · Talk<br>the standing conversation that lasts until you leave it</sub></td>
   </tr>
   <tr>
-    <td align="center" width="25%"><a href="docs/screens/44-mail.svg"><img src="docs/screens/44-mail.svg" width="165" alt="Correspondence"></a><br><sub><b>44</b> · Correspondence<br>the coach's moderated mailbox — drafts held until you approve</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/45-oversight.svg"><img src="docs/screens/45-oversight.svg" width="165" alt="Company oversight"></a><br><sub><b>45</b> · Company oversight<br>proposed app edits, held until approved — an approved edit rides the next publish</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/44-mail.png"><img src="docs/screens/44-mail.png" width="165" alt="Correspondence"></a><br><sub><b>44</b> · Correspondence<br>the coach's moderated mailbox — drafts held until you approve</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/45-oversight.png"><img src="docs/screens/45-oversight.png" width="165" alt="Company oversight"></a><br><sub><b>45</b> · Company oversight<br>proposed app edits, held until approved — an approved edit rides the next publish</sub></td>
   </tr>
 </table>
 
@@ -604,6 +609,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.2** | **The screens are photographs, and the mechanisms are set out for examination** — 14, 44 and 45 are captures of the running console; the seven mechanisms on file each name the technical problem, the solution as built, what it changes in the machine and the test that holds it. Cut with the siblings |
 | **3.1.1** | **The image carries what the box runs** — the first probe on the hosted cloud got through every wall and fell on `import pytest`: the runtime image ships the dev extra now, and `JIM_SOURCE_DIR` names `/srv` as the tree the box copies, since the package the server runs from lives in site-packages. |
 | **3.1.0** | **The box on a busy server, and one number across the three** — the process ceiling is headroom over what the run's user already has rather than a flat count, so a forty-thread server no longer trips it before the box's first fork; the hosting page says what a container must allow for the box to open on a hosted cloud, with the profiles the compose stack ships for it; and the three products are cut together at one number from here. |
 | **3.0.11** | **The coding assistant gets a box** — a drafted app edit is tried before a person is asked to judge it: the diff applied to a copy of the tree (never the database or a secret), the tests it names run with the network cut, every life on the disk hidden, the run in a pid namespace of its own so nothing outlives it, processes counted, time, memory and output finite. A red run goes back to the assistant with what the tests said, for up to three tries of the draft in all, and every round is filed beside the diff, so oversight reads a fact and not a guess. The Studio has the button and the outcome, the Oversight desk reads the same, and a host without user namespaces gets a sentence instead of a button. The box decides nothing: an approved edit still rides the next publish-merge. |

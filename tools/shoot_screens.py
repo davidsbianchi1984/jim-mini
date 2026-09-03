@@ -76,6 +76,7 @@ PORT = int(os.environ.get("SHOT_PORT", "8098"))
 BASE = f"http://localhost:{PORT}"
 CONSOLE = f"{BASE}/app/"
 OUT = REPO / "docs" / "screens"
+REVIEWER = "shots-reviewer"
 
 #: A viewport that shows the console the way its own people meet it: a
 #: phone, because that is what somebody carrying a Guardian is holding.
@@ -104,9 +105,18 @@ def build_console() -> None:
 
 def start_backend() -> subprocess.Popen:
     env = dict(os.environ)
-    env["JIM_DB"] = "/tmp/jim-shots.db"
+    # The database in a directory of its own: the assistant's box hides the
+    # database's directory inside its walls, and a database sitting bare in
+    # /tmp would hide /tmp — including the workrooms — and refuse the box.
+    Path("/tmp/jim-shots").mkdir(exist_ok=True)
+    env["JIM_DB"] = "/tmp/jim-shots/jim.db"
     env["JIM_OFFLINE"] = "1"
-    Path("/tmp/jim-shots.db").unlink(missing_ok=True)
+    # The deployment's reviewer token, so the oversight desk can be opened
+    # and photographed with something on it. A harness value, never a real
+    # one: the database it guards is deleted at the top of every run.
+    env["JIM_ADMIN_TOKEN"] = REVIEWER
+    env.setdefault("JIM_WORKROOMS", "/tmp/jim-shots-rooms")
+    Path("/tmp/jim-shots/jim.db").unlink(missing_ok=True)
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "jim.api:create_app",
          "--factory", "--port", str(PORT)],
@@ -140,6 +150,64 @@ def enrol() -> dict:
         out = json.load(answer)
     return {"userId": out["id"], "userToken": out["user_token"],
             "displayName": out.get("display_name", "David")}
+
+
+def _door(path: str, body: dict, token: str) -> dict:
+    request = urllib.request.Request(
+        BASE + path, data=json.dumps(body).encode(),
+        headers={"content-type": "application/json",
+                 "authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(request, timeout=600) as answer:
+        return json.load(answer)
+
+
+#: A change the coding assistant might draft: one comment line, in a file
+#: whose tests the box will find by name (`test_vigil.py`), so the run is
+#: real and short.
+DRAFT = """A note above the vigil's own words, and nothing else.
+
+--- a/jim/vigil.py
++++ b/jim/vigil.py
+@@ -1,2 +1,3 @@
++# Photographed for the gallery: the box tried this line.
+ \"\"\"The vigil — the alarm that fires when the signals *stop*.
+ 
+"""
+
+
+def furnish(session: dict) -> None:
+    """What the desks hold when they are photographed, put there through
+    the product's own doors — never by writing rows.
+
+    The moderated mailbox receives two letters, so the Correspondence
+    screen shows threads held for a person rather than an empty tray. A
+    drafted app edit is filed and tried in the assistant's box, so the
+    Oversight desk shows a diff with the box's outcome beside it — a real
+    run inside four walls, on this machine, at the moment of the capture.
+    On a host that cannot raise the walls the edit is filed untried and
+    the desk says so, which is also true.
+    """
+    uid, token = session["userId"], session["userToken"]
+    for letter in (
+        {"from_addr": "dr.okafor@clinic.example", "subject": "Your bloodwork",
+         "body": "David — your panel came back and everything is where we "
+                 "hoped. Keep the evening walks. Book the follow-up for "
+                 "November when you can."},
+        {"from_addr": "maria@example.test", "subject": "Sunday",
+         "body": "Are you still coming for lunch on Sunday? Mum is asking "
+                 "whether to make the big pot."},
+    ):
+        _door(f"/mail/{uid}/receive", letter, token)
+    edit = _door(f"/appedits/{uid}", {
+        "title": "A note above the vigil", "description":
+        "One comment line at the top of jim/vigil.py, so the gallery shows "
+        "an edit the box has tried.", "target": "jim/vigil.py",
+        "patch": DRAFT}, token)
+    try:
+        _door(f"/appedits/{uid}/{edit['id']}/box", {}, token)
+    except Exception as exc:  # noqa: BLE001 — the desk shows an untried edit then
+        print(f"  ? the box did not try the draft ({type(exc).__name__}); "
+              "the desk shows it untried")
 
 
 def open_tab(page, tab: str) -> bool:
@@ -190,6 +258,19 @@ INSIDE: tuple[tuple[str, str, str, tuple[str, ...], str], ...] = (
      ".tabs .tab:nth-child(2).active"),
     # The Studio is not a nav tile. It is reached the way a person reaches
     # it: from the Talk screen's rail, by the chip that names it.
+    # The coach, out loud: a question asked, the answer read aloud, and the
+    # sphere up while it speaks. The synthesiser is silenced by the harness
+    # (see `main`), not the state — the console is in its speaking state,
+    # drawn by its own code, with no sound coming out of a headless browser.
+    ("14", "coach-out-loud", "coach",
+     (("textarea", "How do I keep my heart rate steady on a long walk?"),
+      "button.primary", "text=🔊 Read it aloud"),
+     ".voice-orb-veil"),
+    # The oversight desk with the reviewer token typed and the queue opened:
+    # the edit `furnish` filed, with what the box made of it beside the diff.
+    ("45", "oversight", "oversight",
+     (("input[type=password]", REVIEWER), "text=Open the queue"),
+     "text=In the box:"),
     ("40", "widgets", "engaged", ('.talk-chip[data-go="studio"]',),
      '[data-screen="40"]'),
 )
@@ -260,6 +341,14 @@ def open_inside(page, session, start, presses, proof) -> bool:
     page.wait_for_timeout(900)
     if not follow(page, presses):
         return False
+    # The proof is what the recipe came for: bring it into view, so a
+    # screen taller than the phone is photographed at the part that
+    # matters rather than at its top. The console scrolls inside its own
+    # frame, so a full-page capture alone does not reach it.
+    landed = page.query_selector(proof)
+    if landed is not None:
+        landed.scroll_into_view_if_needed()
+        page.wait_for_timeout(300)
     page.wait_for_timeout(600)
     return page.query_selector(proof) is not None
 
@@ -544,11 +633,27 @@ def main(shots: list[tuple[str, str, str]]) -> None:
     written = 0
     try:
         session = enrol()
+        furnish(session)
         with sync_playwright() as play:
             browser = play.chromium.launch(
                 executable_path="/opt/pw-browsers/chromium")
             page = browser.new_page(viewport=VIEWPORT,
                                     device_scale_factor=SCALE)
+            # A headless browser has no voice. `say()` falls back to the
+            # device's synthesiser and waits for it to finish; this one
+            # never does, so the coach stays in its speaking state for the
+            # camera — the product's own state, only silent.
+            page.add_init_script("""
+              Object.defineProperty(window, 'speechSynthesis', { value: {
+                _on: false,
+                speak() { this._on = true; },
+                cancel() { this._on = false; },
+                get speaking() { return this._on; },
+                pending: false, paused: false,
+                getVoices() { return []; },
+                addEventListener() {}, removeEventListener() {},
+              }});
+            """)
             page.goto(CONSOLE, wait_until="networkidle")
             page.evaluate("s => localStorage.setItem('jim.session', s)",
                           json.dumps(session))
@@ -673,7 +778,7 @@ TABS = [
     "selfprofile", "coach", "engaged", "wellness", "checkin", "journal",
     "aims", "wards", "attending", "reach", "hands", "bearing", "community",
     "presence", "feed", "channel", "capabilities", "permits", "held",
-    "access", "settings",
+    "access", "settings", "mail",
 ]
 
 

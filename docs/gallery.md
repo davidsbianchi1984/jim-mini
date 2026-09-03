@@ -48,7 +48,7 @@ Every capability has a screen, in the product's dark-OLED style (regenerate with
   </tr>
   <tr>
     <td align="center" width="25%"><img src="screens/13-baseline.png" width="160" alt="81 Your Baseline"><br><sub>81 · Your Baseline</sub></td>
-    <td align="center" width="25%"><img src="screens/14-coach-out-loud.svg" width="160" alt="82 Coach Out Loud"><br><sub>82 · Coach, Out Loud</sub></td>
+    <td align="center" width="25%"><img src="screens/14-coach-out-loud.png" width="160" alt="82 Coach Out Loud"><br><sub>82 · Coach, Out Loud</sub></td>
     <td align="center" width="25%"><img src="screens/15-which-model-answers.png" width="160" alt="83 Which Model Answers"><br><sub>83 · Which Model Answers</sub></td>
     <td align="center" width="25%"><img src="screens/16-apple-watch.svg" width="160" alt="84 Apple Watch"><br><sub>84 · Apple Watch</sub></td>
   </tr>
