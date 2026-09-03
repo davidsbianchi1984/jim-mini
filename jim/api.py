@@ -2401,7 +2401,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         try:
             return appedits.box(user_id, edit_id, model=body.model)
         except ValueError as exc:
-            code = 404 if str(exc) == "no such edit" else 422
+            code = 404 if i18n.raised(exc) == "no such edit" else 422
             raise HTTPException(code, i18n.raised(exc)) from None
 
     # -- the medicine cabinet (jim/meds.py) ---------------------------------

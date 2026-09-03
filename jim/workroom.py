@@ -69,7 +69,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from . import db
+from . import db, i18n
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -346,7 +346,7 @@ def try_draft(patch: str, target: str = "", *, source: Path | None = None) -> di
     try:
         room, changed = build(patch, source)
     except ValueError as exc:
-        return {"status": "unapplied", "detail": str(exc), "changed": [],
+        return {"status": "unapplied", "detail": i18n.raised(exc), "changed": [],
                 "tests": [], "output": "", "ms": 0}
     try:
         tests = tests_for(room / "tree", changed, target)
