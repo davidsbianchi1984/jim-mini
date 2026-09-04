@@ -31,6 +31,7 @@ calendar.*
 from __future__ import annotations
 
 import inspect
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -39,6 +40,17 @@ from jim import contacts, db, liaison, life, oncall, permits
 from .conftest import enroll
 
 MOM = "+1 555 010 2233"
+
+
+def _soon() -> str:
+    """A time the schedule will still accept tomorrow.
+
+    A date typed into a test is in the future only until that date arrives;
+    `schedule.book` refuses a moment that has passed, so a literal here is a
+    guard with an expiry on it. This one is always a week out.
+    """
+    return (datetime.now(timezone.utc) + timedelta(days=7)).replace(
+        hour=14, minute=30, second=0, microsecond=0).isoformat()
 
 
 def _with_mom(client, granted=True):
@@ -211,7 +223,7 @@ def test_the_appointment_is_what_survives_the_call(client):
     call = oncall.open(user_id, "speaker", number=MOM)
     oncall.announced(call["id"])
     made = oncall.remember(call["id"], "Take Mom to the eye clinic",
-                           "2026-09-04T14:30:00+00:00")
+                           _soon())
     assert made["from_name"] == "Mom"
     assert oncall.left_behind(user_id, call["id"])[0]["title"] == (
         "Take Mom to the eye clinic")
@@ -224,7 +236,7 @@ def test_it_lands_in_the_calendar_everything_else_reads(client):
     user_id, _ = _with_mom(client)
     call = oncall.open(user_id, "speaker", number=MOM)
     oncall.announced(call["id"])
-    oncall.remember(call["id"], "Eye clinic", "2026-09-04T14:30:00+00:00")
+    oncall.remember(call["id"], "Eye clinic", _soon())
     assert [a["title"] for a in schedule.upcoming(user_id)] == ["Eye clinic"]
 
 
@@ -234,7 +246,7 @@ def test_nothing_is_booked_from_a_call_that_never_announced(client):
     user_id, _ = _with_mom(client)
     call = oncall.open(user_id, "speaker", number=MOM)
     with pytest.raises(oncall.NotAnnounced):
-        oncall.remember(call["id"], "Eye clinic", "2026-09-04T14:30:00+00:00")
+        oncall.remember(call["id"], "Eye clinic", _soon())
 
 
 def test_there_is_nowhere_to_put_what_was_said(client):

@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A guard with an expiry date on it.** The appointment left behind by an
+  assisted call was checked against a timestamp typed into the test —
+  `2026-09-04T14:30:00+00:00`. `schedule.book` refuses a moment that has
+  already passed, so the two guards holding *what a call leaves behind is
+  a thing to be done at a time* were true only until that afternoon
+  arrived, and then failed on an untouched tree for a reason that had
+  nothing to do with the product. The literal is now `_soon()` — always a
+  week out from the run — so the behaviour is held on any day the suite is
+  run rather than until a date in the past.
+
 ### Added
 
 - **The writing that lived only in GitHub now travels with the clone.**
