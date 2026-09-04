@@ -982,14 +982,50 @@ export interface DialerPosture {
   transport_kinds: string[];
   provider: string;
   providers: string[];
+  /** The wiring question: a voice door configured, the online kind chosen,
+   * offline mode off. */
+  wired: boolean;
+  offline: boolean;
+  device_sim_wired: boolean;
+  /** The proof — the voice door asked whether it would ring; null unless wired. */
+  standing: DialerStanding | null;
+  /** True only on a proven `ready`. */
   transport_ready: boolean;
   directions: string[];
   note: string;
 }
+/** What the voice door said about itself when JIM asked (jim/telephony.py).
+ * `word` is `ready` or the reason it is not — unreachable, secret_mismatch,
+ * mismatched, or the sidecar's own word (no_from_number, webhooks_unreachable,
+ * ...) — with a note and a fix in words when there is one. */
+export interface DialerStanding {
+  word: string;
+  reachable: boolean;
+  authenticated: boolean | null;
+  provider_reported: string | null;
+  from_number: boolean;
+  webhooks: string | null;
+  note: string | null;
+  fix: string | null;
+  checked_at: string | null;
+}
 export interface ReachOutCall {
   id: string;
   name: string;
-  status: string;         // ringing | consented | talking | reached | unreached | declined
+  status: string;         // ringing | consented | talking | reached | unreached | declined | unplaced
+  /** Whether a phone house actually took this leg; false for a leg that was
+   * only prepared (no line wired) or never rung (unplaced). */
+  placed: boolean;
+  provider: string | null;
+  provider_call_id: string | null;
+  /** The line's word for how the leg ended: completed, voicemail, no-answer,
+   * busy, failed, canceled, no-choice, consented-unspoken,
+   * completed-without-consent, no-report, declined. */
+  ended: string | null;
+  /** The voice door's sentence when the leg was never rung. */
+  placement: string | null;
+  turns: number;
+  answered_at: string | null;
 }
 /** One reach-out cascade and each contact call's live status — the same shape
  * whether it was started by hand on the operator screen or fired by a
@@ -1789,6 +1825,9 @@ export const api = {
   // dialer's posture and the running cascades, and can start one by hand.
   dialerPosture: (uid: string, token: string) =>
     req<DialerPosture>(`/dialer/${uid}/posture`, { token }),
+  // Check the line now: the proof forced past its cache, same shape back.
+  probeDialer: (uid: string, token: string) =>
+    req<DialerPosture>(`/dialer/${uid}/probe`, { method: "POST", token }),
   reachOuts: (uid: string, token: string) =>
     req<ReachOutStatus[]>(`/reachout/${uid}`, { token }),
   beginReachOut: (uid: string, body: {

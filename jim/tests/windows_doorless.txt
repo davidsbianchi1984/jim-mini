@@ -1,4 +1,4 @@
-# status: backlog — 31 rows
+# status: backlog — 32 rows
 #
 # Every route this shell cannot reach.
 #
@@ -169,3 +169,13 @@ PUT /corpus/{user_id}/consent
 GET /models/{user_id}
 GET /video/providers/{user_id}
 PUT /users/{user_id}/region
+# ## 3.0.8: checking the phone line is a desktop operator affordance
+#
+# The reach-out cascade rings through a voice sidecar now. Whether that line
+# would actually ring — the door answers, it is keyed, it has a number to
+# ring from, its webhooks can be reached — is proven on the dialer's posture
+# read the phones already do not take (above), and the probe that forces a
+# fresh proof is the button beside it on the same console screen
+# (app/src/screens/Safety.tsx). A phone's crisis job stays what it is:
+# answering the alarm.
+POST /dialer/{user_id}/probe

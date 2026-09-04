@@ -15,7 +15,7 @@ from fastapi import (BackgroundTasks, Depends, FastAPI, Header,
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from . import pagehead
+from . import pagehead, telephony
 from . import (accounts, adaptation, app_connectors, audit, auth, bands, beacons,
                finetune as finetune_mod,
                careteam, community,
@@ -67,7 +67,7 @@ from .models import (
     FamilyControls, GoalCreate, GoalUpdate,
     CommunityVisit, FollowupAnswer, GuidanceFeedback, HabitCreate,
     BudgetSet, CrashWatchArm, HelpAsk, MealPlanAsk, OAuthStart, WorkoutAsk,
-    ReachOutBegin, ReachOutDigit, ReachOutHeard,
+    ReachOutBegin, ReachOutDigit, ReachOutHeard, ReachOutEvent,
     MailReceive, MailCompose, MailModerate, CorpusConsent,
     RegionChoice, AppEditPropose, AppEditDraft, AppEditDecide,
     MandateSet, MoneyAccountAdd, MoneyObserve, AppointmentIn, ShopOrderIn, ShopCancelIn, SavingsSet, FloorSet,
@@ -121,7 +121,7 @@ def create_app(qrme_client: QRMEClient | None = None,
     # call at the top of each paid handler: one table, one chokepoint, and no
     # route opts in. See jim/tiers.py — including NEVER_GATED, the paths no
     # plan may ever stand in front of.
-    app = FastAPI(title="JIM-mini / Guardian", version="3.0.7",
+    app = FastAPI(title="JIM-mini / Guardian", version="3.0.8",
                   dependencies=[Depends(tiers.gate)])
 
     # A storage-posture refusal is 402 wherever it is raised, not 422 or 500.
@@ -2041,8 +2041,17 @@ def create_app(qrme_client: QRMEClient | None = None,
     @app.get("/dialer/{user_id}/posture")
     def dialer_posture(user_id: str, request: Request) -> dict:
         """What the dialer is, for the operator screen: built, held shut in
-        source, and how a call would be carried once a transport is wired."""
+        source, whether the contact line is wired, and — proven, cached
+        briefly — whether it would ring."""
         _user_or_404(user_id, request)
+        return dialer.posture()
+
+    @app.post("/dialer/{user_id}/probe")
+    def dialer_probe(user_id: str, request: Request) -> dict:
+        """Check the line now: force the proof past its cache and answer the
+        same posture the read does."""
+        _user_or_404(user_id, request)
+        telephony.standing(force=True)
         return dialer.posture()
 
     @app.get("/reachout/{user_id}")
@@ -2075,33 +2084,82 @@ def create_app(qrme_client: QRMEClient | None = None,
         except ValueError as exc:
             raise HTTPException(422, i18n.raised(exc)) from None
 
-    # The call-id is the capability on the handlers below — the opaque id a
-    # provider's webhook carries back, the same shape as the drip endpoint's
-    # token-in-path. A provider signature is the wiring step; there is no
-    # transport to sign yet.
+    # The call-id is the capability against enumeration on the handlers
+    # below — an id nobody minted is a 404 — and it is not authentication.
+    # The doors are gated by the voice adapter's shared secret
+    # (auth.require_voice_adapter: JIM_VOICE_SECRET as the bearer, localhost
+    # only while it is unset); the vendor's own signature is checked one hop
+    # out, at the voice sidecar, before anything reaches these. Every answer
+    # the sidecar reads carries a `line` envelope — what to say and what to
+    # do next — so the sidecar composes no prose of its own.
+
+    def _line_for_consent(call_id: str, out: dict) -> dict:
+        phrases = telephony.phrases()
+        if out.get("already"):
+            return telephony.line("hangup", phrases["closing"])
+        if out.get("status") == "consented":
+            return telephony.line("speak_first", out.get("say") or "")
+        call = reachout._call(call_id)
+        if call["status"] == "declined":
+            return telephony.line("hangup", phrases["declined"])
+        return telephony.line("hangup", phrases["no_choice"])
     @app.post("/reachout/call/{call_id}/consent")
-    def reachout_consent(call_id: str, body: ReachOutDigit) -> dict:
+    def reachout_consent(call_id: str, body: ReachOutDigit,
+                         _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
-            return reachout.consent(call_id, body.digit)
+            out = reachout.consent(call_id, body.digit)
         except ValueError as exc:
             raise HTTPException(404, i18n.raised(exc)) from None
+        return {**out, "line": _line_for_consent(call_id, out)}
 
     @app.post("/reachout/call/{call_id}/say")
-    def reachout_say(call_id: str, body: ReachOutHeard) -> dict:
+    def reachout_say(call_id: str, body: ReachOutHeard,
+                     _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
-            return reachout.say(call_id, body.heard)
+            out = reachout.say(call_id, body.heard)
         except ValueError as exc:
-            raise HTTPException(409, i18n.raised(exc)) from None
+            code = 404 if str(exc) == "no such call" else 409
+            raise HTTPException(code, i18n.raised(exc)) from None
+        phrases = telephony.phrases()
+        turns = int((out.get("call") or {}).get("turns") or 0)
+        if turns >= telephony.MAX_TURNS:
+            line = telephony.line(
+                "hangup", f"{out['said']} {phrases['closing']}".strip())
+        else:
+            line = telephony.line("gather_speech", out["said"],
+                                  again=phrases["silence"],
+                                  close=phrases["closing"])
+        return {**out, "line": line}
+
+    @app.post("/reachout/call/{call_id}/event")
+    def reachout_event(call_id: str, body: ReachOutEvent,
+                       _: None = Depends(auth.require_voice_adapter)) -> dict:
+        """The phone line's word on a leg — a pickup, or how it ended. The one
+        door through which reached versus unreached is decided."""
+        try:
+            out = reachout.event(call_id, body.event, body.seconds, body.detail)
+        except ValueError as exc:
+            raise HTTPException(404, i18n.raised(exc)) from None
+        if body.event == "answered" and out.get("decided") == "noted":
+            phrases = telephony.phrases()
+            call = reachout._call(call_id)
+            situation = json.loads(reachout._load(call["reachout_id"])["situation"])
+            out["line"] = telephony.line(
+                "gather_digit", reachout._opening(situation),
+                again=phrases["repeat"], close=phrases["no_choice"])
+        return out
 
     @app.post("/reachout/call/{call_id}/reached")
-    def reachout_reached(call_id: str) -> dict:
+    def reachout_reached(call_id: str,
+                         _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
             return reachout.reached(call_id)
         except ValueError as exc:
             raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.post("/reachout/call/{call_id}/unreached")
-    def reachout_unreached(call_id: str) -> dict:
+    def reachout_unreached(call_id: str,
+                           _: None = Depends(auth.require_voice_adapter)) -> dict:
         try:
             return reachout.unreached(call_id)
         except ValueError as exc:

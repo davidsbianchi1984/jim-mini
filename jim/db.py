@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS reachout_calls (
     user_id       TEXT NOT NULL,
     name          TEXT NOT NULL,
     channel       TEXT NOT NULL,
-    status        TEXT NOT NULL,   -- ringing | consented | reached | declined | unreached
+    status        TEXT NOT NULL,   -- ringing | consented | talking | reached | declined | unreached | unplaced
     transcript    TEXT NOT NULL DEFAULT '[]',  -- JSON: the conversation turns
     created_at    TEXT NOT NULL,
     updated_at    TEXT NOT NULL
@@ -318,6 +318,20 @@ CREATE TABLE IF NOT EXISTS do_not_call (
     channel       TEXT NOT NULL,
     at            TEXT NOT NULL,
     PRIMARY KEY (user_id, channel)
+);
+-- What the phone line said about a leg, verbatim and in order (jim/telephony.py,
+-- jim/reachout.py): a pickup, how it ended, how long it ran. The record the
+-- reached-or-unreached decision is made from, kept beside the decision so a
+-- reviewer can see both.
+CREATE TABLE IF NOT EXISTS reachout_call_events (
+    id            TEXT PRIMARY KEY,
+    call_id       TEXT NOT NULL REFERENCES reachout_calls(id),
+    user_id       TEXT NOT NULL,
+    event         TEXT NOT NULL,   -- answered | completed | voicemail | no-answer | busy | failed | canceled
+    seconds       INTEGER NOT NULL DEFAULT 0,
+    detail        TEXT NOT NULL DEFAULT '',
+    note          TEXT NOT NULL DEFAULT '',  -- 'late' when the leg had already ended
+    at            TEXT NOT NULL
 );
 
 -- The moderated mailbox (jim/mailbox.py): the coach agent's correspondence,
@@ -1940,6 +1954,20 @@ _NEW_COLUMNS = [
     # providers if the government asks — so the region has to be a fact on
     # the account, chosen at sign-up, not inferred from an address later.
     ("users", "region", "TEXT"),
+    # The placed leg (jim/telephony.py, 3.0.8): whether the voice door took
+    # the call, which house rang it and under what reference, the sentence
+    # when it did not (`placement`), the line's word on how it ended
+    # (`ended`), when it was placed and picked up, and how many spoken turns
+    # it ran. `placed` is 0 for a leg that was only prepared — the honest
+    # state on a box with no transport — so a screen can tell the two apart.
+    ("reachout_calls", "placed", "INTEGER NOT NULL DEFAULT 0"),
+    ("reachout_calls", "provider", "TEXT"),
+    ("reachout_calls", "provider_call_id", "TEXT"),
+    ("reachout_calls", "placement", "TEXT"),
+    ("reachout_calls", "ended", "TEXT"),
+    ("reachout_calls", "placed_at", "TEXT"),
+    ("reachout_calls", "answered_at", "TEXT"),
+    ("reachout_calls", "turns", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 

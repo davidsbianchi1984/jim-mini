@@ -89,24 +89,45 @@ def chosen_provider() -> str:
 
 
 def transport_ready() -> bool:
-    """Whether a real telephony transport is actually wired.
+    """Whether a contact call may actually go out — the wiring question.
 
-    False everywhere today: choosing a kind and a provider names *how* a call
-    would go out, not that anything can yet — the online path needs the
-    provider's SDK, credentials, and a number; the device path needs the
-    phone's own dialer reached. That is the owner's infrastructure step. Kept
-    as one honest question so no path pretends a call went out.
+    True when the voice door is configured (JIM_VOICE_URL and
+    JIM_VOICE_SECRET), the online kind is chosen, and offline mode is off
+    (:func:`jim.telephony.configured`). False in every test environment, in
+    offline mode, and for the device path, which stays honestly unwired. This
+    is the send decision for a *contact*; whether the line would actually
+    ring is proven separately by :func:`jim.telephony.standing`, and the
+    posture reports both. Neither has anything to do with 911: `place()`
+    below reads only `SEND_ENABLED`.
     """
-    return False
+    from . import telephony
+    return telephony.configured() is not None
 
 
-class DialerArmedWithoutTransport(RuntimeError):
-    """`SEND_ENABLED` was turned on, but no telephony transport is wired.
+class CallNotPlaced(RuntimeError):
+    """A contact call that did not go out, with the sentence that says why.
 
-    Raised instead of dialing, so arming the flag on its own can only ever
-    produce a loud failure — never a silent, unmonitored call. Wiring a real
-    provider is a deliberate, reviewed act that adds a transport below; until
-    then, on is a bug and this says so.
+    The base every honest non-ring is raised as: the number refused, the
+    voice door answering with something other than a call, or the door not
+    answering at all. The cascade records the leg as *unplaced* with this
+    sentence and moves on — never a pretended ring.
+    """
+
+    @property
+    def detail(self) -> str:
+        return str(self.args[0]) if self.args else ""
+
+
+class DialerArmedWithoutTransport(CallNotPlaced):
+    """The flag says a call may go out, and nothing answers.
+
+    Two ways here, both loud. `SEND_ENABLED` turned on with no 911 transport
+    wired — there is none, and there will not be one here — raises this from
+    `_transmit` instead of dialing, so arming the flag alone can only ever
+    produce a loud failure, never a silent, unmonitored call. And a contact
+    call whose transport reports ready while the voice door does not answer
+    raises this from `call_contact`, so a dead sidecar is a recorded,
+    visible failure on the leg and never a ring nobody can account for.
     """
 
 
@@ -195,16 +216,31 @@ def call_contact(to: str, opening: str, *, call_id: str | None = None) -> dict:
         "assembled": True,
         "routed": True,
     }
-    if transport_ready():  # pragma: no cover - no transport wired yet
+    from . import telephony
+    if not transport_ready():
+        where = (chosen_provider() if chosen_kind() == "online"
+                 else "the user's own phone")
+        why = telephony.why_not()
+        plain = (f"the contact call is composed and routed via "
+                 f"{chosen_kind()} ({where}); the ring waits on a "
+                 "telephony transport being wired.")
+        return {**prepared, "placed": False, "prepared": True,
+                "reason": (plain if why == "no telephony transport is configured"
+                           or why is None else why)}
+    # The transport is wired: the one function that rings. A door that does
+    # not answer is the loud failure this module promises; a door that
+    # answers with anything but a call carries its own sentence.
+    try:
+        live = telephony.place(call_id or "", to, opening)
+    except telephony.SidecarUnreachable as exc:
         raise DialerArmedWithoutTransport(
-            "a telephony transport reports ready but none is wired; refusing "
-            "to pretend a contact call was placed")
-    where = (chosen_provider() if chosen_kind() == "online"
-             else "the user's own phone")
-    return {**prepared, "placed": False, "prepared": True,
-            "reason": f"the contact call is composed and routed via "
-                      f"{chosen_kind()} ({where}); the ring waits on a "
-                      "telephony transport being wired."}
+            f"a telephony transport reports ready but the voice door at "
+            f"{telephony.url()} did not answer: {exc}; refusing to pretend a "
+            "contact call was placed") from None
+    return {**prepared, "placed": True, "prepared": False,
+            "provider": live["provider"],
+            "provider_call_id": live["provider_call_id"],
+            "reason": f"the contact call rings through {live['provider']}"}
 
 
 def posture() -> dict:
@@ -214,6 +250,9 @@ def posture() -> dict:
     carried, and that the 911 send stays shut — without implying any call
     will go out.
     """
+    from . import offline, telephony
+    wired = transport_ready()
+    standing = telephony.standing()
     return {
         "built": True,
         "send_enabled": SEND_ENABLED,
@@ -222,15 +261,24 @@ def posture() -> dict:
         "transport_kinds": list(TRANSPORT_KINDS),
         "provider": chosen_provider(),
         "providers": list(PROVIDERS),
-        "transport_ready": transport_ready(),
+        # The wiring question (the send decision for a contact), the proof
+        # (does the line answer, keyed, addressed, reachable by the house's
+        # webhooks, holding the same secret), and the honest device path.
+        "wired": wired,
+        "offline": offline.enabled(),
+        "device_sim_wired": False,
+        "standing": standing if wired else None,
+        "transport_ready": bool(wired and standing["word"] == "ready"),
         # One transport carries calls both ways: JIM (and, when this seam is
         # lifted into QRME, a synthetic profile) can place a call and answer
-        # one, speaking to its assigned task or profession. Both directions
-        # wait on the same wiring, and neither rings today.
+        # one, speaking to its assigned task or profession. Placing rings
+        # through the voice door once it is wired; answering waits.
         "directions": ["place", "receive"],
-        "note": "emergency contacts may be called — and the line answered — "
-                "once a telephony transport is wired; the 911 send is held "
-                "shut in source and cannot be opened by a setting, a plan, or "
-                "a waiver, only by a reviewed change to jim/dialer.py that "
-                "also wires a transport.",
+        "note": ("emergency contacts are called through the voice door when it "
+                 "is wired and ready — it rings through "
+                 f"{chosen_provider()} — and their calls are prepared and "
+                 "documented, never pretended, when it is not; the 911 send is "
+                 "held shut in source and cannot be opened by a setting, a "
+                 "plan, a waiver, or by wiring this transport, only by a "
+                 "reviewed change to jim/dialer.py."),
     }
