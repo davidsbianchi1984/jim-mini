@@ -8,10 +8,12 @@ This folder is that writing, checked in, so a clone of
 
 | Page | What it holds | Count |
 | --- | --- | ---: |
-| [RELEASE-NOTES.md](RELEASE-NOTES.md) | Every release, newest first, with its notes | 267 releases |
-| [PULL-REQUESTS.md](PULL-REQUESTS.md) | Every pull request body, and the comments on it | 278 pull requests |
+| [RELEASE-NOTES.md](RELEASE-NOTES.md) | Every release, newest first, with its notes, in 2 parts | 267 releases |
+| [PULL-REQUESTS.md](PULL-REQUESTS.md) | Every pull request body, and the comments on it, in 2 parts | 279 pull requests |
 | [REVIEW-THREADS.md](REVIEW-THREADS.md) | Inline review comments and review summaries | none |
 | [repository.json](repository.json) | The repository's settings as GitHub stores them | — |
+
+GitHub renders a markdown file as a formatted page up to 512 KiB and shows plain text above it. RELEASE-NOTES.md and PULL-REQUESTS.md pass that, so it is an index over numbered parts; every entry is in exactly one part, and a clone holds all of them either way.
 
 Harvested from the GitHub REST API on 2026-09-04. To refresh, run
 `GITHUB_TOKEN=... python3 docs/github/harvest.py`; it rewrites every page in

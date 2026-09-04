@@ -83,47 +83,116 @@ def quote(text: str) -> str:
                      for line in text.replace("\r\n", "\n").split("\n"))
 
 
-def releases_page(repo: str, owner: str, rows: list) -> str:
-    out = [f"# {repo} — release notes", "",
-           f"Every release published to <https://github.com/{owner}/{repo}/releases>, "
-           "newest first. GitHub keeps these in its own database, not in the "
-           "repository; this page is the copy that travels with a clone.", "",
-           f"**{len(rows)} releases.**", ""]
+# GitHub renders a markdown file as a formatted page up to 512 KiB and falls
+# back to plain text above it. A history this long passes that on its own, so
+# a page that would go over is written as numbered parts under an index.
+RENDER_CAP = 400 * 1024
+
+
+def paginate(blocks: list[str], cap: int = RENDER_CAP) -> list[list[str]]:
+    """Pack rendered blocks into parts, none of them over the cap.
+
+    The count is settled first and the blocks spread evenly across it, so a
+    history that needs two parts gets two halves rather than a full part and
+    a stub.
+    """
+    sizes = [len(b.encode()) for b in blocks]
+    total = sum(sizes)
+    if total <= cap:
+        return [list(blocks)]
+    count = -(-total // cap)
+    target = total / count
+    parts: list[list[str]] = [[]]
+    size = 0
+    for block, n in zip(blocks, sizes):
+        if parts[-1] and len(parts) < count and size + n / 2 > target:
+            parts.append([])
+            size = 0
+        parts[-1].append(block)
+        size += n
+    return parts
+
+
+def write_pages(here, stem: str, head: str, blocks: list[str],
+                label) -> list[str]:
+    """Write `stem`.md, or an index and `stem`-NN.md parts when it is long.
+
+    Returns the filenames written, index first.
+    """
+    parts = paginate(blocks)
+    if len(parts) == 1:
+        (here / f"{stem}.md").write_text(head + "".join(parts[0]))
+        return [f"{stem}.md"]
+
+    names = [f"{stem}-{i + 1:02d}.md" for i in range(len(parts))]
+    rows = []
+    for name, part in zip(names, parts):
+        first, last = label(part[0]), label(part[-1])
+        span = first if first == last else f"{first} to {last}"
+        (here / name).write_text(
+            f"{head}This is one part of a page GitHub is too long to render "
+            f"whole — see [{stem}.md]({stem}.md) for the rest.\n\n"
+            f"**{span}.**\n\n" + "".join(part))
+        rows.append(f"| [{name}]({name}) | {span} | {len(part)} |")
+    (here / f"{stem}.md").write_text(
+        head
+        + "GitHub renders a markdown file as a formatted page up to 512 KiB "
+          "and shows plain text above it. This history passes that, so it is "
+          "written as parts, newest first — every entry is in exactly one of "
+          "them.\n\n"
+        + "| Part | Covers | Entries |\n| --- | --- | ---: |\n"
+        + "\n".join(rows) + "\n")
+    return [f"{stem}.md"] + names
+
+
+def releases_pages(repo: str, owner: str, rows: list) -> tuple[str, list]:
+    head = "\n".join([
+        f"# {repo} — release notes", "",
+        f"Every release published to <https://github.com/{owner}/{repo}/releases>, "
+        "newest first. GitHub keeps these in its own database, not in the "
+        "repository; this page is the copy that travels with a clone.", "",
+        f"**{len(rows)} releases.**", "", ""])
+    blocks = []
     for r in rows:
         tag = r.get("tag_name") or "(untagged)"
-        out += [f"## {tag} — {(r.get('name') or tag).strip()}", "",
-                f"- Published: {day(r.get('published_at') or r.get('created_at'))}",
-                f"- Commit: `{r.get('target_commitish', '')}`",
-                f"- Assets: {len(r.get('assets') or [])}",
-                f"- Page: <{r.get('html_url', '')}>",
-                "", quote(body_of(r)), ""]
-    return "\n".join(out) + "\n"
+        blocks.append("\n".join([
+            f"## {tag} — {(r.get('name') or tag).strip()}", "",
+            f"- Published: {day(r.get('published_at') or r.get('created_at'))}",
+            f"- Commit: `{r.get('target_commitish', '')}`",
+            f"- Assets: {len(r.get('assets') or [])}",
+            f"- Page: <{r.get('html_url', '')}>",
+            "", quote(body_of(r)), "", ""]))
+    return head, blocks
 
 
-def pulls_page(repo: str, owner: str, rows: list, comments: list) -> str:
+def pulls_pages(repo: str, owner: str, rows: list,
+                comments: list) -> tuple[str, list]:
     by_issue: dict[str, list] = {}
     for c in comments:
         by_issue.setdefault(c.get("issue_url", "").rsplit("/", 1)[-1], []).append(c)
     merged = sum(1 for p in rows if p.get("merged_at"))
-    out = [f"# {repo} — pull requests", "",
-           f"Every pull request opened against <https://github.com/{owner}/{repo}>, "
-           "newest first, with the body as written. The body is the argument for the "
-           "change; git keeps the diff but not the argument.", "",
-           f"**{len(rows)} pull requests, {merged} merged.**", ""]
+    head = "\n".join([
+        f"# {repo} — pull requests", "",
+        f"Every pull request opened against <https://github.com/{owner}/{repo}>, "
+        "newest first, with the body as written. The body is the argument for "
+        "the change; git keeps the diff but not the argument.", "",
+        f"**{len(rows)} pull requests, {merged} merged.**", "", ""])
+    blocks = []
     for p in sorted(rows, key=lambda r: r["number"], reverse=True):
         n = p["number"]
         state = "merged" if p.get("merged_at") else p.get("state", "?")
-        out += [f"## #{n} — {(p.get('title') or '').strip()}", "",
-                f"- {state} · opened {day(p.get('created_at'))}"
-                + (f" · merged {day(p['merged_at'])}" if p.get("merged_at") else ""),
-                f"- `{p['head']['ref']}` → `{p['base']['ref']}`",
-                f"- Author: {p.get('user', {}).get('login', '')}",
-                f"- Page: <{p.get('html_url', '')}>",
-                "", quote(body_of(p)), ""]
+        lines = [f"## #{n} — {(p.get('title') or '').strip()}", "",
+                 f"- {state} · opened {day(p.get('created_at'))}"
+                 + (f" · merged {day(p['merged_at'])}" if p.get("merged_at") else ""),
+                 f"- `{p['head']['ref']}` → `{p['base']['ref']}`",
+                 f"- Author: {p.get('user', {}).get('login', '')}",
+                 f"- Page: <{p.get('html_url', '')}>",
+                 "", quote(body_of(p)), ""]
         for c in sorted(by_issue.get(str(n), []), key=lambda c: c["created_at"]):
-            out += [f"### Comment — {c['user']['login']}, {day(c['created_at'])}", "",
-                    quote(body_of(c)), ""]
-    return "\n".join(out) + "\n"
+            lines += [f"### Comment — {c['user']['login']}, {day(c['created_at'])}",
+                      "", quote(body_of(c)), ""]
+        blocks.append("\n".join(lines + [""]))
+    return head, blocks
 
 
 def reviews_page(repo: str, review_comments: list, reviews: dict,
@@ -174,6 +243,21 @@ def rock() -> str:
 
 
 def index_page(repo: str, owner: str, counts: dict) -> str:
+    def note(files: list[str]) -> str:
+        n = len(files) - 1
+        return f", in {n} parts" if n > 1 else ""
+
+    split = ""
+    if len(counts["rel_files"]) > 1 or len(counts["pr_files"]) > 1:
+        long = " and ".join(
+            name for name, files in (("RELEASE-NOTES.md", counts["rel_files"]),
+                                     ("PULL-REQUESTS.md", counts["pr_files"]))
+            if len(files) > 1)
+        split = ("\nGitHub renders a markdown file as a formatted page up to "
+                 f"512 KiB and shows plain text above it. {long} pass"
+                 f"{'' if ' and ' in long else 'es'} that, so it is an index "
+                 "over numbered parts; every entry is in exactly one part, "
+                 "and a clone holds all of them either way.\n")
     return f"""# What GitHub holds that git does not
 
 A clone carries the code, the commits and the tags. It does not carry the
@@ -184,11 +268,11 @@ This folder is that writing, checked in, so a clone of
 
 | Page | What it holds | Count |
 | --- | --- | ---: |
-| [RELEASE-NOTES.md](RELEASE-NOTES.md) | Every release, newest first, with its notes | {counts['releases']} releases |
-| [PULL-REQUESTS.md](PULL-REQUESTS.md) | Every pull request body, and the comments on it | {counts['pulls']} pull requests |
+| [RELEASE-NOTES.md](RELEASE-NOTES.md) | Every release, newest first, with its notes{note(counts['rel_files'])} | {counts['releases']} releases |
+| [PULL-REQUESTS.md](PULL-REQUESTS.md) | Every pull request body, and the comments on it{note(counts['pr_files'])} | {counts['pulls']} pull requests |
 | [REVIEW-THREADS.md](REVIEW-THREADS.md) | Inline review comments and review summaries | {counts['reviews']} |
 | [repository.json](repository.json) | The repository's settings as GitHub stores them | — |
-
+{split}
 Harvested from the GitHub REST API on {counts['stamp']}. To refresh, run
 `GITHUB_TOKEN=... python3 docs/github/harvest.py`; it rewrites every page in
 this folder from what the API returns today.
@@ -219,22 +303,32 @@ def main() -> None:
                        [p["number"] for p in pulls])
         reviews = {str(n): r for n, r in got if r}
 
+    for stale in HERE.glob("RELEASE-NOTES-*.md"):
+        stale.unlink()
+    for stale in HERE.glob("PULL-REQUESTS-*.md"):
+        stale.unlink()
+
+    head, blocks = releases_pages(repo, owner, releases)
+    rel_files = write_pages(HERE, "RELEASE-NOTES", head, blocks,
+                            lambda b: b.split(" — ", 1)[0][3:])
+    head, blocks = pulls_pages(repo, owner, pulls, issue_comments)
+    pr_files = write_pages(HERE, "PULL-REQUESTS", head, blocks,
+                           lambda b: b.split(" — ", 1)[0][3:])
+
+    (HERE / "REVIEW-THREADS.md").write_text(
+        reviews_page(repo, review_comments, reviews, issue_comments))
+    (HERE / "repository.json").write_text(settings_page(meta))
+
     stamp = subprocess.run(["git", "-C", str(HERE), "log", "-1", "--format=%cs"],
                            capture_output=True, text=True).stdout.strip()
-    counts = {"releases": len(releases), "pulls": len(pulls), "stamp": stamp,
-              "reviews": (len(review_comments)
-                          + sum(len(v) for v in reviews.values())) or "none"}
-    write = {
-        "README.md": index_page(repo, owner, counts),
-        "RELEASE-NOTES.md": releases_page(repo, owner, releases),
-        "PULL-REQUESTS.md": pulls_page(repo, owner, pulls, issue_comments),
-        "REVIEW-THREADS.md": reviews_page(repo, review_comments, reviews,
-                                          issue_comments),
-        "repository.json": settings_page(meta),
-    }
-    for name, text in write.items():
-        (HERE / name).write_text(text)
-        print(f"{name:20s} {len(text) // 1024:>5d} KiB")
+    (HERE / "README.md").write_text(index_page(repo, owner, {
+        "releases": len(releases), "pulls": len(pulls), "stamp": stamp,
+        "rel_files": rel_files, "pr_files": pr_files,
+        "reviews": (len(review_comments)
+                    + sum(len(v) for v in reviews.values())) or "none"}))
+
+    for name in sorted(p.name for p in HERE.iterdir() if p.name != "harvest.py"):
+        print(f"{name:24s} {(HERE / name).stat().st_size // 1024:>5d} KiB")
 
 
 if __name__ == "__main__":

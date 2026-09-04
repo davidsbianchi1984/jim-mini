@@ -1,0 +1,4279 @@
+# jim-mini — pull requests
+
+Every pull request opened against <https://github.com/davidsbianchi1984/jim-mini>, newest first, with the body as written. The body is the argument for the change; git keeps the diff but not the argument.
+
+**279 pull requests, 277 merged.**
+
+This is one part of a page GitHub is too long to render whole — see [PULL-REQUESTS.md](PULL-REQUESTS.md) for the rest.
+
+**#279 to #158.**
+
+## #279 — The writing that lived only in GitHub travels with the clone
+
+- open · opened 2026-09-04
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/279>
+
+> ## What this is
+>
+> A clone carries the code, the commits and the tags. It does not carry the argument for any of it.
+>
+> Release notes and pull request bodies live in GitHub's own database, not in the repository. A downloaded copy of JIM-mini arrived without **267 release notes and 278 pull request bodies — 149,682 words** explaining why each change was made. That writing is the record an examiner reads beside the diff, and it was the one part of the product a `git clone` left behind.
+>
+> `docs/github/` is that record, checked in.
+>
+> ## What is in it
+>
+> | Page | What it holds |
+> | --- | --- |
+> | `RELEASE-NOTES.md` | Every release, newest first, with its notes, its commit and its asset count — 267 releases |
+> | `PULL-REQUESTS.md` | Every pull request body, with the conversation comments left on it — 278 pull requests, 277 merged |
+> | `REVIEW-THREADS.md` | Inline review comments and review summaries |
+> | `repository.json` | The repository's settings as GitHub stores them |
+> | `harvest.py` | The script that writes the other four |
+>
+> ## Measurements, not assumptions
+>
+> - **Review threads: none.** Every one of the 278 pull requests was queried for reviews and review comments; all came back empty. The page says so explicitly rather than being absent, so a reader can tell "nothing was left" from "nothing was collected."
+> - **Conversation comments: eight, and they are real writing** — full-suite results reported on #218, and the note on #275 explaining that its novel commits were absorbed into the 1.9.0 line before it was closed. Each sits with the pull request it was written on.
+> - **Issues: none.** GitHub's issues endpoint returns pull requests too; filtering them out leaves zero real issues on this repository.
+> - **Labels: the stock nine, unused.** GitHub's defaults, attached to nothing. Not checked in. Milestones: none.
+>
+> ## The script
+>
+> `harvest.py` reads the owner and repository from the `origin` remote, so one script serves all three products unedited. It paginates releases, pull requests, review comments, issue comments and per-pull-request reviews, then rewrites all five files from what the API returns. Run against a sibling tree it reproduced the committed pages byte-for-byte.
+>
+> It also closes its index page on the same Matthew 7:24–25 passage every README in this repository closes on — read out of the root README at write time, so it stays byte-identical rather than drifting.
+>
+> ## What is deliberately not here
+>
+> Release **assets**. Across the three products they run to hundreds of gigabytes of built binaries, which belong on the release pages and not in a git history. Each release's asset count is listed beside its notes, and the release page linked from every entry still serves the files.
+>
+> ## A second commit: a guard with an expiry date on it
+>
+> `test_the_call_that_knows_who_it_is_with.py` booked an appointment at a hardcoded `2026-09-04T14:30:00+00:00`. That was a future time when it was typed; it is this afternoon, already past, and `schedule.book` refuses a moment that has passed. Two cases went red today on an **untouched checkout of `main`** — confirmed by running the file in a worktree at `origin/main` before changing anything (2 failed, 22 passed):
+>
+> - `test_the_appointment_is_what_survives_the_call`
+> - `test_it_lands_in_the_calendar_everything_else_reads`
+>
+> The literal becomes `_soon()`, a timestamp a week out from whenever the suite runs, so what these two hold — *what a call leaves behind is a thing to be done at a time* — is held on any day rather than until one particular afternoon. Every other hardcoded stamp in `jim/tests` was checked: the rest are deliberately in the past (expiry, staleness, time-travel refusals) or read under a frozen clock, and none of them expire.
+>
+> ## Gates
+>
+> `jim/tests/test_the_call_that_knows_who_it_is_with.py`: **24 passed.** The full suite is running as this opens; the run before the fix was 2 failed, 3336 passed, 5 skipped, with both failures the expired literal above. This PR is a draft until the full run confirms green, and I will report the number here either way.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #278 — JIM-mini 3.0.8 — a real telephony transport for the reach-out cascade
+
+- merged · opened 2026-09-03 · merged 2026-09-03
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/278>
+
+> ## What this is
+>
+> The reach-out cascade ran to the ring and held there since 3.0.1: every contact call came back *prepared* because no transport was wired. It rings now, through a voice sidecar in the compose stack (`docker/voice` in the QRME repository) that holds the phone house's credential and speaks one small protocol to JIM.
+>
+> ## Changes
+>
+> - **`jim/telephony.py`** (new): the JIM half of the phone line — `place`, `standing` (proven, cached 30 s), `line` envelopes, `phrases`, number normalisation and the emergency-number refusal. One `urlopen`, behind the offline gate, with the bearer.
+> - **`jim/dialer.py`**: `call_contact` hands a leg to the door when configured; `CallNotPlaced` base; posture gains `wired`, `offline`, `standing`, `device_sim_wired`, a proven `transport_ready`. `place()`, `_transmit()` and `SEND_ENABLED = False` untouched.
+> - **`jim/reachout.py`**: `_claim` row-as-mutex; unplaced legs; `event()` is the one place reached/unreached is decided; `settle_stale` (from `crashwatch.sweep` only); `reachout_call_events` ledger; widened status rows.
+> - **`jim/auth.py`**: `require_voice_adapter` on the five call-id doors (unset → localhost only; set → bearer must be the secret; every refusal audited).
+> - **`jim/api.py`**: `POST /reachout/call/{id}/event`, `POST /dialer/{uid}/probe`, line envelopes on consent/say.
+> - **Console**: `DialerPosture`/`ReachOutCall` shapes, `probeDialer`, Safety screen posture in three states with *Check the line*, `unplaced` rows; four l10n keys in ten languages.
+> - **Docs and release train**: `docs/hosting.md` phone-line section, CHANGELOG 3.0.8, README row, every version field to 3.0.8 / build code 3000008, ledgers.
+>
+> ## Tests
+>
+> Six new test files: the 911 locks, the contact call through the voice door, a call event decides reached or unreached, the call-id doors take a secret, the dialer posture is proven, the spoken lines are in every language. `jim/tests/fakevoice.py` replaces exactly `telephony._request`.
+>
+> ## Pinned, not changed
+>
+> The transport never carries 911: the send is still the source constant, the dialer's path never names the voice door, the transport refuses an emergency short code before a request is built, and exhausting into the held rung asks the door for nothing.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #277 — The capability register: nine faculties, on one page, beside their permissions
+
+- merged · opened 2026-08-30 · merged 2026-08-30
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/277>
+
+> ## What this adds
+>
+> Nine faculties can be given to a Guardian. Every one of them already had a
+> door — `console_doorless.txt` has stood at zero for many rounds — and not one
+> of them had a place that named the set. Seeing was a card inside Channel &
+> camera; a bound body was one of twenty-four rows on What reaches out; the look
+> permit was a checkbox on Hands. Somebody wanting to answer *what can this thing
+> actually do* had to already know where to look, which meant the only people who
+> could answer it were the people who built it.
+>
+> ```
+> asked     can each capability be reached
+> mattered  can the whole set be read at once
+> ```
+>
+> **Capabilities** (screen 114) carries four columns for each of the nine:
+>
+> | column | what it is |
+> |---|---|
+> | what it is | the function, in a sentence, in the reader's language |
+> | where it stands | read live from the same route the owning screen reads |
+> | what it rests on | the permission that had to exist first, named rather than implied |
+> | where it is withdrawn | the screen that owns it, one press away |
+>
+> The third column is the reason the screen exists as code rather than as a
+> document: a register that could disagree with the product would be a brochure.
+> Nothing on it grants, commands or revokes — it reads, and it routes. `README.md`
+> carries the same four columns as a table, for a reader who never opens the app.
+>
+> A capability this console could not ask about renders as unread, never as off.
+> The two are different facts and the register refuses to let them look the same.
+>
+> ## On the naming
+>
+> The nine are named for what they do, not for the body part they resemble. The
+> engineering shorthand behind them is anatomical — the eyes, the ears, the hands
+> — and that shorthand is exactly wrong in front of a clinician, a regulator or an
+> attorney: *eyes* claims a faculty, where *visual perception, described in words
+> and not retained* states a behaviour that can be checked against the code and
+> found true or false.
+>
+> Each row names the product's own surface underneath the function, so the two
+> vocabularies stay joined instead of competing.
+>
+> ## Also fixed
+>
+> - **The front door was drawn wider than the phone it was on.** `.onboarding` is
+>   a grid whose one column was the implicit `auto` track, sized to its item's
+>   max-content — 440px, the card's own width — so the card's `max-width: 100%`
+>   resolved against 440 and capped nothing. On a 390px phone the right-hand end
+>   of the Sign in button and the email and password fields was simply not drawn,
+>   on the first screen anybody meets. The track is `minmax(0, 1fr)` now.
+>
+> - **Every width the camera knew how to ask about had answered "fits."**
+>   `.onboarding` scrolls, and a scroll container absorbs its own overflow: the
+>   document stayed exactly as wide as the window while the content inside was
+>   clipped away. `tools/shoot_screens.py` grew `past_the_edge()`, which asks every
+>   element on every capture whether it is painted past the viewport's right edge.
+>
+> - **Screens 40 and 42 were drawings** because the camera could only press nav
+>   tabs and neither of these is one. The harness grew a recipe table — where to
+>   start, what to press, and a selector that proves it arrived — and both are
+>   photographs now; the superseded drawings are deleted rather than left beside
+>   them.
+>
+> ## Registries and guards
+>
+> Four guards caught this mid-build and all four were right:
+>
+> - `ui_screens.txt` — Capabilities registered as screen 114, status line recounted
+> - `productmap.DOORS` — a door with the words somebody would use to ask for it
+> - `tutorial.LESSONS` — a lesson explaining the screen
+> - `test_readme_gallery` — the screen shown, and the two new photographs shown
+> - `formal_register.txt` — held at its ceiling by rewriting a German sentence that
+>   opened with third-person *Sie*, rather than filing an eleventh exception
+>
+> ## Testing
+>
+> Full suite green over the final tree: **3042 passed, 5 skipped, 0 failed.**
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #276 — The fork folds: both lines' rounds on one branch, suite-certified
+
+- merged · opened 2026-08-27 · merged 2026-08-28
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/276>
+
+> Two threads drove development in parallel for a day; one released 1.8.5–1.8.9 from main while this branch carried its own rounds. This PR is the reconciliation: everything from both lines, rebased onto the 1.8.9 main and certified by the full suite (2960 passed, 5 skipped).
+>
+> **This line's five rounds, replayed onto 1.8.9:**
+> - **The console and the shells finish agreeing** — the recorded console↔native wording splits close.
+> - **The greeting is escaped where it is printed** — `landing.py` escapes `{who}` at the sink.
+> - **The far end and the widgets reach every shell** — FarEnd and Studio cards on iOS/Android/Windows; nine console-first doors open. The doorless ledgers now carry only the 1.8.9 line's three new routes (heartbeat, freshness, meeting-audio).
+> - **One name, one type** — the five primitive wire-name clashes close (`goal_amount`, `stands`, `chosen_surface`, `status_code`, `helped_count`/`answered_count`), with stored-profile fallbacks for old keys.
+> - **The switch tests follow the renamed surface.**
+>
+> **Adopted from the retired thread's branch (PR #275), the two rounds this line lacked:**
+> - **A refused key is a key fact** — provider 401/403 in transcription/speech becomes one translated sentence naming the switch, instead of raw provider JSON across the coach.
+> - **The classifier keeps its body** — the key-check classifier keeps reading the provider's 401 body; only the person-facing directions get the sentence.
+>
+> PR #275's other two commits duplicated the far-end/Studio work already here and were not taken. Supersedes #275.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #275 — Carry the far end to the three native shells
+
+- closed · opened 2026-08-27
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/275>
+
+> ## What this carries
+>
+> The card the console's Held screen gained in 0.92.0 — who stands on the far end of the escalation ladder, whether a person saw the last alert, and the save-with-consent and clear that set the address — lands on the Policy tab of the iOS, Android and Windows safety screens, beside the ladder it feeds.
+>
+> - The sentences are the console's own `hld.farend.*` rows, carried whole so both surfaces keep saying the same thing in the same ten languages.
+> - Three shell backlogs (`jim/tests/*_doorless.txt`) shrink by the `GET/PUT /farend/{user_id}` pair that promised the card.
+> - One carried row, `hld.farend.save` (German "Sie haben zugestimmt" — *they* agreed, the contact), is a documented false positive of the formal-register counter; the ledger names it beside the console's identical row and each native table's floor moves to ten with it.
+>
+> Also under `[Unreleased]`: the refused-key sentence fix from the prior push on this branch.
+>
+> Note: this branch carries the product's full release history past `main` (main sits at 0.82.0; the 1.x tags live here), so the diff is much larger than this round.
+>
+> ## Gates
+>
+> Full suite: 2960 passed, 4 skipped, and the one formal-register failure resolved by the ledger row above (guard re-run green).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+### Comment — davidsbianchi1984, 2026-08-28
+
+> Superseded by the 1.9.0 line: this branch's novel commits (the voice-key sentences) were absorbed onto `claude/new-session-ftgm38` during the fork reconciliation and shipped with the 1.9.0 cut (now on `main` at `aca19af`). Closing without merge — nothing here is lost.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+## #274 — Field round: split wordings closed, the ear that opens stays open, and the voice door wears the studio microphone
+
+- merged · opened 2026-08-25 · merged 2026-08-25
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/274>
+
+> Post-1.8.3 field-testing round on the beta:
+>
+> - **Split wordings closed** — the same English sentence no longer carries disagreeing translations across the three native tables; the crisis screen's "End it" became "End the hold" so es/ja stop reading as something darker.
+> - **The ear that opens stays open** — the console's audio unlock now arms on the gestures WebKit actually counts (click / touchend / keydown), retries until granted instead of burning its one attempt, and stays armed until it succeeds. This is the iOS-silence fix.
+> - **The voice door wears the studio microphone** — the front-door voice-conversation button swaps the telephone glyph for the studio microphone, matching the QRME console's door, per the owner's call off the working screen.
+>
+> Console typecheck + build green; ear/console/mic guard tests green (293 passed in the targeted run).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #273 — A conversation you can take with you — four surfaces, four platforms, and a coach that knows its whole console
+
+- merged · opened 2026-08-24 · merged 2026-08-24
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/273>
+
+> Seven commits. Two features, two platform ports, and four repairs — three of which were corrections to claims I had made in this same PR.
+>
+> ## A conversation you can take with you
+>
+>     asked     did the screen unmount
+>     mattered  did the person mean to end the conversation
+>
+> Both of this console's conversations unmount on a tab change and the voice went with them. That teardown is right for navigating away and wrong for walking away on purpose: the same event to React, the opposite event to the person.
+>
+> A walking figure beside Speak and beside the coach's Ask hands the conversation to a strip mounted outside `<main>`. Only a press starts it, it says which of listening/answering/stopped it is, ending it is its first control, a real failure reads as one, and a walk started from Coach keeps the area it was asked in. The turn is `speech.ts`'s rather than a second copy of one.
+>
+> **Pressing walk lands on the front page** — the point of carrying a conversation is going somewhere, and the screen you were on is the one place you've finished with. In the shell, not the screens, because the shell owns navigation.
+>
+> ## It survives a minimised window — a correction
+>
+> This PR originally said it couldn't, and that a minimised browser was a native shell's problem. Half right, and the wrong half was load-bearing.
+>
+> `away.ts` is correct that a hidden page has its *recogniser* ended by the browser. It is **not** correct about `getUserMedia`: an open capture keeps recording while the window is minimised, and the browser shows its own recording indicator throughout — the same bargain iOS makes with its orange dot. This console has two ways of hearing, they behave oppositely when the page goes away, and `listen` guarded them as though they behaved the same.
+>
+> So `listen` takes `carryWhenAway` — not a way to switch the guard off, but a claim that the recording path will run, enforced by refusing the device recogniser and by failing outright where no transcription service is configured. Opening a microphone that will hear nothing would be the silent failure in a different coat.
+>
+> ## All four platforms, and what each one charges
+>
+> | | how it survives | what it costs the person |
+> |---|---|---|
+> | Web | `getUserMedia` keeps capturing | the browser's own recording indicator |
+> | Android | foreground service, `microphone` type | a notification that can't be swiped away |
+> | iOS | `UIBackgroundModes: audio` | the system's orange dot |
+> | Windows | nothing — a minimised window isn't suspended | the tray microphone indicator |
+>
+> Windows is the one that needed no permission at all, and that is a fact about the platform worth writing down, or the next person reads its absence as an oversight and adds a service Windows never wanted. What it needed was a voice loop, which the shell had none of.
+>
+> **None of the native code has been compiled.** No Swift toolchain, no .NET SDK, and the proxy refuses `dl.google.com` outright so there's no Android SDK either — I checked that rather than assuming it. The guards read the declarations, because that is where the absence of an indicator would live: permissions, service type, foreground start, session activate *and* deactivate, the notification and its stop. The loops have been reasoned about and not run, and want a device before anyone calls them working.
+>
+> ## The coach knows the whole console, not five doors of it
+>
+> A field report asked for a quarter-hour lookout and got a shrug; the answer was five hand-written doors. That fixed the five and left twenty-seven screens invisible.
+>
+> `jim/productmap.py` is the console door by door, joined to `ui_screens.txt` so a screen added without a row fails the suite in the round that adds it. A turn carries the load-bearing doors always, the doors the message is about (capped at six), and the *names* of the rest — the index is what makes "I cannot do that" wrong when the screen is in the navigation bar. Naming a door is not permission to open one; the permit switches still decide.
+>
+> ## The walk says who answered it
+>
+> A coach turn already fell back to the offline stack with no model key, and nothing said so — stack text read exactly like the model somebody chose. The strip and the Android notification now both say *answered from what's stored here*, dimmed rather than alarmed.
+>
+> ## Repairs
+>
+> - **The strip was a surface nobody had classified** — `ui_screens.txt` caught it, which is what it's for.
+> - **A cue that only fires on the word it was typed as**: `follower` missed "who is following me". Cues match their ordinary endings now.
+> - **`walk.take` said "Take it with you"**, which `hld.take` already carries for the export file — two keys, one English sentence, two sets of translations.
+> - **I twice asserted a project file didn't exist when it did.** Both `native/ios/project.yml` and `native/windows/JimGuardian.csproj` were there all along. That is why iOS and Windows are in this PR rather than deferred.
+>
+> ## Testing
+>
+> Full suite green over the final tree (result posted below). Guards across five files, sabotage-tested throughout — **47 sabotages, 43 caught by the intended test on the first pass.** The four that slipped were all my tests being too weak, and all the same shape: asserting a *name appears in a file* rather than that the code *uses* it.
+>
+> - the idle check read the import line, not the comparison;
+> - a failure line was asserted present while its condition was `if (false)`;
+> - `NO_EARS_MESSAGE` was found in a renamed, unused export;
+> - and three separate checks found the API they forbade inside the comment explaining why it's forbidden.
+>
+> All strengthened and re-sabotaged. Comments are stripped before that family of check now.
+
+## #272 — Informal register, and two refusal guards that were measuring the wrong thing
+
+- merged · opened 2026-08-24 · merged 2026-08-24
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/272>
+
+> Three pieces, all in `[Unreleased]`.
+>
+> ## 1. German finishes the informal register
+>
+> German and Spanish both distinguish a formal *you* from an informal one, and that choice is a claim about the relationship rather than a synonym. This estate made both claims at once — a German reader met *Sie* on the desktop console and *du* on the phone.
+>
+> ```
+> asked     is the string translated
+> mattered  who does it think it is talking to
+> ```
+>
+> **381 rows** across `app/src/l10n.ts` and the three native `L10n` tables, converted fragment by fragment so a string that was only partly formal could not be mangled by a global substitution.
+>
+> What stays counted is not convertible: German capitalises whatever opens a sentence, so `Sie` reads as formal address while being *she*, *they* or *it*. `Sie fragen` is *ask them*; `Ihr beide` is the informal plural. Each is now named in `jim/tests/formal_register.txt` beside the number it holds up — floor 10 on the console, 9 per shell.
+>
+> Two disagreements the guards found: `bas.what.p2` / `ch.cam.site` / `self.paste` had been converted twice with different imperative endings (`Wähle` vs `Wähl`), and `spec.ask` sat on the false-positive list while the console already said `Frag sie` for the same English — a disagreement parked inside an exemption.
+>
+> ## 2. A wiring precondition is not a refusal
+>
+> The refusal collector derives which exception classes to follow from the handlers that stringify them — correctly picking up `ValueError`, since real refusals are raised as one — then swept **every** raise of that class in the package, constructors included.
+>
+> ```
+> asked     is this sentence raised through a class a route stringifies
+> mattered  can a person reach the place it is raised
+> ```
+>
+> So `QRMEClient needs base_url or an injected client` sat in a backlog whose own header says it holds sentences a person reads in a language they did not choose. It fires in an `__init__` from environment variables while the app is wired: no object, no request, no reader. Seven rows across the three products, none ever owed a translation.
+>
+> Checked three ways rather than trusted — forward (each really is raised in a constructor), backward (none is *also* raised where a request can reach it), and that the exempted set matches the sentences the ledger names exactly, so a new exemption takes an edit somebody reads. The third check earned itself immediately: the first cut took every `__init__` raise and wrongly exempted two sentences the collector had never picked up at all.
+>
+> ## 3. A floor at a seventh of what it measures
+>
+> Adding those tests moved the line numbers the floor audit records, which is how the number itself came up for reading. `assert len(i18n._REFUSALS) >= 21` against a table of **147** — a floor that answers "is the number satisfied" every run and would not notice the table being gutted. Registered as a Ratchet so the comparison is made rather than assumed, and struck from the unregistered-floor backlog (62 → 61). The rows that merely moved are repointed, not struck: being bumped down a file by an unrelated edit is not the same as being registered.
+>
+> ## Verification
+>
+> Full suite green over this tree: **2672 passed, 5 skipped**. Placeholder parity checked in both directions against the pre-edit tree — no `{token}` added or lost. Both new guards sabotage-tested.
+
+## #271 — The Guardian answering an interruption knows where it was cut off
+
+- merged · opened 2026-08-23 · merged 2026-08-23
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/271>
+
+> A voice screen plays a reply piece by piece, and speaking over it hushes the rest — so what the person is left holding is a PREFIX. The turn that followed was built as though the whole answer had landed: the Guardian carried on from a place nobody arrived at, or took as read a caveat that never left the speaker.
+>
+>     asked     did they interrupt
+>     mattered  how much had they heard when they did
+>
+> QRME's room learned this first and learned it on a transcript. Same fact, different shape, because the two are answered differently: a room turn is replayed from history, so the fact belongs on the interrupted message; a coach turn is generated from the *current* question, so it rides the request and is stored nowhere. That second half is deliberate — a recorded interruption would be replayed into every later prompt, and the Guardian would keep accounting for one nobody remembers making.
+>
+> ## What changed
+>
+> - `app/src/speech.ts` — `heardAloud()` counts the pieces that started playing. The piece in the air counts as **heard**: it started, and calling it unheard would have the Guardian re-say a sentence somebody had already had enough of. Counted before `play()` rather than after it resolves, and `hush()` deliberately does not clear it — hush is what an interruption calls, and clearing it there would wipe the only evidence the interruption exists to carry.
+> - `hushAndReport()` — one function for all four voice screens, because the order is the whole correctness of it: read the count before the stop and it is right; read it after and every screen is free to get it wrong on its own.
+> - Check-in, Coach, Monitor and Talk capture it on the barge-in and spend it on the next question. Spent, not kept: it is a fact about one turn.
+> - **Typing interrupts too**, on the two screens with a text box. Somebody who watched an answer head off in the wrong direction and typed rather than spoke wanted the same thing the speaker wanted; until now the voice carried on over the top of their new question.
+> - `CoachMessage.cut_off_heard` → `coach.reply` → one prompt block. Context rather than instruction: told to start over, the model would spend the turn on the last question, which is exactly what the person interrupted to stop.
+>
+> ## What it does not cover
+>
+> The specialist door. That answer comes from a profile in QRME over the tandem link, and that endpoint takes a question and nothing else — sent there it would be dropped rather than read. Stated in the code and the changelog rather than papered over.
+>
+> ## Testing
+>
+> `jim/tests/test_the_guardian_knows_it_was_cut_off.py` — 11 tests, each negative-tested by breaking the thing it claims and confirming it fails: the prompt rendering, whitespace not counting as an interruption, the fact not being stored, the count surviving the hush, `say()` resetting it, and all four screens capturing, sending and spending it. 553 guard/coach/surface tests green; `tsc` clean.
+>
+> Optional on the wire and ignorable — absent means nothing was interrupted, which is the ordinary turn, and every native shell keeps working unchanged.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #270 — 1.4.0 — a slept tab does not go quietly deaf
+
+- merged · opened 2026-08-22 · merged 2026-08-23
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/270>
+
+> Draft while the full suite runs over this tree. Nothing merges until it is green.
+>
+> ## The finding
+>
+> A backgrounded page has its timers throttled, its audio suspended and its speech recogniser ended by the browser. None of that arrives as an error, so the console stopped hearing and every light saying it was listening went on saying it.
+>
+> ```
+> asked     does the console stop listening when it is put away
+> mattered  does it stop *saying* it is listening
+> ```
+>
+> The first half already happened, without being asked and without being reported. The second is the defect: silence and deafness look identical on screen and are opposite facts — one means nobody spoke, the other means nobody could be heard. There was no `visibilitychange` handler anywhere in this console, so a suspended page could not know it had been suspended.
+>
+> ## What changed
+>
+> **`app/src/away.ts`** — one module the console asks *am I away now* and *tell me when that changes*, written once rather than at each of the six screens that listen.
+>
+> **`listen()`** — every path out now goes through a guard that stops the microphone on hide and reports `PUT_AWAY_MESSAGE`. That message is deliberately neither of the two sentences `heardNothing` matches: reported as quiet, a standing conversation would re-open the microphone into a sleeping tab forever, orb lit throughout. Everything the stopped recogniser says afterwards is dropped, because a MediaRecorder torn down mid-recording reports `"nothing was recorded"` — which *is* `heardNothing`, which is the loop again.
+>
+> **The standing ear** was the worst of it. Its restart-on-`onend` contract stood a fresh recogniser every 400ms into a page that could not run one — all night if the tab was left that way, with the pill reading *listening for the words that call for help*. It now dozes, says so on the pill in all ten languages, and stands back up on return, because the person never switched it off.
+>
+> **Version fields.** PDI's release guard caught six the bump had missed, stale in all three repos: the numeric build codes, the Windows shell manifest's version trio, and the README banner. The half a developer looks at had moved; the half a store reads had not.
+>
+> ## Testing
+>
+> Six guards, each negative-tested by planting the defect it names: the module and its release, every return path through the guard, the put-away message kept out of `heardNothing`, the wrappers that close the callbacks, the ear's two doors into the restart loop, and the pill branch that would otherwise fall through to blaming the browser.
+>
+> Two of those guards were rewritten because the plant did *not* catch them first time — a token-anywhere check on `ear.ts` passed with the doze gate deleted, and the wrapper check tripped on the wrappers themselves.
+>
+> `tsc --noEmit` clean. Full suite still running; results to follow before this leaves draft.
+>
+> ## Note
+>
+> This is one of three repositories released together under one version. The round's other work — a PDF reader that served byte soup and called it read, an add-friend button that looked the same whether it fired or did nothing, and the room's friends picker — landed in `qrme`.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #269 — The wrist is a surface — a real Wear OS app, and a reading that names its row
+
+- merged · opened 2026-08-21 · merged 2026-08-22
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/269>
+
+> asked     do the watch screens look right
+>     mattered  is there a watch
+>
+> The console draws thirty-six watch faces at wrist size and the iPhone app has a `WatchCard`. A field report asked whether the watch screens worked for people who had attached watches, and the honest answer was that none of them was a watch: there was no watch target at all, and nothing on any wrist could reach the Guardian.
+>
+> ## `native/wear/` — the target
+>
+> A standalone Wear OS 3 app that talks to the deployment itself, for the case the whole surface exists for: the phone in another room, or in a bag, or flat, and the person still wearing the thing that knows their pulse.
+>
+> Four things on it, which is what a wrist is for:
+>
+> * **the pulse**, through Health Services rather than a hand-rolled sensor loop, with `BODY_SENSORS` asked at the switch and never at launch — a permission asked before there is anything to do with it is a permission somebody grants without a reason;
+> * **a turn of speech through channel 2** — words, never audio. The watch recognises the speech itself, so nothing but text leaves the wrist and it works on a deployment with no transcription key at all;
+> * **the coach reaching out first**;
+> * **help now**.
+>
+> It signs in rather than signing up, with the same email and password as every other surface, through Wear's own input screen so every field can be dictated instead of typed. A short pairing code handed over from the phone would be better and does not exist yet; shipping the awkward thing that works beats shipping the elegant thing that does not.
+>
+> ### Why it is not a fourth shell
+>
+> `jim/tests/clientpaths.py` walks the three phone shells and asks, of every published route, whether each can reach it. That guard is right about phones and would be wrong here — the wrist is *deliberately* incomplete, and a completeness rule would push routes onto a watch to satisfy a test. So the wear app is its own Gradle project rather than a module under `native/android/`, precisely so a watch-only door can never be counted as a phone shell's door.
+>
+> `test_the_wrist_is_a_surface.py` holds it honest the other way instead: every path it calls must be a route the server publishes, the pairing chain must run in the order the server requires, the sensor and the microphone must both be let go when the screen goes, and the refusal that reaches the wrist must be the server's own translated sentence rather than a status line.
+>
+> ## A wrist that reports stops saying `waiting`
+>
+> Building the watch walked into the roster's own lie facing the other way. Last round taught `monitors.roster` to derive `sensing` from moments actually recorded, because nothing was connected and every switched-on row claimed to sense. But readings arrive through `POST /monitor/{user_id}`, that door recorded no moment, and a watch posting a pulse every sixty seconds would have left the wrist row reading `waiting` forever.
+>
+>     asked     did a reading arrive
+>     mattered  can the roster tell
+>
+> A sample may now name the roster row it came off, and naming it records the moment. It does **not** gate the reading: the vitals ladder is not the monitor roster, and refusing to grade a dangerous heart rate because a settings toggle is off would be a safety regression dressed as consistency. What the toggle decides is whether the day gets to remember it — the roster's own promise, enforced where it always was, in `daybook.sensed` through `monitors.may_sense`. Both doors print the same three words about the same fact.
+>
+> ## Testing
+>
+> Full local JIM suite over this tree. Nineteen new assertions across two files: `test_the_wrist_is_a_surface.py` and `test_the_wrist_that_reports_stops_saying_waiting.py`.
+>
+> **Not compiled.** There is no Android SDK in the environment this was written in, so the wear app has never been built. Expect the first build to want small fixes.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #268 — The screen is really seen
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/268>
+
+> First of the ten surfaces, in the order the field asked for them.
+>
+> ## What
+>
+> The roster has promised since it was written that the screen monitor can *"see what is on your screen while you work"*, holding nothing — *"what it notices is offered and dropped"*. For the wearables the missing half is hardware. For this one it never was: the browser has had `getDisplayMedia` for years and this console had never called it, and the server had no way to turn a picture into the words a day is made of.
+>
+>     asked     may JIM see this screen
+>     mattered  has it ever been shown one
+>
+> - **`jim/sight.py`** — the deployment's eyes, on exactly the terms `jim/voice.py` is its ears. A frame goes out to be described, one sentence comes back, and no frame is written down here.
+> - **The describing happens on the server**, and that is the load-bearing choice rather than a convenience. Half this roster promises to keep nothing, and those promises only hold if the *noticing* does not need the picture. A test walks every table in the database asserting there is nowhere to put a frame — otherwise that promise is one `INSERT` away from being false.
+> - **The console shares through the browser's own chooser** — the one dialog every OS draws the same way, that names exactly what will be shared and cannot be pre-answered. A better consent gesture than any switch this product could draw, so the switch isn't drawn twice. One frame every 20s, scaled down, never more than one in flight (a sample still being described when the next comes due is a backlog of stale pictures of somebody's screen). Stopping the share ends it — from the console or the browser's own bar, and the two can't disagree because `ended` is wired to the same stop.
+> - **Offered and dropped, literally.** The sentence comes back in the response to the person whose screen it is, under its own name so no reader mistakes what was handed back for what was retained — and it is stored nowhere.
+> - **No key, no guessing.** A deployment with nothing to look with refuses in a sentence. An invented description would reach the cue reader, and a cue read out of a hallucination is an escalation nobody's day contained.
+>
+> ## Tests
+>
+> - `jim/tests/test_the_screen_is_really_seen.py` — the frame becomes words and only words; no table can hold a frame; the words are dropped too on a monitor that keeps nothing; a screen nobody switched on isn't looked at; words-or-frame-but-not-both; no eyes says so; the caller can't talk the eyes out of their limits; and the console really calls the chooser.
+> - Full suite: **2544 passed, 5 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #267 — Channel 2 carries what it hears
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/267>
+
+> ## What
+>
+> `jim/mic.py` has always said, honestly, that capture happens on the device and nothing in that module touches a sample. That was a true description of the division and — until now — of a pipe that did not exist. The second microphone could be attached, handed over, gained, capped and audited, and there was no door for the wearable to hand anything back. A field report named it: the switches and the channel are permission, with nothing honouring them.
+>
+>     asked     may the agent listen on this device
+>     mattered  can the device get what it hears to the agent
+>
+> `POST /users/{user_id}/mic/heard` is that pipe, and it is the narrowest one that works. Every refusal on it is a rule that already lived in that module with nothing to enforce it:
+>
+> - **Nothing attached** — audio for a channel nobody lent is audio nobody agreed to.
+> - **Not handed over** — sound arriving outside a handover is a microphone that opened itself.
+> - **A different device** — one channel, one wearable; otherwise the audit line becomes a guess.
+> - **Nothing in it** — an empty delivery says something arrived when nothing did.
+>
+> A device may hand in **words** it recognised itself — a watch with an on-device recogniser answers with nothing but text ever leaving the wrist, and it works where no transcription key is configured — or the **audio** for this deployment's ears. The channel now remembers that it carried something, so `standing` (**unattached / silent / carrying**) stops letting "attached" be read as "listening" — the monitor roster's lesson, applied here.
+>
+> Doors in the console and all three phone shells, each offered only while the channel is actually held. The capture itself stays on the device wearing the microphone: the shells carry words for a wearable that relays through them, and the one recorder per platform stays where the capability record says it lives.
+>
+> ## Two guards got better on the way
+>
+> - `_stringified_errors` only recognised `str(exc)`, so obeying the sibling guard (which *requires* `i18n.raised(exc)` once a domain exception can carry a template) made a whole module's refusals invisible to the translation guard. It now reads both spellings — a guard that goes quiet when you follow its neighbour's advice is worse than no guard, because the silence looks like a pass.
+> - That immediately surfaced one genuinely untranslated refusal that had been hidden: `no such monitor`, now translated into all nine.
+>
+> ## Tests
+>
+> - `jim/tests/test_channel_two_carries_what_it_hears.py` — the four refusals, both delivery shapes, the standing (silent → carrying), and that a stranger holding a user id cannot deliver against it.
+> - Full suite: **2532 passed, 5 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #266 — The Guardian does not answer herself, and a switch is not a sensor
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/266>
+
+> Two field reports, both about the product claiming something that was not true.
+>
+> ## The Guardian does not answer herself
+>
+> "When I'm in the chat sphere with coach while it's talking, it's listening at the same time, but it seems to be picking up its own voice and triggering itself and not letting it finish."
+>
+> The open microphone is not the defect — it is what makes interrupting a turn, which an earlier report asked for by name. The defect is what came back through it: on a phone speaker, echo cancellation thins her voice without silencing it, and the transcriber turned that leakage into the person's next turn, so the reply hushed itself mid-sentence to answer a sentence it had just said.
+>
+>     asked     did somebody interrupt
+>     mattered  was it a person, or the speaker on the table
+>
+> - The energy bar goes up while she speaks (a fifth of full scale against a twentieth). A person interrupting is inches from the microphone and clears it; a speaker across the table usually does not. That is the cheap half.
+> - Whatever survives is checked against her own words. Three words or more, seven in ten drawn from what she just said, is the room. Short interruptions ("stop", "no", "wait") are never called an echo — they are the ones worth having.
+> - An echo is reported as **quiet**, not as a failure, so a standing conversation re-opens the microphone instead of ending over the room being a room.
+> - The rule lives in `app/src/echo.ts`, which imports nothing, so the guard suite transpiles and runs the real function on real sentences. Both listening paths wear it — including the device recogniser, which needs it more (no analyser behind it, so no bar to raise).
+>
+> ## A switch is not a sensor
+>
+> "My wrist, ring, glasses, room, camera, speaker, doorway are all showing sensing, but without actually being able to physically connect the device via Bluetooth, JIM has no way to actually monitor what I have stored."
+>
+> Exactly right, and the word was the lie. `switched_on` is a *permission* — this person said this monitor may sense — and every surface printed it as a fact about the world.
+>
+>     asked     is this monitor switched on
+>     mattered  has anything ever arrived from it
+>
+> - `roster()` carries a **standing** (off / waiting / sensing) and `last_sensed`, where "sensing" requires that something has actually landed in the day's moments.
+> - The task window prints that standing instead of the constant it used to, and the window's own kind label — which read "sensing" before the standing was even consulted — is a noun again.
+> - A waiting monitor still appears: it is something this person switched on and is owed an answer about. It now says "waiting — nothing has come from it yet".
+>
+> This round deliberately does **not** connect anything. Pairing on the Channel screen is a real Web Bluetooth handshake, but the GATT connection is dropped once the device's name is registered — no characteristic is subscribed, so no reading follows. Making the wrist genuinely sense is its own round.
+>
+> ## Tests
+>
+> - `jim/tests/test_the_guardian_does_not_answer_herself.py` — the echo rule executed through node (her sentence coming back, a fragment, a real answer, short interruptions, nothing-said), plus both listening paths and the quiet-not-failure contract.
+> - `jim/tests/test_a_switch_is_not_a_sensor.py` — switching on is not sensing, arrival is, the window says waiting, a waiting row still appears, and the kind label is a noun.
+> - Full suite: **2522 passed, 5 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #265 — Release prep 0.98.0
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/265>
+
+> ## What
+>
+> Version bump 0.97.0 → 0.98.0 across every surface that states it: `pyproject.toml`, `jim/api.py` (FastAPI title), `app/package.json` + lockfile, Android `build.gradle.kts` (versionCode 98000), iOS `project.yml`, Windows `JimGuardian.csproj`. The CHANGELOG's `[Unreleased]` is dated `[0.98.0] - 2026-08-21` with the compare link closed over the tag, and the README's release table gains the 0.98.0 row.
+>
+>     asked     do the thirteen fields say the same release
+>     mattered  a version is a promise every surface makes at once
+>
+> ## Tests
+>
+> Full suite over the release tree: **2506 passed, 5 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #264 — Leaving the room ends the conversation
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/264>
+
+> ## What
+>
+> None of the five conversation screens — Coach, Talk, Engaged, Monitor, Check-in — had an unmount teardown. Navigating away mid-reply left a headless loop: the reply kept speaking, and the standing conversation — whose whole design is to re-open the microphone after each turn — kept doing exactly that under a screen that no longer exists. The person is on the Baseline screen; the Guardian is still listening to the kitchen.
+>
+>     asked     what happens to the voice when the screen goes away
+>     mattered  a conversation with no screen is a hot microphone
+>
+> - Every conversation screen now tears down on unmount through its own `exitTalk()` — the same door the veil tap uses, so there is exactly one way a conversation ends: talking off, round bumped, recorder stopped and released, voice hushed.
+> - The Journal's one-shot dictation lets go of the microphone on unmount too: on a platform without the silence watcher, an abandoned recording held it open until somebody came back to tap it.
+>
+> ## Tests
+>
+> - `jim/tests/test_leaving_the_room_ends_the_conversation.py` — pins the teardown on all five conversation screens, sweeps every screen so one that grows `exitTalk` later must join the roster, and pins the Journal's recorder release.
+> - Full suite: **2506 passed, 5 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #263 — The sphere reaches the check-in
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/263>
+
+> ## What this is
+>
+> The round preserved in the reviewer's screenshot through three interruptions, resumed: *carrying the specialist's sphere to the check-in screen plus an autoplay-blocked fallback*.
+>
+> A worrying check-in note already ran the same Guardian pipeline as the monitoring screen; the identical guidance came back as a silent paragraph under the sliders. The check-in opens the sphere now, with every honesty rule the monitor's carries: the mic opens *with* her voice (interrupting is a turn), a reply that "finished" in under half a second holds the tap-to-hear state (autoplay refused), the discussion goes to her own area's door when the server named one, and the two-minute idle exit never fires mid-reply. The card below keeps the written copy.
+>
+> ## How it holds
+>
+> `Checkin.tsx` joins the shared idle-constant drift guard (`test_the_agents_hands_reach_the_look.py`) alongside Coach, Talk, Engaged, and Monitor; the chime guard suite stays green.
+>
+> ## Diff shape
+>
+> `app/src/screens/Checkin.tsx` (the sphere machinery + veil), one guard list extended, CHANGELOG. No server changes — the route already returned everything the screen ignored.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #262 — The baseline screen is the home of every limit
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/262>
+
+> ## What this is
+>
+> The reviewer, over the live baseline screen: round up the settings that belong here, remove them from the other menus, and give finances limit ranges with sliders.
+>
+> - **Round-up:** the vigil panel moved in whole from Settings; the sensitivity dial moved in from Bearing (it scales the very bands this screen draws). The mandate — a grant of permission, not a threshold — stays in Settings while its two caps become adjustable here.
+> - **Finances:** a new *Your money limits* card with sliders — savings goal (moved from Settings), the mandate's per-order and monthly caps, and a **low-balance floor** that was a constant (`LOW_FLOOR`) since the money guardian arrived. New `PUT /money/{uid}/floor` (null clears, zero refused); the low-balance warning trips on the owner's number and the investing engine's untouchable cushion is twice the same floor.
+> - **Server-driven slider bounds:** `bands.DEFAULTS` now states each metric's (min, max, step); the console stopped guessing scale from the unit.
+> - **Fixed on the way:** both Bearing and the watch face offered a sensitivity level (`direct`) the server has never accepted — every tap was a 422. Both now speak the server's vocabulary (cautious / balanced / assertive), guarded.
+>
+> ## How it holds
+>
+> `jim/tests/test_the_baseline_screen_is_the_home_of_limits.py` — 11 tests: the round-up (present on Baseline, gone from the old homes), the refused level gone from every console, slider bounds sane per metric and carried to the screen, the floor as real state (constant → setting, trip honors it, zero refused / null clears, engine cushion respects it).
+>
+> ## Diff shape
+>
+> Server: `jim/bands.py`, `jim/money.py`, `jim/db.py` (one table), `jim/models.py`, `jim/api.py` (one route). Console: `Baseline.tsx` (three new cards), `Settings.tsx` / `Bearing.tsx` (moves out), `Watch.tsx` (level fix), `api.ts`, `l10n.ts` (12 new keys ×10 languages, 4 dead rows removed). One new test file, CHANGELOG.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #261 — The conversation can be interrupted, and the standing ear
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/261>
+
+> Two rounds on the voice surface, landing together.
+>
+> ## The conversation can be interrupted, and silence is not a turn (`ec0e833`)
+>
+> Two field reports on the standing conversation:
+>
+> - **Barge-in.** Long answers had no way in but waiting them out. The microphone now opens *with* the voice on every speaking screen — Coach, Talk, the engaged session, the specialist's sphere — with echo cancellation requested by name so the speaker cannot barge itself in. Speaking over a reply hushes it mid-sentence and takes your words as the next turn; a generation counter (`sayGen`) orphans the hushed reply's cleanup so the interruption owns the orb, and the sphere stands until the person exits rather than closing under a live conversation.
+> - **The energy gate.** The profile "replies back over and over to silence": speech models hallucinate words out of quiet, and each invented sentence reset the idle clock. A recording whose level meter never crossed the voice threshold now reports *nothing was heard* without reaching transcription, so the two-minute idle exit finally fires — and never mid-reply.
+> - Also carried on the same surface: the sphere's honest **tap-to-hear** state when autoplay rules hold the chime-in's audio until the screen is touched.
+>
+> ## The standing ear (`51e6850`)
+>
+> Field request: while monitoring is active and the app or site is open, the microphone should be listening for the cue words. The vocabulary (`jim/cues.py`) and the consent-gated sensed door (`POST /monitors/{uid}/{name}/sensed`) already existed — what was missing was a monitor that could hear.
+>
+> - `app/src/ear.ts`: continuous device recogniser, restarting past engine silence timeouts, submitting everything heard through the plugged sound monitor's own door, where cues are matched server-side and consent is re-checked on every submission.
+> - Guardian lights grow an ear row (visible only with a plugged sound-sensing monitor): a remembered per-browser switch, with honest listening / refused / no-recogniser states in ten languages.
+> - `jim/tests/test_the_standing_ear.py` pins the edges: no cue phrase may appear in the client, the Guardian's own spoken replies are never submitted as something a room said (`speakingNow()`), only a refusal stops the ear for good, and the row is gated on a plugged sound monitor.
+>
+> ## Verification
+>
+> - `npx tsc --noEmit` clean over the console.
+> - New guard suite green alongside the lights, language, mic, and sensing guards (97 passed locally).
+> - Full JIM suite running over this exact tree; merge follows green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #260 — The image carries what the code imports
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/260>
+
+> Field report as a 502: after the 0.97.0 redeploy, the beta box's jim container crash-looped on `import httpx` in `jim/engaged.py`. httpx sat only in the dev extra — every test run had it because the test client depends on it, and every earlier image had it as somebody else's transitive dependency, until a rebuild resolved versions where nothing dragged it along. The suite was green; the deploy was down. (The renderer's playwright pin was this same defect wearing different clothes, one stack over.)
+>
+> - `httpx>=0.27` is a declared main dependency now, with the story in the comment; `pydantic>=2` joins it — imported directly across the codebase, it deserved better than riding in through fastapi. The dev extra shrinks to pytest alone.
+> - **The rule becomes a guard**, because twice is a class: `test_the_image_carries_what_the_code_imports` walks every module-scope import in `jim/` (the class that kills boot — a lazy import inside a function degrades a feature and says so, which is a different and acceptable failure; torch/peft/transformers in the finetune module stay lazy on purpose) and holds each third-party name to the declared dependency list. Its second half refuses any runtime import living only in the dev extra — the exact arrangement that made this invisible.
+>
+> The box was hotfixed live with a `sed` on its checkout and a `build jim` while this landed; the reconcile is `git checkout -- pyproject.toml && git pull`.
+>
+> ## Verification
+>
+> Full JIM suite over the final tree: **2462 passed, 6 skipped** in 12:57 — the two new guard tests included.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #259 — Release prep 0.97.0
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/259>
+
+> 0.97.0 across the trio. This repo's half: the engaged session joins the standing voice conversation and the study question's yes/no is literal buttons; the specialist chimes in out loud — her own sphere over the monitor screen, wearing her name, speaking the guidance, and holding the mic for a discussion at her own door (`specialist_area` on the wire); and the reviewer's three calls land — the look's own permit, the ask-first excursion in the reviewer's verbatim words, and the two-minute idle exit shared by every conversational surface.
+>
+> The thirteen release fields move to 0.97.0, the CHANGELOG's `[Unreleased]` becomes the dated `[0.97.0]` section with its compare link closed over the tag, and the README banner and release table say the same.
+>
+> ## Verification
+>
+> Full JIM suite over the final release tree: **2460 passed, 6 skipped** in 12:49.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #258 — The specialist chimes in out loud
+
+- merged · opened 2026-08-21 · merged 2026-08-21
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/258>
+
+> The last slice of the batch round, from the field: blood oxygen dropped, the attached doctor profile chimed in — with text. Correct text, the correct call door beside it, and easy to scroll past at exactly the moment it should not be.
+>
+> When guidance lands on a detection now, her own sphere opens over the monitor screen, wearing her name (`.voice-orb-who`), and the message is spoken so it cannot be missed. Then the microphone opens — the same standing loop every conversational surface carries, two quiet minutes and all — and the discussion goes to her own door: the monitoring path sends `specialist_area` beside her name (`specialists.area_for_condition`, the inverse read of the declared map — never a guess), and the console addresses follow-ups through `/coach/{id}/specialist`. A detection answered by local guidance discusses through the coach's front door instead, so a deployment without a specialist still talks back.
+>
+> The sphere never replaces the emergency card and its call door: one tap and they are in front of you. The voice is how the message stops being missable, not a gate in front of the help.
+>
+> ## Verification
+>
+> Full JIM suite over the final tree: **2460 passed, 6 skipped** in 12:54 — including the new `test_the_specialist_chimes_in_out_loud.py` (inverse-map agreement both directions, the offer carrying its area, console drift guards for the sphere/name/door, and the chime riding detection + guidance only). `npx tsc --noEmit` clean (which also caught the screen's local `say(helped)` shadowing the speech module's `say` — renamed `saidHelped`).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #257 — The engaged session joins the voice conversation, and the choice is buttons
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/257>
+
+> JIM's slice of a multi-repo batch round (QRME gets the browse pool and the bound voice, PDI the recording guard — separate PRs).
+>
+> The screen where somebody asks for the look or sends the agent out for knowledge was the one conversational surface still requiring thumbs — the agent with hands was the one you could not speak to. It carries the same standing loop as Coach and Talk now, in the same shape: mic button, wave-ring orb, listen, answer aloud, listen again; quiet re-opens the microphone, two quiet minutes bow out, the tap is the way out, and a failed turn ends the conversation with its honest sentence. The idle constant stays the one export in `speech.ts` — the drift guard now holds all three screens to it.
+>
+> And the reviewer's "with yes/no choice" is literal: the agent is held to its verbatim study question by the prompt and the round's test, so the screen can recognize the moment — when the last turn asks it, the console offers **Yes — go study it** and **No — stay here** as buttons (ten languages), sending the word the person would have typed. In voice mode, saying it works the same; the buttons are the choice made visible, not a second protocol.
+>
+> ## Verification
+>
+> Full JIM suite over the final tree: **2457 passed, 6 skipped** in 12:53 — including the new drift guard `test_the_console_offers_the_yes_no_choice` (screen string ≡ prompt string) and the extended idle-constant guard. `npx tsc --noEmit` clean; l10n guards green over `engaged.study.yes`/`engaged.study.no`.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #256 — The reviewer's three calls on 0.96.0
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/256>
+
+> The 0.96.0 release briefing raised three judgment calls; the review answered all three, and this lands the answers.
+>
+> 1. **The look gets its own permit.** `set_appearance` shipped riding in on `how_it_speaks`, covered by opening a session; the review called it back out. New `how_it_looks` group, standing `asked` — off until switched on. The permits module's own rule (consent given for one thing is not consent for a new thing) applied all along; cosmetic-and-reversible lowered the stakes, not the principle.
+>
+> 2. **The asked-for excursion asks first, in-turn.** The standing stays `opened` — the review considered a permit and chose the in-conversation question instead. The system prompt now carries the reviewer's verbatim wording — *"Shall I go online and research more into this topic and bring back a copy for coach to hold and use while offline?"* — yes or no, with the study tool called only on a yes. The tool's reach sentence and the permit group's sentence both say it asks first, and the round's test holds the prompt to the exact question.
+>
+> 3. **The standing conversation bows out after two quiet minutes.** Quiet still re-opens the microphone, but a room nobody has spoken into for `CONVERSATION_IDLE_MS` (120 s) closes on its own, quietly. One constant in `speech.ts`, imported by Coach and Talk both (a drift guard refuses a screen with its own copy of the number); the clock starts when the mic re-opens, so a long spoken answer never eats into the person's two minutes.
+>
+> Alongside, caught while touching the same card: four permit groups rendered as their raw keys — `speak_for_you`, `study_on_your_own`, `handle_what_you_notice` had no ten-language headings since they shipped, and the new excursions row joined them. All five named now.
+>
+> ## Verification
+>
+> Full JIM suite over the final tree: **2456 passed, 6 skipped** in 13:11 — including the updated pins in `test_the_agents_hands_reach_the_look.py` (area/standing moves, the verbatim question, the shared idle constant).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #255 — Release prep 0.96.0
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/255>
+
+> 0.96.0 across the trio. This repo's half: the standing voice conversation on Talk and Coach (listen, answer aloud, listen again — until the person taps out), the engaged agent's real hands on the look (`set_appearance`: standard, midnight, paper — colors only) plus the asked-for `study` excursion, the front door answering `general` with a real composer mic under the wave orb, the channel's device block in the phone's own Bluetooth-page shape, and the menu tile renamed "What JIM can touch".
+>
+> The thirteen release fields move to 0.96.0, the CHANGELOG's `[Unreleased]` becomes the dated `[0.96.0]` section with its compare link closed over the tag, and the README banner and release table say the same.
+>
+> ## Verification
+>
+> Full JIM suite over the final release tree: **2455 passed, 6 skipped** in 13:14.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #254 — The standing conversation, and the agent's hands on the look
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/254>
+
+> Two field reports from one beta session, landed as two commits over one verified tree.
+>
+> ## The conversation stands until the person leaves it (`48c40dc`)
+>
+> Push-to-talk on the coach worked perfectly — and then the spoken reply ended and the veil dropped back to the screen. The voice exchange is a standing loop now, on Coach and Talk both: listen, answer aloud, listen again. Quiet with nothing said re-opens the microphone (`heardNothing` in `speech.ts` names the two nothing-was-said messages); a real refusal — no permission, no service — still ends the conversation with its honest sentence. Tapping the orb, green or purple, is the one way out, and a `round` stamp orphans any transcription still in flight so an exit tap never answers behind the person's back. Both orb labels updated in ten languages, the speaking one saying the mic will open again.
+>
+> ```
+> asked     when is the conversation over
+> mattered  the person decides that, not the end of an answer
+> ```
+>
+> ## The agent's hands reach the look, and the errand can be asked for (`92cdf37`)
+>
+> A transcript from the field: "I'd like my homepage to be decorated in black and white", said to an engaged session — which had no tool for it, refused `update_setting`, and could only promise to keep the wish in mind.
+>
+> - **The look is a setting** (`jim/appearance.py`, `GET`/`PUT /appearance/{user_id}`): `standard`, `midnight` (black background, white text), `paper` (its daylight mirror). Colors only — the same report said "do not mess with photos or category tiles", and a drift guard holds every theme the wire offers to a painted `body.theme-*` block in `styles.css` with no image filters.
+> - **The engaged agent holds `set_appearance`** — reversible like every setting it touches, in the `how_it_speaks` group a session already covers; the Engaged screen re-applies the look when the turn returns, so the room changes color in the same breath as the reply.
+> - **The Settings card** offers the same three looks; sign-in applies the stored choice and sign-out clears it.
+> - **`study` joins the tools**: "go study strength training for me" runs the coach's knowledge excursion over the same wire as the coach screen's Study button. Asked-for is its own consent, so it stands `opened` where `study_unattended` stays `asked` — the axis is pinned in the new test — and it joins the irreversible list, since a topic that left for a model cannot be recalled. The composer hint now offers the excursions and names the areas.
+> - **The menu tile is renamed** to what a reporter called the same list: **What JIM can touch** (door and room, ten languages).
+>
+> ```
+> asked     can the person have the app look how they want
+> mattered  an agent offering to change what it cannot reach is worse than a menu
+> ```
+>
+> ## Verification
+>
+> - Full JIM suite over the final tree (both commits together): **2455 passed, 6 skipped** in 13:11 — including the new `test_the_agents_hands_reach_the_look.py` (5 tests).
+> - The irreversible-list pin in `test_signing_off_is_a_handover.py` moved with the decision (`study` added), comment updated.
+> - `npx tsc --noEmit` clean; the three l10n guards green over the new keys.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #253 — Shape the device block like the phone's own Bluetooth page
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/253>
+
+> JIM's half of the device-page field report (QRME's half landed in qrme PR#328).
+>
+> A field report held the channel screen's device cards next to the phone's Bluetooth settings and asked why this one was a pile of cards. The device block is the settings shape now:
+>
+> - **My devices** — a rounded, hairline-separated list: the device's name, Connected/Not connected on the right, an ⓘ chip that opens the inline detail line (kind, transport, on-device model, paired). The group renders only when there is something in it.
+> - **Other devices** — underneath, holding the existing manual add and the honest Bluetooth scan (the browser's own chooser; the web cannot passively enumerate, and the screen does not pretend to).
+>
+> ```
+> asked     can a person find their device
+> mattered  a screen shaped like the one in their pocket needs no manual
+> ```
+>
+> Five new l10n rows (`dev.my`, `dev.other`, `dev.connected`, `dev.notconn`, `dev.details`) in all ten languages; the `.dev-list`/`.dev-row` styles are the same block QRME's assist screen wears, so the two consoles answer the same field report with the same shape.
+>
+> ## Verification
+>
+> - Full JIM suite over the final tree: **2450 passed, 6 skipped** in 13:20.
+> - `npx tsc --noEmit` clean over the console.
+> - The three l10n guard tests pass (27 tests) — every new key has all ten rows and never leaves the client.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #252 — The front door answers, and the mic listens there
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/252>
+
+> asked     can a person say hello
+>     mattered  the front door refusing "hey" is the product refusing people
+>
+> Field report with a screenshot: typing "hey" on the Talk screen came back as a red banner reciting the area list — the front door sends everything as `general`, and the server refused the front door's own word since the screen was built.
+>
+> - `general` is a real coach area now, in the three declared places: the model's closed set (`CoachArea`; goals keep `LifeArea`), the coach's area map, and the specialist map as the explicit empty tuple its guard demands.
+> - The Talk composer's mic is a **microphone** instead of a door to the channel screen: it listens (five-second silence send), the reply is spoken back, and the orb rides the whole exchange — wearing an **audio-wave ring** that moves with the person's own voice level, on Talk and Coach both. The channel stays a tap away on the rail and in the + menu.
+> - Typing `api.coach`'s area as the server's closed set surfaced two more wire refusals nobody had reported: the watch's coach face sent its short chip names ("mind", "money", "bonds") raw — every chip but career refused — and its free-typing faces sent "mind" too. The chips now map to the server's vocabulary, the free-typing faces speak through the front door's area, and `test_the_front_door_answers.py` holds every area literal a screen sends to the map the server answers.
+>
+> This push also carries the previous round's commit (`9a5433d`, the talk turn keeping its shape), whose PR record was lost to a merge-order slip.
+>
+> Full JIM suite green over this tree: 2450 passed, 6 skipped; console typecheck and guard suites green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #251 — Release prep 0.95.0
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/251>
+
+> asked     do the thirteen fields say the same release
+>     mattered  a version is a promise every surface makes at once
+>
+> 0.95.0 for JIM is a version-alignment release: the trio releases together, and this release's changes live in the qrme repository (the ears arc reaching every briefcase door). Nothing changed here since 0.94.0 — the changelog and README table say so in as many words. The thirteen version fields moved together via the release manifest; the compare link closes over the tag.
+>
+> Full JIM suite green over this tree: 2446 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #250 — The lookout grows ears, and the release cuts
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/250>
+
+> Three commits over one suite-verified tree.
+>
+> **The lookout grows ears** (`e5ccb30`)
+>
+>     asked     can JIM keep an ear on a recording for somebody
+>     mattered  the same lookout, hearing where hearing is what the URL is
+>
+> Planting a lookout on a URL that *is* a recording — the media file itself (.mp3, .mp4 and kin, judged by the path, never the query), not a page containing a player — stands a `fetch.listen` appointment instead of a rendering one. Same capture key, same change-memory: the read-back, the changed_at, the coach's prompt block and the letter all read a transcript the way they read a page, and the letter says "watched recording" because new words said are not a page edited. A deployment without ears fails the cycle in words and the `trouble` line carries the reason.
+>
+> **The study's author on screen** (`f87c572`)
+>
+>     asked     does the person see who answered
+>     mattered  a provenance only the API can see is disclosure to nobody
+>
+> The Reach screen's excursion rows wear `answered_by` beside `left_host` and the redaction count — ten languages, absent on rows that predate the record.
+>
+> **Release prep 0.94.0** (`7c61270`)
+>
+> The thirteen version fields moved together via the release manifest; the changelog is dated with the compare link closed over the tag; the README's banner and table carry the release.
+>
+> Full JIM suite green over this tree: 2446 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #249 — The coach knows its own product, and the doors exist
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/249>
+
+> Two rounds from David's console walks, landed as two commits over one suite-verified tree.
+>
+> **The coach knows its own product** (`2aa89df`)
+>
+>     asked     can the coach do this
+>     mattered  can the product, and where
+>
+> Asked to "plant a quarter-hour lookout", the coach gave a graceful shrug — the prompt carried no map of JIM's own doors, so door-shaped requests were answered from what assistants generally cannot do, with the Watched pages card two scrolls below the chat. The coach context now carries a short deterministic feature map (watched pages with the real quarter-hour-to-a-month bounds, check-ins, the weekly letter, the permit switches, the Safety screen), each named with the screen it lives on and the instruction to route by name instead of declining. The safety line still puts immediate help first.
+>
+> **The held screen's buttons match the wire, and the doors exist** (`96e1454`)
+>
+>     asked     does the button do what its label says
+>     mattered  does every promise the shell makes have a door behind it
+>
+> - The quick-allow row sent "mail" and "photos" — names the `Source` enum rejects, so every press was a 422. The buttons now offer only sources the wire accepts, and a standing test parses the row out of `Held.tsx` and holds it to the enum.
+> - The permits screen rendered under its tab and appeared in no menu — reachable only through the assistant's chip rail. It has its own sidebar entry (labelled with the screen's own title, ten languages), and two guards hold both directions: every rendered tab has a door, every door opens a rendered tab.
+> - Enrollment could refuse *after* creating the user and *before* creating the membership — an unknown language or plan left an account every capability gate read as "visitor". Everything that can refuse is checked before the user exists, `/signup` validates the plan while somebody is there to correct it, and activation coerces a bad parked plan to the default instead of stranding the account planless.
+>
+> Full JIM suite green over this tree: 2442 passed, 6 skipped (nine new tests across the two rounds).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #248 — The study says who answered
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/248>
+
+> asked     which model was this study sent to
+>     mattered  which model actually wrote these findings
+>
+> The excursion row was the audit trail for what could have left — the sanitized brief, the redaction count, `left_host` — but not for who wrote what came back: a study whose model degraded to the stub, or whose vault turned out to be an older tandem without the voice door, was recorded exactly like one the chosen model answered.
+>
+> Every excursion now records `answered_by` — the model's registry name, `vault` for the resident, `stub` when a degrade or a keyless machine left the words to the local deterministic provider — read from the provider that actually generated, the same duck-typed record `generate_for_user` trusts, never from the choice that was asked for. Request-scoped, because the provider is built and discarded inside the gather and a module global would let two concurrent studies describe each other's findings.
+>
+> Changes:
+> - `jim/db.py`: `excursions.answered_by TEXT` (base schema + migration; rows that predate the column stay `null` rather than being guessed at)
+> - `jim/research.py`: a request-scoped record written by `gather` / `gather_inside`, read by `excursion` around the gather and restored after; module docstring documents the provenance fingerprint
+> - `jim/api.py`: the excursion endpoints carry the field
+> - `jim/tests/test_the_study_says_who_answered.py`: six tests — stub named as itself, a model's name on its study, a degrade not dressed as the model, the vault named vault, an older tandem not dressed as the vault, and one study's author not describing the next
+>
+> Full JIM suite green over this tree: 2430 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #247 — The letter is not the looser door
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/247>
+
+> asked     does the letter keep the excursions' promise
+>     mattered  one loose door undoes every careful one
+>
+> Raised by the outside reviewer: the study path sanitizes what leaves the host and writes down that it left — and the weekly letter, carrying the week's names, meals, pages and appointments, reached the same network models with neither. Every careful redaction on the excursion path was undone by the Sunday letter.
+>
+> Now the letter keeps the promise. A voice that would leave the host receives the *sanitized* digest, and each letter stores and discloses `left_host` and the redaction count, in the excursions' own words. The person's own letter keeps every word — sanitizing is about what leaves, never about what they may read of their own week. The vault's voice and the local ones still read the full digest: nothing leaves, and the prose is better for it. The vault ruling mirrors the excursions': the registry says honestly that a socket opens (`network: true`), and the caller's question — did it leave the *facility* — answers no.
+>
+> QRME's letter makes the same move in its own repo, same round, with the week's own names passed as sanitize extras. Suite green over the final tree: 2420 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #246 — The ladder ends at a person
+
+- merged · opened 2026-08-20 · merged 2026-08-20
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/246>
+
+> asked     does notify_contact notify a contact
+>     mattered  the ladder's whole promise is that it ends at a person
+>
+> The escalation tree resolved every crisis to an explicit, auditable tier — and the `notify_contact` rung was words. The guardian recorded `notified_emergency_contact: true` whenever a phone number was on file, and nothing left the machine: JIM cannot dial a phone. The reviewer's sequencing for this round, verbatim: *build the email rung before asking who stands on it.*
+>
+> `jim/farend.py` gives the rung a far end, three ways:
+>
+> - **The alert.** A decision at `notify_contact` or above mails the consented `emergency_email` — condition, reason, tier, and an acknowledgment link. Pressing it is the far end saying *a person has seen this*; JIM records who was told, when, and when they answered. The token is a single-purpose capability that can mark exactly one alert seen and read nothing.
+> - **The refusal.** With no consented address, the escalation result says so in the user's own language: *there is no one on the far end of this today.* `notified_emergency_contact` is honest now — true only when a letter actually left.
+> - **The liveness note.** Once a month, riding the monitor sense like the calendar's reminder pass, the far end gets a short useful note — so a dead mailbox is discovered on a calm day instead of during an emergency.
+>
+> A re-detecting crisis rides the standing unacknowledged alert (30 min) instead of flooding the mailbox. The address arrives through its own door (`PUT /farend/{user_id}`), settable after enrollment; the console's Held screen carries the card (status or refusal, last alert with its acknowledgment, a save button whose label carries the consent it settles), in all ten languages. Guard dues paid in full: refusal translated, fields labelled, the ack link recorded beside the other browser-door exemptions, the two routes standing in each native shell's backlog with the reason written down.
+>
+> Deliberately unchanged: the tree's `contactable` input still keys off the phone — what a responder dials is a different fact from what this product can reach.
+>
+> Suite green over the final tree: 2418 passed, 6 skipped. Ten prior enrollments that asserted the old flag now enroll with the address that makes it true; seven new tests hold the rung to a letter that leaves, an ack that records once, an honest refusal, a storm that does not flood, and a monthly note sent once.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #245 — The amulet is not a placeholder, and now the code can say so
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/245>
+
+> The reviewer's disposal rule was binary: source it and comment it, or label it a placeholder honestly — the only forbidden state is the middle, the element everyone assumes is meaningful and no one can source.
+>
+>     asked     can anyone source why the triangle is there
+>     mattered  the middle state is how a system accumulates what it can't explain
+>
+> Sourced: the triangle reproduces the abracadabra amulet — the word written in a diminishing triangle and worn against fever and plague, the illness meant to waste away row by row as the word does; eleven rows is the full charm. A protective charm against sickness on the front door of a product that watches over somebody's health. The owner confirmed the reading and the placement, so the `JimMiniOS.tsx` header now carries it — and the menu label beside the amulet says JIM-mini, the name, while the amulet keeps the incantation.
+>
+> Comment-only; verified in the same suite run as #244 (2409 passed, 6 skipped).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #244 — The rate alone can be the emergency
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/244>
+
+> The heart-rate rule was an anxiety pattern: rate over resting AND fast breathing. For months that second clause quietly excused the opposite finding — a resting heart rate three times baseline with *slow* breathing looks less like panic and more like SVT, and the respiration that declined to call it anxiety should have sharpened the alarm, not silenced it. Found live by the owner, hand-typing samples on the deployed box: 199 bpm, respiration 10, and the calm drift layer said "all calm."
+>
+>     asked     can the number itself be the emergency
+>     mattered  a rule that needs the wrong symptom misses the right one
+>
+> New cardiac rules, seated with the other cardiac detections so they outrank distress findings in the same sample:
+>
+> - extreme resting tachycardia with slow breathing (≥ max(180, resting+100), sensitivity-shifted) is **critical** — possible arrhythmia;
+> - a high-but-not-extreme rate with slow breathing (≥ max(150, resting+70)) gets **guidance**;
+> - bradycardia counts without a collapse beside it: below 30 critical, at or below 40 guidance — the mirror hole, where a pulse in the 30s only mattered next to a fall;
+> - fast breathing keeps the anxiety reading, where exercise and panic live.
+>
+> The signal-quality grade still caps how far one sample can climb, and the baseline discipline that kept the owner's synthetic 199s out of "your usual" is what these rules lean on. Five new tests written from the live find, including the exact sample that said "all calm" — and a fever-masking test proving cardiac outranks distress. Full suite green: 2409 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #243 — The menu says what the product is called
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/243>
+
+> The assistant's menu entry read ABRACADABRA in all ten languages — the amulet's incantation standing where a name belongs. It shipped as a placeholder, and it cost a real person a real search on a live box today: told to open the assistant, they found no such word anywhere, because the menu offered a magic word instead of a name.
+>
+>     asked     can a person find the assistant in the menu
+>     mattered  a label only insiders understand is a locked door
+>
+> `nav.engaged` now reads **JIM-mini**, the same in every script the way names are — the same convention `engaged.title` already holds with "JIM". The amulet beside it (`JimMiniOS.tsx`) is untouched and keeps its incantation; the menu label says what the product is called.
+>
+> Full suite green over the final tree: 2404 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #242 — Release prep 0.91.0
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/242>
+
+> Thirteen version fields moved by the release script (driven by `jim/tests/release_fields.txt`), plus the README banner, a 0.91.0 release-table row, and the CHANGELOG section dated with refreshed compare links.
+>
+>     asked     which files does a release touch
+>     mattered  which fields does a release touch
+>
+> 0.90.0 → 0.91.0, build code 90000 → 91000. The cut carries the voice choice honored on the study path (#240) and the letter accounting for the studying (#241).
+>
+> Full suite green over this exact tree: 2404 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #241 — The letter accounts for the studying
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/241>
+
+> The weekly letter counted check-ins, meals, habits, journal entries, goals and the watching — and said nothing about what JIM went and learned on the person's behalf. Twinned with the QRME asking line.
+>
+>     asked     what did JIM learn for you this week
+>     mattered  work done on your behalf belongs in your account of it
+>
+> The digest now carries the week's studies with their latest topics, in the same plain-sentence shape as every other line and byte-matched to the QRME letter's studies line. A typed question, the coach's own study, an unattended errand: all excursions, and all part of their week whether or not they watched it happen.
+>
+> One new test; full suite green over the final tree: 2404 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #240 — The excursion honors the voice choice
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/240>
+
+> A person who picked "The vault's local model" made a choice about where their words are made. The coach honored it; the study path did not — `research.excursion` resolved the app-level cloud and shipped the sanitized brief out with `left_host: true`, from a typed question, from the coach's own study, and from the unattended errands alike. Twinned with davidsbianchi1984/qrme#308.
+>
+>     asked     does the study speak with the chosen voice
+>     mattered  a choice honored in one room and not the next is decor
+>
+> A user whose provider is the vault now studies *inside*: `gather_inside` hands the brief to the resident (the same voice door the coach uses), the findings are made on the facility's own hardware, the cloud sees nothing — the test spies on it — and `left_host` honestly says false. An older tandem without the voice door falls to the local deterministic provider, because the honest fallback for "never send it out" is a worse answer made at home, not a better one made by quietly shipping it anyway.
+>
+> All three callers thread the vault through — the excursion route, the coach's study, and `errands.run` — so there is still one path out and it asks one question. No new routes; no wire changes.
+>
+> Two new tests; full suite green over the final tree: 2403 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #239 — Release prep 0.90.0
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/239>
+
+> Thirteen version fields moved by the release script (driven by `jim/tests/release_fields.txt`), plus the README banner, a 0.90.0 release-table row, and the CHANGELOG section dated with refreshed compare links.
+>
+>     asked     which files does a release touch
+>     mattered  which fields does a release touch
+>
+> 0.89.0 → 0.90.0, build code 89000 → 90000. The cut carries the watching reaching the person: the coach speaking from the watched pages (#235), the lookout list saying when each page last actually changed (#236) and why the latest round failed (#237), and the weekly letter carrying the watching's facts unprompted (#238).
+>
+> Full suite green over this exact tree: 2401 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #238 — The letter mentions what the watching noticed
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/238>
+
+> The weekly letter is the one surface that comes to the person instead of waiting to be opened, and the lookouts had no line in it: a page could change on Tuesday and the letter about that week would not know.
+>
+>     asked     did the week hold anything the watching saw
+>     mattered  a watcher that reports only when asked is a drawer
+>
+> The digest now carries the watching's facts, in the same plain-sentence shape as every other line:
+>
+> - **"watched page {url} changed on {date}"** — when the capture's own change date (the fetch's fingerprint history, davidsbianchi1984/pdi#183) falls inside the week window. An old change is not this week's news and stays out.
+> - **"the watch on {url} has been failing"** — when the runs ledger's latest round failed (davidsbianchi1984/pdi#184), stated as the fact it is, without the technical note the lookout row already carries.
+>
+> A changed page alone earns the letter: nothing else logged, the letter still has a real event the person asked to be told about. The lines read through the real vault handed in by the route, and a vault that is absent or cannot be reached contributes nothing — the letter never fails for its least essential paragraph. The prose model's contract is unchanged: warmth, never events.
+>
+> No new routes; the letter's existing doors carry it. Four new tests; full suite green over the final tree: 2401 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #237 — The lookout says why it fails
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/237>
+
+> A lookout row could already say `failed`; the why lived buried in the vault's runs ledger (davidsbianchi1984/pdi#184), a console away from the person whose watching broke. Twinned with the QRME half.
+>
+>     asked     why did the watching stop working
+>     mattered  a failed status without a why is a shrug
+>
+> The PDI client gains `resident_runs` (None on an older PDI — deliberately not the same answer as "no rounds yet"), and the lookout list reads the latest round: when that round failed, its note rides the row as `trouble`, worn in red on all four clients.
+>
+> - Only the latest round speaks — a lookout that failed yesterday and ran clean this morning is not in trouble, so no stale alarm outlives its recovery.
+> - An older vault without the ledger, or an unreached one, leaves the field null the same way `status` already goes null: absence stays absence, and a lookout in trouble never makes the list itself fail.
+> - The note is the server's own sentence, shown as-is like every status and error on these rows.
+>
+> Three new tests; full suite green over the final tree: 2397 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #236 — The lookout says when the page changed
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/236>
+
+> PDI 0.89's fetch fingerprints its captures (davidsbianchi1984/pdi#183); this round carries that knowledge to the person. Twinned with the QRME half.
+>
+>     asked     when did the page change
+>     mattered  a fetch date answers when we looked, not when it moved
+>
+> The lookout list and the capture read-back gain `changed_at` — when the watched page last actually changed across the vault's re-seals, not merely when it was last read — surfaced translated on all four clients ("Changed {when}", ten languages), and the coach's prompt block wears it too ("captured …, last changed …"), so the model can say how fresh the thing it is drawing on really is.
+>
+> Honesty carries through: a capture from before fingerprints answers nothing rather than inventing a date, an unreadable tandem leaves the field null the same way `status` already goes null, and absence never becomes a guess anywhere on the path from seal to screen.
+>
+> Two new tests; full suite green over the final tree: 2394 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #235 — The coach speaks from the watched pages
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/235>
+
+> The lookout's other half, brought home from the QRME twin (davidsbianchi1984/qrme#303). JIM's lookout (#231) kept a page fresh in the vault and showed the capture on request, but the coach never spoke from it — the watching stopped one step short of the advice. Now the freshest capture of each watched page rides the coach's prompt, wearing its URL and `fetched_at` date and capped at a digest's length, so a coach asked about the pollen count speaks today's page and not its training data.
+>
+>     asked     does the watching reach the advice
+>     mattered  a page kept fresh that nobody speaks from is a scrapbook
+>
+> - The block is context the model may draw on, never an instruction, and honest about its age: the header tells the model to say when a page did not carry an answer, and never to present a capture as older or newer than its date.
+> - It rides whatever the provider is — the vault grounds on memory seals, and a capture is not one of those, so stepping aside on the vault path would lose the pages exactly when the answering moved inside the facility.
+> - It reads through the real vault, the same split recall holds, and contributes nothing rather than failing when the tandem cannot be reached: a turn that lands without the pages beats a turn refused for them.
+>
+> No new routes, so the coach's existing four doors carry the payoff. `page()` now reads its seal through the same `_capture` helper the prompt block uses. Three new tests (the capture rides wearing its date; an unreachable tandem contributes nothing; a digest, not an archive); full suite green over the final tree: 2392 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #234 — Release prep 0.89.0
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/234>
+
+> Thirteen version fields moved by the release script (driven by `jim/tests/release_fields.txt`), plus the README banner, a 0.89.0 release-table row, and the CHANGELOG section dated with refreshed compare links.
+>
+>     asked     which files does a release touch
+>     mattered  which fields does a release touch
+>
+> 0.88.0 → 0.89.0, build code 88000 → 89000. The cut carries the grounded coach (#233): with the `vault` provider chosen, the resident ranks this person's own seals against the question and answers *from* them — retrieval and generation both inside the facility, the memory prefix as the per-person wall inside the shared tenant, client-side recall stepping aside when the vault grounds, and `grounded_in_vault` disclosed in the provenance.
+>
+> Full suite green over the bumped tree: 2389 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #233 — The coach answers grounded in the vault
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/233>
+
+> With the `vault` provider chosen, the coach no longer recalls lines into the prompt and then ships the prompt out for generation. The resident ranks this person's own seals against the question and answers *from* them — retrieval and generation both inside the facility, through PDI's ask door (pdi#181) with the memory prefix as the per-person wall inside the shared tenant.
+>
+>     asked     does the coach remember
+>     mattered  where the remembering happens, and who is told
+>
+> - Client-side recall steps aside when the vault grounds: the resident reads the same seals, and the same seals said twice is not more memory.
+> - `grounded_in_vault` in the provenance says whether the grounding actually happened — an older PDI without the ask door still speaks through the voice door, ungrounded and disclosed, and a stub answer is never reported as grounded.
+> - The prefix rides a request-scoped contextvar set by `generate_for_user`, the one layer that knows whose turn this is; the persona travels in the ask door's `system` slot, so grounding never costs the coach its voice.
+>
+> Three new tests. Full suite: **2389 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #232 — Release prep 0.88.0
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/232>
+
+> Thirteen version fields driven by `jim/tests/release_fields.txt`, plus the README banner, a release-table row, and the dated CHANGELOG section.
+>
+> 0.87.0 → 0.88.0, build code 87000 → 88000. The cut carries the vault voice (the coach generating on the facility's own hardware, disclosed honestly when anything degrades), the lookout (a page the vault keeps fresh on its own appointment — consent-gated, erasure-honest, the capture read back through the seal), and recall keeping the real vault across a billing change. On all four clients.
+>
+> Full suite over the release tree: **2386 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #231 — The lookout: a page the vault keeps fresh
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/231>
+
+> PDI's standing tasks (pdi#177/#178) put to work. "Keep an eye on this page" becomes one standing plan whose single fetch step re-seals the current capture every cycle — the resident does the watching from inside the facility, JIM never does, and what leaves JIM is the URL once, at planting.
+>
+>     asked     can JIM watch a page for somebody
+>     mattered  who does the watching, and where the page lives
+>
+> - **Consent before the web**: planting needs the same standing study permit the errands do, because the resident leaves its host on this person's behalf.
+> - **Writes plan-gated, reads and drops on the real vault**; the capture reads back as a capped reading beside the honest size of the seal.
+> - **The ledger lets go only after the vault did**: a drop cancels the appointment, then unseals the capture, then deletes the row — a down tandem leaves the row on the list rather than orphaning a standing appointment.
+> - **Erasure walks the same path** for every lookout: cancelled and unsealed, `lookouts_cancelled: null` when the tandem was unreached, rows swept with the user's tables.
+> - `PDIClient` gains `resident_stand` (which refuses an older tandem that would drop the schedule on the floor), `resident_cancel` and `resident_tasks`.
+> - A watched-pages card beside the errands on the console and all three shells, in ten languages; both new refusals translated into `i18n._REFUSALS`, `url`/`every_hours` in the field-label vocabulary, and "Stop watching" wearing `eng.watch.stop`'s exact wordings.
+>
+> Eleven new tests in `jim/tests/test_the_lookout.py`. Full suite: **2386 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #230 — Recall keeps the real vault
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/230>
+
+> The last read still behind the plan gate (twin of qrme's companion PR). `coach.reply` used one `pdi` for remembering (a write, rightly gated through `_vault`) and for recalling (a read, wrongly gated) — so a person who moved to an open plan had a shelf that showed their sealed moments and a coach that had stopped finding them.
+>
+>     asked     is the seal plan-gated
+>     mattered  is the recall
+>
+> The route now hands recall `app.state.pdi` while the seal keeps `_vault(user_id)` — the same writes-gated split every other memory door already holds after the curation rounds — via a `recall_pdi` parameter that defaults to the write vault, so direct callers and tests keep their single-vault shape. A downgraded account's new turns are honestly not sealed at all, and the new test proves both halves at once.
+>
+> Full suite: **2373 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #229 — The voice inside the vault
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/229>
+
+> A `vault` provider joins the model registry: a person picks "The vault's local model (PDI resident)" on the existing model screen and the coach's words are generated through PDI's new `/resident/infer` door (pdi#176), on the facility's own inference server. The prompt travels the one authenticated channel every seal uses and goes no further, and PDI's audit line carries its length, never its words.
+>
+>     asked     can the coach speak from inside the building
+>     mattered  does the prompt ever leave it
+>
+> Honest at every edge, and disclosed: a vault with no local model raises rather than speaking the resident's operational stub sentence in the coach's voice — the turn falls to this product's own stub and `generated_by`/`degraded` say who actually answered; an older tandem without the door does the same; with no tandem the choice is simply not configured, so a stored preference can never wedge a reply.
+>
+> The provider reads the *live* client the app holds — `pdi_client.active()` bound to app state at creation — not a startup snapshot. No new routes: the choice rides the existing `/models` and `PUT /model/{user_id}` doors, and the label flows to every client from the server registry.
+>
+> Five new tests in `jim/tests/test_the_voice_inside_the_vault.py`. Full suite: **2372 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #228 — Release prep 0.87.0
+
+- merged · opened 2026-08-19 · merged 2026-08-19
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/228>
+
+> Thirteen version fields driven by `jim/tests/release_fields.txt`, plus the README banner, a release-table row, and the dated CHANGELOG section — with the stale `[Unreleased]` compare link brought current.
+>
+> 0.86.0 → 0.87.0, build code 86000 → 87000. The cut carries the coach's long-term memory through the PDI resident: check-in notes, journal entries and coach turns sealed into the tandem and indexed by meaning (a hash, never the text), recalled into the prompt as context; the memory shelf showing every remembered moment with a per-moment forget; and every delete unmaking the vector, the seal and the ledger row together — through the real vault, so a billing change never strands somebody's history. On all four clients.
+>
+> Full suite over the release tree: **2367 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #227 — Deleting a check-in reaches the vault, and the doors use the real one
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/227>
+
+> Two alignments with the doctrine the trio now holds everywhere: nothing deleted stays findable, and no delete or read is refused over a billing change. (Twin of qrme#297; lands beside pdi#174.)
+>
+>     asked     did the check-in leave the record
+>     mattered  did the moment stop being findable
+>
+> ## Deleting a check-in reaches the vault
+>
+> `remove_journal` already unmade its entry's memory; its twin did not. A person who unrecorded how they felt kept a sealed, findable moment the coach could recall into a later reply — on the screen that also feeds the crisis pipeline. `DELETE /checkin/{user_id}/{checkin_id}` now takes the vector, the seal and the ledger row with the check-in, best-effort like the journal's: a local delete must not depend on a second product being up, and what could not be unmade stays covered by the user-level erasure door.
+>
+> ## The memory doors use the real vault
+>
+> The shelf read, the per-moment forget and the journal/check-in deletes went through `_vault(user_id)`, which gates on the *plan* — right for every seal point, wrong here: somebody who moved to an open plan still has a history of sealed moments they must be able to read back and let go of, and a delete refused over a billing change would leave records nobody can reach and call that forgetting. Writes stay plan-gated; reads and deletes now take `app.state.pdi` — the same split QRME's memory doors hold and `jim/storage.py` already prescribes.
+>
+> Also restores the CHANGELOG's `[Unreleased]` heading, dropped in the shelf round.
+>
+> ## Tests
+>
+> One new test mirroring the journal-delete guard: deleting a check-in unmakes its vector, seal and ledger row while the check-in's own medical seal keeps its separate erasure story. Full suite: **2367 passed, 6 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #226 — The memory shelf, shown and curatable
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/226>
+
+> The coach's long-term memory could remember, recall and forget — and the person it was about could see none of it.
+>
+> - `GET /memory/{user_id}` reads every remembered moment back from the vault (kind, the line itself, when) — from the same `vault_keys` ledger erasure walks, so the answer is exactly what recall can surface rather than a claim about it.
+> - `DELETE /memory/{user_id}/{kind}/{ref}` unmakes one moment — vector, seal, ledger row — with an answer that says what happened, because a forget button that fails silently is worse than none.
+> - Rendered beside the continuity card (which has held "every derived thing is droppable by its subject" for the attention vector since it shipped) on the console's Settings screen and all three shells' self-profile screens, in ten languages — the button and empty state reuse rows all four surfaces already carry byte-identically.
+> - A tandem that cannot be reached answers honestly: the moments are listed, their words are not (`readable: false`) — "I hold twelve memories I cannot show you right now" and "I hold nothing" are different answers.
+> - The wire calls the list `memories`: `moments` already counts something in the daybook, and one name carries one type.
+>
+> Suite: 2366 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #225 — Deleting a journal entry unmakes its memory
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/225>
+
+> The memory round left three things standing after a journal delete: the sealed line, the `vault_keys` ledger row, and the embedding vector — so the coach could keep reciting an entry the person deleted.
+>
+> - `remove_journal` now unmakes all three through the tandem (`recall.forget`: vector, seal, ledger row), best-effort — a single entry's delete must not depend on a second product being up, and whatever could not be unmade stays covered by the user-level erasure door.
+> - That door finishes the job it already claimed: `delete_user_data` takes every memory vector under the person's prefix in one resident call (`recall.forget_all`, PDI's new prefix forget), reports the count in its answer — `memory_vectors: null` when the tandem was unreached, said rather than guessed — and the erasure audit line counts only the integers it actually holds.
+>
+> Suite: 2362 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #224 — The coach remembers, through the vault
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/224>
+
+> PDI 0.86.0 gave the vault an embedding index that stores a hash of the text and never the text. This is JIM's side of that bargain (`jim/recall.py`): coach turns, journal entries and check-in notes are sealed AES-256-GCM into the tandem under `jim/{user}/memory/…` and indexed under the same key, so a coach turn recalls by meaning — the shoulder injury mentioned in March surfaces when the training question comes in August, folded into the prompt as context the model may use, never an instruction.
+>
+> Three rules, each tested:
+> - **Memory never breaks the doing** — every path returns what happened rather than raising; a check-in lands even when the tandem is down.
+> - **No vault, no memory, no pretending** — unconfigured or offline, the coach works exactly as before; an older PDI without the resident is reported as "the vault has no memory index" while the words stay sealed.
+> - **One person's memories** — recall drops any match outside `jim/{user}/memory/` before it fetches a word, a second wall behind PDI's tenant fence.
+>
+> Memory keys are sealed through `life.vault_store`, so the `vault_keys` ledger the erasure sweep walks knows every one of them — a wipe purges memories with everything else, held by the existing erasure and storage-posture guards.
+>
+> And the errand ledger writes itself into the vault's own tables: the unattended study pass hands its results to the PDI resident as `jim_errands` dataset rows through the resident's plan door, queryable in the PDI console; the run's answer says `vaulted: false` when the tandem is absent, offline, or too old.
+>
+> Suite: 2358 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #223 — Release prep 0.86.0
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/223>
+
+> Thirteen manifest-driven version fields (0.85.0 → 0.86.0, build code 85000 → 86000), the CHANGELOG section dated 2026-08-18, the README banner and a release-table row. The cut carries the watch made real: all thirty-six faces working screens at `#watch` on the doors the phone screens use, the CPR metronome on the audio clock, and the emergency face handing the number to the device.
+>
+> Suite: 2347 passed, 6 skipped over the final tree.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #222 — The watch on the wrist becomes real
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/222>
+
+> The thirty-six faces in `docs/watch/` shipped as drawings — a design set the README showed and nothing served. This round closes the gap: **every face is now a working screen**, served at `jim-mini.com/#watch`.
+>
+> - `app/src/screens/Watch.tsx` — the watch surface: all 36 faces in the canonical order, each standing on the doors the phone screens already use (a check-in on face 09 is the Check-in tab's own `POST /checkin`; the agents face reads the same task window `Underway` renders). `#watch/<slug>` deep-links a face (`05-heart`, `heart` and `5` all land on Heart); the hash tracks the face across reloads; swipe, arrows, and a 36-cell grid navigate.
+> - **CPR** carries its own algorithm: a metronome at 110 compressions/min scheduled on the audio clock (a drifting timer is a wrong compression rate), thirty high tones and two low for the 30:2 rhythm, vibration where available — no account, no network.
+> - **Emergency** hands the number to the device through a telephone link; JIM never claims a call it did not make.
+> - 148 new console strings ×10 languages, wordings the phones already carry copied byte-identically; the surface opens before sign-in; screen 112 records it in the gallery; a tutorial lesson teaches it; the README front page is rebuilt with every face image linked to its live screen.
+>
+> Suite: 2347 passed, 6 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #221 — Release prep 0.85.0
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/221>
+
+> ## What this does
+>
+> The 0.85.0 cut for JIM-mini, in step with QRME and PDI: all thirteen version fields from `jim/tests/release_fields.txt` (0.84.0 → 0.85.0, build code 84000 → 85000), the README banner and a release-table row, and the CHANGELOG sectioned to `[0.85.0] - 2026-08-18` with its compare links.
+>
+> The cut carries the front page cut down to a professional overview — the 36 watch faces kept in place above the drip channel that feeds them, the desktop and phone galleries moved to `docs/gallery.md` — and no functional changes to the product itself.
+>
+> Full local suite: **2347 passed, 6 skipped** over this tree.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #220 — The front page reads like a product
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/220>
+
+> ## What this round does
+>
+> Rewrites the README as a professional front page, per the owner's field report from the deployed beta:
+>
+> - **README.md** — a compact overview: what JIM-mini does, the product surfaces, the wrist channel, quick start, configuration, documentation table, and the release-history table folded into a `<details>` block. The **watch-face set stays on the front page as asked** — all 36 faces, verified valid and rendering — captioned honestly as the design set for the wrist surface, above the drip channel (`jim/watch.py`) that serves the data behind them today. The Matthew 7:24–25 closing stays byte-identical, as the scripture guard requires.
+> - **docs/gallery.md** (new) — the desktop and phone screen galleries moved here whole, paths adjusted.
+> - **Guards** — `test_readme_gallery.py` and `test_the_gallery_is_a_grid.py` scan the README *and* the gallery page now, so every promise over the old page (every screen shown somewhere, no skipped numbers, links that resolve, grids no wider than a phone) holds over the new pair; the test-count claim scan covers docs/ pages and treats zero claims as legal since the capability prose that carried them moved.
+> - **CHANGELOG.md** — the round recorded under Unreleased.
+>
+> Full local suite: **2347 passed, 6 skipped** over this tree.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #219 — Where the address book lives, and never two of it
+
+- merged · opened 2026-08-18 · merged 2026-08-18
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/219>
+
+> The contacts round shipped the book and left custody for later: every row went into the local table whatever the account was paying for. `jim/storage.py` had already settled how this product answers that question, and it answers it about the **plan** rather than about whether the deployment happens to have a vault configured.
+>
+> ```
+> asked     where does the book live
+> mattered  is there ever more than one of it
+> ```
+>
+> Sealed into PDI where the account is on a plan that has a vault, platform custody otherwise — one book either way, one withdrawal either way, and the same rows out of `book()` from both. One record per person rather than one per contact: a book is a few hundred names read all at once, and a record each would turn a single unseal into three hundred on the one path that runs while a phone is ringing.
+>
+> ## Writes are plan-gated; reads and deletions are not
+>
+> That asymmetry is `vault_for`'s own, and the address book is the payload that makes the cost of getting it wrong plainest. Somebody on Basic for a year has a sealed book. If they move to Free and withdraw the grant, a withdrawal that only cleared the side their *current* plan points at would leave a few hundred other people's names and numbers in a vault after the one person who could say stop did — the copy-kept-after-stop objection wearing a billing change as a disguise.
+>
+> So `withdrawn` and `_clear` take the real vault and never ask the plan, and a guard reads the source to hold that. `life.set_source` carries the vault down to it, because the withdrawal switch is the one control this has to reach.
+>
+> ## Never both, and a sealed book that cannot be opened is not an empty one
+>
+> A plan change between two syncs is the ordinary way to end up with two books disagreeing about who somebody knows, so `sync` clears both custodies before writing to either.
+>
+> And `_rows` raises `VaultUnreachable` rather than answering nobody. *You know nobody* and *I could not open your book* are different sentences and only one is true; answering the first puts no name — or the wrong name — on a phone call, and reports somebody's data loss as a fact about their life. A row saying sealed over a vault with nothing in it is that case, and it is not the same as an empty book, which is a row saying `held = 0`. The count stays on the local row so a screen saying *312 people* is never a reason to unseal three hundred names.
+>
+> ## Fixed: a guard that was measuring prose
+>
+> `test_one_function_is_the_only_door_to_the_book` asked whether `allowed(user_id)` appeared in the first 900 characters of each reader. It passed for two releases and failed on a round that only made `sync`'s docstring longer. It asks the property now — `allowed` before anything touches the book — because a guard a paragraph can break is a guard a paragraph can also satisfy.
+>
+> ## Also here
+>
+> `test_a_translation_in_the_wrong_script.py`, byte-identical in all three products. `refusals_untranslated.txt` counts the sentences with **no** translation and only shrinks; nothing has ever looked at the ones that do, so the backlog can reach zero with a Chinese row written in Cyrillic in it. Two got through that way and were caught by eye. It checks the script each row is filed under, plus a value identical to the English key and a row missing languages — both invisible to the backlog file. All three tables are clean: QRME 296 rows, JIM-mini **135**, PDI 64.
+>
+> ## Testing
+>
+> - Full local suite over the final tree: **2347 passed, 6 skipped** (16:29) — +34 against 0.84.0's 2313.
+> - New: `test_where_the_book_lives_and_who_can_reach_it.py` (16). The two load-bearing ones were proven by putting the defect back: a `_clear` that skips the vault fails three, and a `sync` that does not clear first fails two.
+>
+> ## One thing this round did not fix
+>
+> `jim/contacts.py` has **no HTTP route at all**. `sync` is reachable only from inside the process, so the book cannot actually be filled from a device. The handoff listed the missing clients as the gap; it is deeper than that — there is nothing for a client to call. Custody is settled either way, and the door is a round of its own.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+## #218 — Both people, or the call ends it — and one place that says what is running
+
+- merged · opened 2026-08-17 · merged 2026-08-17
+- `claude/new-session-ftgm38` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/218>
+
+> Two halves of the same missing thing. The task is what keeps a link between two guardians alive past the call, and `liaison.py`'s own docstring said both people could see it *"in the same place they see everything else running"*. That place did not exist, and the task did not need both people.
+>
+> ```
+> asked     does the work outlive the call
+> mattered  did both people say it should, and can either of them see it
+> ```
+>
+> ## The task was specified mutual and shipped one-sided
+>
+> `task` was a single column, written by either party through a door that checked only membership, and the call ending checked only that it was set. So one person could hold a channel open to somebody else's guardian past the conversation that justified it, on their own say-so. That is the same shape as the one-sided contact `liaison.open` refuses at the door — and refusing a stranger there while letting one party extend the stay unilaterally is the door mattering less than it looks.
+>
+> Agreement is now per side and recorded **against the wording**. `take_on` proposes and counts as the proposer's own yes; `agree` is the other side's; only both together outlive the call. Re-wording drops the other side's agreement, because agreeing to *book the venue* is not agreeing to *run the wedding* — and that reset falls out of the primary key rather than depending on somebody remembering to clear a flag in a later edit.
+>
+> A proposed task is not lost: it stays on the link to be agreed to afterwards, it simply holds nothing open meanwhile. Ending a link still takes one person alone, and that asymmetry is deliberate in both directions.
+>
+> A new table rather than two columns, following the rule this schema already carries — every statement is `CREATE TABLE IF NOT EXISTS`, so an added column never reaches a database that already exists.
+>
+> ## Five readers, five screens, and no answer
+>
+> Links had a list. The monitor roster had its own. The mic knew whether channel 2 was open, the call table knew whether a call was live, the engagement table knew whether an agent was mid-session. Nothing answered *what is my guardian doing right now* — the question you ask precisely when you do not already know where to look.
+>
+> `jim/underway.py` gathers the five behind `GET /underway/{user_id}`. The gathering is server-side deliberately: four shells each deciding what counts as still running is four chances to disagree invisibly, since every shell would look right on its own. It is the opposite call from the Guardian's lights, which compose their glance client-side from routes already open — and rightly, because *is there an alarm* needs no judgement. This does.
+>
+> - **It composes no prose.** `kind` and `why` are closed sets a client branches on and says in the reader's own language; `term` is one of the product's own vocabulary words, `words` is what the person wrote.
+> - **What is running and what merely happened are kept apart.** An errand opens, studies and finishes inside one call, so listing one as running would be a lie told by the one window whose job is to be believed about that. Today's errands sit beside the budget that bounds them, sliced against the same day boundary `spent_today` uses.
+> - **It is a reader.** One route, and it is a `GET`. A window over everything that could also act on everything would quietly be the widest door in the product.
+>
+> On the console it is shell furniture beside `GuardianLights`; on iOS, Android and Windows it opens the overview.
+>
+> ## Three findings came with it
+>
+> 1. **The console's wording had inherited the defect.** Naming a task said *"It outlives the call now"* — true of the rule being replaced, and a promise the backend now refuses. Corrected in all ten languages.
+> 2. **Two wire names carried two types each,** and the guard caught both: `running` was this window's list and a link's boolean; `errands` was the ledger's list and this window's count. That is the same rule `liaison.running` cites in its own docstring as the reason it is not called `open` — knowing a rule and writing the file that breaks it are not far apart, and the guard is what closes the distance. They are `underway` and `spent_today` now.
+> 3. **Naming a task on a closed link did something worse than answer the wrong status:** the update carried `AND ended_at IS NULL`, so it quietly changed nothing and returned a summary that looked like success. It is a 404 now, matching what `say` has always answered, through a refusal with its own type.
+>
+> ## A correction to the handoff this round started from
+>
+> The handoff led its recovered-asks section with the coach → JIM token ladder as *"the economic spine of the whole product and it is missing"*, claiming there is no `coach → Jim` trigger anywhere. There is: `jim/errands.py` (`2a3c5d7`, shipped 0.82.0) is exactly that ladder — the coach records what it could not answer, `curriculum` turns misses into a study list minus what the store already covers, and `errands.run` spends paid excursions on them under a permit with a ledger-counted daily ceiling, on all four clients. What is genuinely absent is narrower: escalation of a **situation** the coach notices in the moment into JIM handling it. The knowledge half is built; the situational half is not.
+>
+> ## Testing
+>
+> - Full local suite over the final tree — result reported in a follow-up comment.
+> - Console typechecks clean (`tsc --noEmit`).
+> - New: `jim/tests/test_the_task_window_over_everything_running.py` (18), extended `test_two_guardians_working_together.py` (28).
+> - The four client-symmetry and doorless guards pass with the new routes doored on all four shells.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_012RuEkwtajFcHEhMxUNPWMN)_
+
+### Comment — davidsbianchi1984, 2026-08-17
+
+> Full local suite over the final tree: **2201 passed, 6 skipped**, in 15:52.
+>
+> The two pre-existing failures on this container at the start of the round were the console's JSX-text extractor refusing to run (`Cannot find package 'typescript'` — `npm install` had never been run in `app/`), not anything in the tree. Installed, and both pass.
+>
+> Two of the repo's own guards caught real defects in this work before it landed, which is worth recording since both are the kind that look correct in review:
+>
+> - `test_no_wire_name_carries_two_types` — `running` and `errands` each carrying two types across the wire.
+> - `test_every_surface_is_accounted_for` — the new `Underway` panel unclassified. It is chrome by the same reasoning as `GuardianLights`, not `undrawn`, which is a status for a surface that ought to have a drawing and has not got one.
+>
+> Console typechecks clean (`tsc --noEmit`). The three native shells are not compiled here — no Xcode, Gradle or MSBuild in this environment — so iOS, Android and Windows are covered only by the repo's own shape and door guards, which do pass. Worth a build on a machine that has the toolchains before this merges.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+### Comment — davidsbianchi1984, 2026-08-17
+
+> `ead4a9b` adds the situational half of the token ladder — the piece the handoff reported as the whole of it missing.
+>
+> Full local suite over the final tree: **2230 passed, 6 skipped**, in 15:35. Console typechecks clean.
+>
+> The repo's guards caught four things in this round before it landed, which is worth recording because all four look correct in review:
+>
+> - **Five wire-name collisions.** `by_coach`/`by_jim` were both a list of notices and a count of them; `due` was already the errand ledger's suggestions; `noticed` was already a bool; `standing` was already a permit's opened/asked. `ladder` was the replacement for that last one until the guard pointed out it is the escalation tiers.
+> - **A permit naming a tool that did not exist** — `handle_unattended` is now in the engaged roster, and joins the three acts that cannot be taken back, because what it sends is the person's own situation.
+> - **Android's `l10n.asked` floor** sitting at half its surface (390 against 785) while its five siblings had all been carried to roughly four-fifths. A handful of new call sites tipped it under the guard. The drift predated this round and had been failing nothing; it is 628 now.
+>
+> And one design error caught by a test rather than by review: the first draft raised a 429 when the day's budget ran out, which refuses the work costing nothing because it cannot do the work that costs — and it broke out of the loop, so situations further down that the offline coach could have settled for free were never tried. A spent day is reported in `over_budget` now, and the pass carries on.
+>
+> Two things that are decisions rather than gaps, both flagged in the module and worth a second opinion:
+>
+> 1. **The pass advises; it does not act.** Every acting tool sits behind a session someone opened, with an undo trail. An unattended pass that could act would be that apparatus with the person removed.
+> 2. **This permit sends the person's own context to a model**, unlike `study_on_your_own` which sanitises them out. The permit sentence says so before anyone agrees, and the two switches stay separate.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+### Comment — davidsbianchi1984, 2026-08-17
+
+> `54e3ee3` adds the day's capture and accounting; `f884644` fixes five guards that `54e3ee3` went out without hearing from.
+>
+> Full local suite over the final tree: **2267 passed, 6 skipped**, in 15:31. Console typechecks clean.
+>
+> ### The commit that went out red, and why
+>
+> `54e3ee3` was pushed on targeted runs while the full sweep was still going, and the sweep found five real failures. All five sat in the seam between the new module and code that already existed — which is exactly what targeted runs do not reach. Recording it because the process error is the reusable part.
+>
+> Three of the five were guards protecting a rule rather than a line:
+>
+> - **`test_one_function_is_the_only_door`** asserts nothing reads a monitor's switch directly instead of asking `may_sense`. It looked for that call in `jim/api.py`, and the daybook had moved the door one layer in — the route hands the moment over and the daybook asks. The rule was intact; the guard was reading the old address and passing without looking at anything. That is worse than a guard that fails wrongly. It reads both modules now.
+> - **`test_the_member_that_isnt_there`** reported six real members of a `Stretch` as missing from `AppState`. It expands `var st = AppState.Current` and has no scopes, and `ConnectPage.xaml.cs` binds `st` to the singleton in one handler while the new panel looped `foreach (var st in day.Stretches)` in another. That is the false-positive failure the file's own docstring is about, so both halves are fixed: the loop variable is `run`, and the reader now treats a `foreach` binding as a rebinding the way it already treats `=`.
+> - Editing that test then moved three floors recorded by `file:line` in `unregistered_floors.txt`, caught by its own guard on the next run. Line numbers updated rather than entries struck — the floors did not move, the lines under them did.
+>
+> The other two were ordinary: `monitor` and `stretch_id` had no label for the sentence a refusal shows, and three new refusals were untranslated. Plus `day.meet.end` arrived as a third key carrying "End it", whose two existing holders translate it differently; it says "End the meeting" now.
+>
+> ### What this round deliberately did not build
+>
+> It is not a recorder. Nothing captures audio, video or pixels, and a guard holds those columns out of `day_moments` so a later round cannot add them quietly.
+>
+> Literal always-on recording of screens, calls and meetings needs three things this round could not decide alone: the roster's `holds` promises rewritten (the screen row currently promises *nothing*), somewhere to put the bytes that is not this database — `jim/capture.py` already refuses to degrade to a local file for a single photograph — and an answer to two-party consent law that a checkbox is not. That is a product decision with legal exposure attached.
+>
+> ### Still outstanding across all three rounds
+>
+> The three native shells have had no real compile in this container — no Xcode, Gradle or MSBuild — so iOS, Android and Windows are covered only by the repo's shape, door and member guards. Those all pass, and the member guard caught a genuine break this round, but a real build on a machine with the toolchains is worth doing before merge.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+### Comment — davidsbianchi1984, 2026-08-17
+
+> `ad537d1` reads visual and verbal cues out of what the monitors sense.
+>
+> Full local suite over the final tree: **2293 passed, 6 skipped**, in 15:53 — run to completion *before* the commit this time, after the last round went out red. Console typechecks clean.
+>
+> ### The whole feature is where the reading happens
+>
+> `jim/monitors.py` opens with the sentence this round exists to make true:
+>
+> > "It notices you fell" and "it keeps the video of you falling" are different agreements, and only one of them is what the code does.
+>
+> That was honest only because the code did neither. So `daybook.sensed` reads cues **before** it asks whether any of the content may survive. A room camera with keeping switched off notices a fall exactly as well as one keeping everything, and stores exactly as little as it promised.
+>
+> The strongest case is the earpiece, which promises *nothing* outright rather than *nothing unless*: it hears somebody call for help, reports it, and keeps not one word of what it heard — with no switch anywhere that could change either half. Noticing being free of retention is the only arrangement under which somebody can switch retention off without switching off their guardian.
+>
+> ### Three rules the guards hold
+>
+> - **The words are never kept.** The test checks what is actually written rather than the shape of the function, and that difference caught something: `events.detail` is free-form JSON and would have taken the whole sentence without complaining. My first version asserted against the signature and would have passed while the words went into the row.
+> - **A monitor only yields cues its own senses can produce.** A doorway reports nothing however the text is worded; a camera does not hear somebody call out. Checked against the roster's `senses`, because the cheap version would have a presence sensor reporting slurred speech.
+> - **One ladder, not two.** Cues are graded in `escalation.py`'s vocabulary and resolved through `escalation.decide`. `hazards.py` grades critical/warning/notice — a good scale, and not this one; a cue in the wrong words would reach the ladder as an unknown severity and be treated as the mildest thing it could be.
+>
+> The two unattended passes compose without either knowing about the other: a `critical` cue reaches a person, because `noticed.py` excludes critical from the pass that puts things to a model, and an ordinary `guidance` cue is exactly what the free half of that ladder is for.
+>
+> ### What it cannot do, and says so
+>
+> Plain phrase matching, for the reasons `hazards.py` gives — works with the network cut, costs nothing, auditable line by line. It does not see; something else describes what it saw and this reads the description.
+>
+> And **it cannot tell whose cue it is.** A room camera catches whoever is in the room, and a cue read off one of them lands on the account holder's record because that is the only record there is. The roster already refuses to switch such a monitor on until somebody says the people in that space were told; this cannot improve on that claim and does not pretend to. Every cue names its monitor, so a reader can at least see it came from a room rather than a wrist.
+>
+> That limitation is worth a second opinion — it is the one place in this round where the honest answer is "the code cannot know."
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+### Comment — davidsbianchi1984, 2026-08-17
+
+> `e1b1003` lets two people be on one call with their own channel 2 each, and tells each of them the other's guardian is listening.
+>
+> Full local suite over the final tree: **2313 passed, 6 skipped**, in 16:07 — run to completion before the commit. Console typechecks clean.
+>
+> ### Half of this already worked, and that changed the round
+>
+> `mic.handover` is per person and always was. On a private route channel 2 hears its wearer and not the call, so two people on one call could each hand one over today: no permission needed from each other, no conflict, each hearing only its own wearer. The feature as literally asked for was there.
+>
+> What was missing is that **nothing knew they were the same call**. Somebody on a call where both guardians were listening had no way to find that out — and that is the half worth building, because it is the half about the people rather than about the microphones.
+>
+> So a pair is a disclosure and that is the whole of it: no audio, no content, nothing either guardian heard. Each channel stays exactly as private as it was; what changes is that each person can see there are two.
+>
+> ### Pairing never grants listening
+>
+> A side may only join with a channel it already has, so every refusal in `handover` — private route, busy primary, not the microphone already carrying the call, nobody else in earshot — was answered before the pair could name the session.
+>
+> The load-bearing one is the speakerphone refusal, which that module spends four screens on: *on speaker the watch hears whoever you are talking to, and they are not a user here*. The cheap version of pairing would have opened the channel itself and become a second door onto exactly that. A test holds it shut, and the request body carries no route, gain or device — nothing that could set terms the handover already settled.
+>
+> ### The two halves never meet
+>
+> Neither side is handed the other's session id, device, gain, or what it hears. What crosses is that somebody is listening and since when, and a side stops counting the moment their own channel closes — a row that outlived the session it names would report somebody as listening after they hung up.
+>
+> The disclosure surfaces in `mic.state`, whose whole job is *what can it hear right now, in words a person can check*. On a call where both guardians are listening, "yours hears you" is a true sentence and an incomplete one.
+>
+> ### Two findings
+>
+> - The pair routes were first written at `/mic/{user_id}/pair` while every sibling in that family lives at `/users/{user_id}/mic/...`. Nothing would have caught it — the door guard asks whether a client reaches the route, not whether the route is where its family lives — and it was a smoke test against the running app, not a reading, that turned up the 404.
+> - The empty answer was missing four of its nine keys, because the not-paired branch was written before the paired one and never revisited. A shape that grows fields only when something is there hands four shells `undefined` on the case they meet most.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code)_
+
+## #217 — A voice in the picker that does not exist, and a price list that could not say whether the gate was running
+
+- merged · opened 2026-08-14 · merged 2026-08-14
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/217>
+
+> Two findings, each the same shape: a fact this repo asserted about somebody else's system, which nothing in this repo could check.
+>
+> ## One of the seven voices does not exist
+>
+> A real ElevenLabs account was connected, so for the first time the voice list could be checked rather than read. Six of the seven ids speak. `VR6AewLTigWG4xSJukFG` — "Arnold" — answers 404 `voice_not_found`.
+>
+> It has been in `ELEVEN_VOICES` since the voice round, offered in the picker on the console and all three phones, and choosing it failed at the one moment the feature exists for: somebody asking to be spoken to.
+>
+>     asked     is the voice list well-formed
+>     mattered  does every voice in it answer
+>
+> Nothing here could have told us. These are hand-copied opaque identifiers on somebody else's service: the shape is fine, the name is fine, and the id is a string whether or not it resolves. Every test in `test_voice.py` passed over the dead row, because every question they ask is answerable from the list itself.
+>
+> `test_the_voices_we_offer_are_voices_that_exist` asks the service. It **synthesises** two syllables in each voice rather than looking the voice up, because that is the call the product makes and a voice can be absent from a library and still speak. Without a key it **skips rather than mocking** — a mock of ElevenLabs would have answered 200 for Arnold too, which is precisely the reassurance that let this ship.
+>
+> The row is replaced with one that speaks. The list lives only in `jim/voice.py`; every client reads it from `/settings/voice`, so this is the whole fix.
+>
+> ## The price list could not say whether the gate was running
+>
+> `locked` answers what a plan will cost. Whether anybody is being refused *today* is a different question, and for one release nothing could answer it: the beta stand-down was a module constant no response mentioned.
+>
+>     asked     does the price list say what a plan costs
+>     mattered  does it say whether the gate is running
+>
+> QRME's cross-product smoke found it. That run drives a Basic account into the `synthetic_agents` gate and asserts the 402 — correct while the gate is enforcing, wrong the moment it is not, and it had nowhere to ask. It died seven steps in reporting a specialist that "does not accept delegated work". Every tier test here kept passing, because they all force the flag on, deliberately.
+>
+> `catalogue()` now carries `enforcing` and, when false, a sentence saying so. `entitles` is untouched and `locked` is unchanged: the prices are what each tier will cost, and a beta reporting everything as included in Free would advertise a product that does not exist. The Held screen shows the sentence beside them.
+>
+> ## Checks
+>
+> - `jim/tests/test_voice.py`: 9 passed, 1 skipped (the live one, no key in this environment).
+> - `jim/tests/test_tiers.py`: 29 passed.
+> - README test count corrected 28 → 29.
+> - Full local suite running over this tree — result will be reported before merge.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #216 — Engaged sessions: the online Guardian you leave running
+
+- merged · opened 2026-08-14 · merged 2026-08-14
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/216>
+
+> This product had one conversational door, `POST /coach/{user_id}`, and it was a *turn*: you said something, it said something, and nothing was left holding. Which model answered depended on `PUT /model/{user_id}`, so "the online one" and "the offline one" were the same route with a different provider behind it — a person could tell them apart only by the amber banner when a turn degraded.
+>
+> ```
+> asked     can you talk to it
+> mattered  can you stay talking to it
+> ```
+>
+> `jim/engaged.py` is the thing that was missing. `POST /engaged/{user_id}` opens a session; it stays open across turns and through the app being closed, and ends when somebody signs off rather than when they stop typing.
+>
+> ## It does things rather than describing them
+>
+> Twenty-six tools, each going through the app's own door with the caller's own credential forwarded, so its reach is exactly theirs — no wider, and no longer-lived. The reach is a written list rather than the token's full authority, because the token can also delete the account and nobody who says *sort my week out* means *and be free to erase me if you misread it*.
+>
+> `GET /engaged/reach` renders the list in sentences, carries no token, and is exempt from the plan gate: how somebody decides whether to open one is not the thing being sold.
+>
+> ## Everything it changes can be taken back
+>
+> Every acting row declares its own inverse as data — a `remove` that deletes what was created, or a `replace` that reads the prior value **before** the write and replays it after, because the value an act overwrites is gone the moment it is overwritten. `GET /engaged/{id}/acts` is the trail; `POST …/acts/{id}/undo` is the way back.
+>
+> This is the condition the autonomy was granted under, so it is guarded three ways: the registry must declare an inverse or a reason, the inverse must resolve to a route this app serves, and both shapes are driven end to end through the real app.
+>
+> One act cannot be taken back and says so in words rather than filing itself beside a journal entry that deletes cleanly: putting a question to a QRME specialist sends the person's own words outside this product.
+>
+> ## Signing off is a handover, not a close
+>
+> What the session was about is deposited into the store the offline stack predicts from — the same path a paid coach turn already takes — and anything named on the way out becomes a standing watch, carried into every offline coach answer and raised unprompted by `presence.beat` above everything the product noticed by itself.
+>
+> Somebody who signs off has not stopped being looked after. That sentence is the feature, and `sign_off` is where it is true.
+>
+> ## What it may never touch
+>
+> Enforced against the registry rather than trusted to review: emergencies, alarms, escalation, the vigil, the crash watch, the beacon, the referral release, every money path, membership, erasure, the synthetic self, and anything belonging to another person. Refused by absence — the agent cannot call what is not in the list — and checked both ways, so an entry matching no route fails the suite instead of sitting there looking like a protection. Writing that guard found one: `/money/{user_id}/orders` had never existed.
+>
+> ## The plan gate exempts three paths
+>
+> For the same reason `jim/tiers.py` exempts `/monitor`: a paywall in the wrong place here does not withhold a feature, it strands somebody inside one.
+>
+> - **sign-off**, so a lapsed plan cannot leave a session open forever with the handover never made
+> - **undo**, because charging for the way out of a change somebody did not want is the one version of this that could not be defended
+> - **reach**, which is how they decide at all
+>
+> ## An engaged turn the offline model served says so
+>
+> `coach.reply` degrades gracefully — the stub answers and the offline pipeline takes over with something genuinely useful — and that is right for a screen whose job is to *say* something. This screen's job is to *do* something, and the stub cannot ask for a tool, so a session on a box with no key would have answered in canned prose, taken no action, and looked exactly like one that had considered the request and decided against it.
+>
+> ```
+> asked     did the turn come back with text
+> mattered  did the model that can act answer it
+> ```
+>
+> ## Doors that were missing long before an undo trail needed them
+>
+> `DELETE` on a journal entry, a check-in, a goal, a habit and a habit's day. A person could write in their own diary and not unwrite it, and could record how they felt on the screen that feeds the crisis pipeline and not unrecord it.
+>
+> ## All four clients, in the same round
+>
+> The console gets screen 109; iOS, Android and Windows each get the reach card above the button, the transcript, the undo trail, sign-off with its topics field, and the standing watches. Thirty-four strings in ten languages, emitted into Swift, Kotlin and C# from one source, because `test_the_three_shells_say_the_same_thing` compares the tables against each other and a hand-copied row is how they drift — that guard's own docstring records four such drifts.
+>
+> It went everywhere at once rather than to the console first, for the feature's own reason: a client that could open a session and speak into it but could not show the trail would have taken the permission and dropped the condition it was granted under. All four doorless backlogs are at zero.
+>
+> ## What the guards caught in this work
+>
+> Three real defects, found by the estate's own audits rather than by review:
+>
+> - **`acted` carried two shapes on the wire.** A session's `acted` is the trail of completed changes; a turn's was the list of steps it reached for, refusals included — and a refusal is not an act. The turn's list is now `did`.
+> - **`watching` collided with a boolean** `guardian.py` has returned on the crash watch for versions. The list is now `watches`.
+> - **The session shape changed with its state** — `id`/`area`/`opened_at` present when open and absent when closed, which a typed client cannot declare. Same keys either way now, null when there is no session.
+>
+> And one in the audit itself: `test_the_guardian_refuses_in_one_language` walked the AST for `HTTPException` and the domain error classes, which sees a raise site. `engaged` raises a *key* and the handler resolves the sentence afterwards, so sixteen real refusals would have gone out in English while the guard reported zero.
+>
+> ```
+> asked     is every refusal raised with a sentence translated
+> mattered  is every refusal a person reads translated
+> ```
+>
+> ## Testing
+>
+> Full local suite green over this tree: **1903 passed, 3 skipped**. The whole loop was also driven live over HTTP — open, act, undo both inverse shapes, refuse what is not on the list, sign off, and the offline Guardian afterwards saying *"You asked me to keep an eye on my sleep while you were away. I have been. How is it?"*
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #215 — Beacon alarms page a real channel + the error reports come home
+
+- merged · opened 2026-08-13 · merged 2026-08-13
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/215>
+
+> Fourteen commits: an honest sentence with a real send behind it, the failure reports funneling back to whoever runs the deployment, what the full gate then found, the guide catching up, the shells&#39; last four doors, the untranslated ratchet run to the floor, four bites of the three-repo guard-divergences backlog, and a field report from a sibling product that changed how every screen in this repo is read.
+>
+> ## `0bd3e35` — the sentence sends the message it always claimed
+>
+> `POST /c/{id}/alarm` answered every finder with **&#34;The people watching over this person have been alerted&#34;** — while `beacons.alarm()` sent nothing to anyone: no mail, no page, no ledger row. The worst failure a care beacon has is a stranger walking away from a person on the ground believing the QR handled it.
+>
+> - **A personal beacon&#39;s alarm now pages a real channel when one exists.** A minor&#39;s page goes to the guardian inbox that verified their consent; an adult&#39;s goes to the trusted channel they armed their own crash watch with.
+> - **Every attempt lands in the `relay_pages` ledger** under the alarm&#39;s own id, so a page that could not be sent shows as a `queued` row rather than a silence.
+> - **The finder&#39;s sentence is derived from the outcome, never asserted**: *&#34;A message has been sent…&#34;* only when one was; one honest *&#34;No message went out from this page…&#34;* for every way it can fail. Which of the three it was is the owner&#39;s information — a beacon never tells a stranger how watched a person is.
+> - **A site beacon sends nothing here** — a worker&#39;s personal emergency contact is the wrong recipient for a workplace incident.
+> - Three bystander sentences hand-translated into the nine accountless-page languages; seven new tests hold the sentence to the ledger.
+>
+> ## `1a4529e` — the error reports come home, here too
+>
+> - **`POST /v1/problems` now lives on this backend** — the gateway&#39;s whitelist contract, self-contained in `jim/problems.py`, and strictness matters more in this product, where the messages a report must never carry can be health content. Anything outside the whitelist is a 422 naming the field; rows fold into counters keyed by (source, version, platform, op, status).
+> - **`GET /v1/problems` is the operator&#39;s read**, behind `JIM_PROBLEMS_KEY` or the backend&#39;s own machine.
+> - **The console falls back to its own backend** when no collector is stamped into the build, and the &#34;What went wrong&#34; card grew the retrieval half in ten languages.
+> - New table only: `problem_reports`.
+>
+> ## `546a586` + `3666af1` — what the full gate found
+>
+> - The member-guard&#39;s Kotlin reader didn&#39;t know a nested `data class` is a member; it now knows `class` and `object` declarations, with a self-test that entered the three-repo manifest.
+> - `prob.server` sat translated with nothing asking for it; wired as the reader&#39;s section header.
+> - **`day` carried two types on this product&#39;s wire** — a calendar date on habit logs and problem counters, a 1-based ordinal on the meal plan. The ordinal is renamed `day_number` on the server and in all four clients.
+>
+> ## `0886d76` — the guide catches up with the evening
+>
+> The problems lesson teaches the retrieval half, and the help index answers &#34;where do the reports go&#34;.
+>
+> ## `040f6d0` — the last four doors: three QR codes and the drip, records to zero
+>
+> The three `qr.svg` routes are URL builders in each shell&#39;s client — the JSON helper cannot carry an image, so the door is the URL the opener fetches, shown as selectable text and captioned in ten languages. `POST /watch/drip/{token}` is a button: one reading by hand through the same door the automation uses, the cheapest proof the tether is live.
+>
+> ## `fec712e` — the last English behind the tabs: 10/16/4 → 1/0/0
+>
+> The enrollment terms sentence and the start-the-backend hint become `wel.terms` / `wel.backend` on all three shells. **Android&#39;s first-aid surface stops speaking English at the worst moment**: heading, call-emergency-services line, waiver sentences and revoke note now ride the same `fa`/`res` keys the iPhone already held. New rows `fa.live` and `fa.english` — the sentence explaining that safety steps stay in English is itself readable in the reader&#39;s language. The one surviving row is the language picker&#39;s &#34;English&#34;.
+>
+> ## `f770558` + `477393f` — the guide family asks the same questions here (divergences 136 → 124)
+>
+> Porting the *questions* rather than the names found two real defects: the tutorial&#39;s `LESSONS` no longer ran in chapter order, and the help box could not start the tour it described. Both fixed; `shared_guards.txt` 469 → **481**, and the README&#39;s dock count caught up with the ported empty-pane guard.
+>
+> ## `edce315` + `e908860` — the watch lights clear the tab bar, and the reader learned to see
+>
+> Ported from a field report on PDI — **&#34;It seems to be blocking the PDI menus&#34;**. JIM&#39;s watch-lights face is the same shape of thing: `position: fixed` near the bottom of the viewport. It now clears the bar by the same measure and shrinks to a phone-sized face.
+>
+> The larger half is the reader. `{ok ? "answering" : "degraded"}` is a `ConditionalExpression` and not a `JsxText` node, so a sentence chosen at render time was invisible to the extractor every console count in this estate is built on.
+>
+>     asked     what text does this file place between its tags
+>     mattered  what words does this screen put on the glass
+>
+> `console_untranslated.txt` is regenerated under the widened reader and holds **93 rows where it held zero**. The zero was never true: it was the answer to a narrower question. The guard pinning it at zero said raising it had to be a deliberate decision made at that line, so the decision and its reasoning are written there, and the ceiling is asserted for equality in both directions.
+>
+> ## `e62341d` → `11c3875` — three more divergence bites (124 → 121, shared 481 → 489)
+>
+> The records are byte-identical in the three repositories, so a bite paid down anywhere lands here. PDI gained the README-arithmetic guard (a hosting claim of 16 against 25 real tests) and the custody guard (the vault never said holding is not owning, nor that a data subject&#39;s statutory rights survive the arrangement).
+>
+> Then the stylesheet guard **ports into this console**. The behaviour was already right — corner widgets lifted above the bottom bar, minimized light shrunk to a 22px dot, rounds ago. What was missing was the question.
+>
+>     asked     was this fixed once, on the screen somebody reported
+>     mattered  does anything stop it happening again, here
+>
+> One repair the port needed: this stylesheet opens the mobile media query more than once, deliberately, so the corner widgets win the cascade from the bottom of the file, and the first reader would have measured a rule a later block overrides.
+>
+> **`11c3875` — the apology for a failed route.** Porting `test_every_handler_returns_through_the_one_place` to QRME exposed what none of the three suites was asking. Every exception handler answers in the reader&#39;s language; the catch-all does not, and could not be caught by that guard, because the catch-all is not a handler — `@app.exception_handler(Exception)` sits outside the CORS layer, so it has to be a middleware, and being a middleware nothing was asking it anything. Its sentence sat inline in English in all three products.
+>
+>     asked     does every exception handler answer in the reader's language
+>     mattered  does every failure answer in the reader's language
+>
+> `i18n.SERVER_ERROR` is a named constant with its row in `_REFUSALS` in nine languages, and the middleware reads the reader&#39;s language the way the handlers do. `test_every_failure_answers_in_the_readers_language` asks the catch-all directly in all three suites — matching a middleware whose `except` names `Exception` or is bare, not one that catches a narrow pair around a parse.
+>
+> ## Tests
+>
+> **Full suite green over the final tree: 1852 passed, 3 skipped** (gate over `11c3875`). All door, refusal, l10n and three-suites guards green; ios/android/windows doorless records at zero; `native_screens_untranslated.txt` at 1/0/0; `guard_divergences.txt` at 121 with `shared_guards.txt` at 489.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
+## #214 — Safety runs in the order of who is pressing, voice works without a key, and the crash watch rings the same bell
+
+- merged · opened 2026-08-12 · merged 2026-08-13
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/214>
+
+> Seven commits, two field reports answered, fully gated (1824 passed over the final tree) and driven live end-to-end against a running server.
+>
+> ## What's in the stack
+>
+> **`76920ec` — docs: the guide catches up with 0.67.0 and 0.68.0**
+> Help directions and lesson prose for meals, the weekly letter, drills, bank statements, hazards, and guardian consent; the crash/emergency entry rewritten around the new safety order. README API rows to match.
+>
+> **`d8547cc` — the feed knows a watch party when it sees one**
+> JIM's community feed renders QRME's new `kind: "party"` cards (title, platform, count, joining note) with a link over to the QRME room — read-only, GET-only.
+>
+> **`3ff9c5c` — the safety screen runs in the order of who is pressing** (field report: "if you collapse on the floor and needed help, how are you gonna put a sticker on a door… it's supposed to connect to emergency services or emergency contact")
+> The Safety screen led with beacons — the *bystander's* path — while the person collapsing had no button. Now **Get help now** leads: the account holder's own dispatch press driving `POST /emergency/{uid}`, rendering the server's honest sentence first (call 911 yourself — this page cannot), then who was contacted, first-aid guidance, and how many devices were alerted. **When you can't answer** shows the crash watch's live status. Beacons now say they are the bystander's path, below the doors the person themselves can press.
+>
+> **`21247ad` — listening falls back the way the header always said** (field report: mic listened but nothing transcribed — no provider key set)
+> Voice-in without any key: when no transcription service is configured (or a configured one fails), the console falls back to the device's own speech recogniser (`SpeechRecognition`/`webkitSpeechRecognition`), remembers the preference, and tells the user to tap the mic again. The egress reason for transcription is now honest ("transcribing recorded speech", not "speaking aloud").
+>
+> **`0107d60` — the crash watch rings the same bell**
+> A crash-watch trip used to email and stop; now it lands in the same Needs-a-person alarm queue everything else rings: it appears first in `GET /users/{uid}/alarms`, acceptance requires a named responder (a 422 refusal says why), clearing keeps the record, escalation re-pages the trusted contact, and every page lands in the relay ledger. `crash_watches` gains `accepted_by`/`accepted_at` via the additive-column path.
+>
+> **`6e3c701` — the new refusal speaks nine languages**
+> The nameless-acceptance refusal translated ×9, keeping the refusals guard green.
+>
+> **`d2e04fa` — one queue, one shape**
+> Reading the shells found a latent wire bug the static guards can't see: crash-alarm `messages` were built as `{from, text}` objects while all three phone shells decode `[String]` — one live trip would have failed the whole alarm-list decode on every phone. Messages are plain strings everywhere now, and the console's mirror-image bug (`m.from: m.text` off a shape the server never sent, rendering every beacon message as ": ") is fixed with it. The bystander line ("A beacon is the bystander's path — SOS is your own") reaches all three shells ×10 languages.
+>
+> ## Proven against a running server
+> Drove the loop over HTTP on a scratch DB: enrolled a user, placed a beacon, raised a tokenless bystander alarm, and read it back with the owner token — `messages` arrived as plain strings, exactly what the shells decode. Nameless accept refused; named accept recorded `accepted_by: "Rosa"`; escalate answered "a person has already taken this"; clear closed it. `GET /emergency` returned the honest call-911-yourself sentence the new Safety screen renders first, and tokenless `GET /settings/voice` reported `device_fallback: true` — the state the keyless voice path runs on.
+>
+> ## Tests
+> Full suite green over the final tree: **1824 passed, 3 skipped**. Eight new crash-watch-bell tests (trip stands first, tier follows consent, acceptance names a responder, nameless 422, clear keeps the name, respond ends it, escalate re-pages, ledger shows every page).
+
+## #213 — Cut 0.68.0 — the shortlist ships
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/213>
+
+> Release cut: thirteen version fields to 0.68.0, README banner + table row, and the CHANGELOG entry covering the research program — meal-photo logging, the weekly letter, interview drills, and money-guardian statement drops plus aggregator bank-link consents, with the Android response-parsing repair and the feedback→critique wire rename noted under Fixed.
+>
+> Full suite gate running; merge follows on green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #212 — R44: money guardian statements — vault drop + bank linking
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/212>
+
+> R44 from the research shortlist, shaped by the field instruction that statement drops definitely involve bank linking and an aggregator, with vault custody on both doors.
+>
+> - **`money.drop_statement`**: the file is sealed in the vault exactly as account credentials are, and read by deterministic local CSV arithmetic — never a model. When the statement closes with a balance, that balance walks the same `observe` path a hand-typed reading takes, so the guardian ladder and its doors wake off the file itself.
+> - **`money.link_bank` / `sync_bank` / `revoke_link`**: a written aggregator consent (plaid, tink, truelayer, mx) that registers a watchable account, requires the vault, and whose status never claims data that was not pulled — sync answers with the exact truth instead of inventing balances. Revoking is never gated.
+> - Six routes under `/money/{id}` with doors on all four clients, every visible word from the overview's own labels ×10 languages.
+> - **Repair found on the way**: the JIM Android client's R41–R43 additions parsed responses with `JSONObject(request(...))` / `JSONArray(request(...))` against a `request` that already returns a `JSONObject` — rewritten to `request(...)` / `getArray(...)` so the shell compiles.
+> - `filename` gained its field label and left the unlabelled backlog (98 rows, count line updated).
+> - Tests in `test_the_statement_is_the_reading.py`.
+>
+> Full suite gate running; merge follows on green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #211 — R43: interview drills — the answer before the room
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/211>
+
+> R43 from the research shortlist: interview drills in the career area.
+>
+> - **`jim/drills.py`**: a curated local question bank (behavioral, situational, strengths, weaknesses, motivation), each question dealt with what it probes stated up front — the whole drill works with the network cut. An online model, when standing, reads the answer against the probes and says what landed and what was missing, never inventing facts about the person; offline, the reading is the probe checklist itself, plainly labeled (`described_by: model | checklist`). One question, one answer.
+> - **Routes**: `POST /users/{id}/drills`, `POST /users/{id}/drills/{id}/answer`, `GET /users/{id}/drills`; the practice reaches the career area's readable context so the coach knows you drilled.
+> - **Doors** on all four clients (console Aims card, iOS GoalsSection, Android GoalsPanel, Windows LifePage Goals pivot) with `drl.*` rows ×10 languages, wording byte-matched.
+> - **Tests** in `test_the_answer_before_the_room.py`.
+>
+> Full suite gate running; merge follows on green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #210 — R42: the weekly letter — what your numbers meant
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/210>
+
+> R42 from the research shortlist: one short letter a week — what your numbers actually held, in words.
+>
+> - **`jim/letter.py`**: composed only from what was logged — a deterministic digest of the week's check-ins (with averages), meals, habit marks, journal entries and goal movement. An online model, when standing, turns the digest into three or four warm sentences without adding a fact the digest doesn't carry; offline, the digest is the letter and says so (`described_by: model | digest`). A week with nothing logged gets no letter.
+> - **Routes**: `POST /users/{id}/letters` + `GET /users/{id}/letters`; `letters` table keeps the digest beside the prose.
+> - **Doors** beside the journal on all four clients (console, iOS, Android, Windows) with `let.*` rows ×10 languages, shell wording byte-matched to the console.
+> - **Tests** (`test_the_week_in_words.py`): the letter holds the week and only the week; an empty week is refused.
+>
+> Full suite green over this tree: 1807 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #209 — R41: meal logging — the plate is the receipt
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/209>
+
+> R41 from the research shortlist: meal logging in the nutrition area — point the camera at the plate, say a few words, done.
+>
+> - **`jim/meals.py`**: the photo is the receipt — metadata stripped and vaulted like a clinical capture (503 without a vault); the note is the log, kept local so the offline coach's nutrition area can read today's meals with the network cut. An online model, when standing, tidies the note into a coarse items-and-portions line and never invents what the note doesn't say (`described_by: note | model | photo`) — the providers are text-only, so nothing pretends to have seen the pixels.
+> - **Routes**: `POST /users/{id}/meals` + `GET /users/{id}/meals`; new `meals` table (no column changes).
+> - **Doors** on all four clients: console Journal card (with photo file input), iOS LifeView, Android journal panel, Windows LifePage — `mea.*` rows ×10 languages in all four string tables, shell wording byte-matched to the console.
+> - **Tests** (`test_the_plate_is_the_receipt.py`): note logs the meal and the coach's collected layer sees it; empty plate refused; photo without a vault refuses like the capture door.
+>
+> Full suite green over this tree: 1805 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #208 — 0.67.0: cut in step
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/208>
+
+> The thirteen fields the release checklist names, the README banner and table row, and the CHANGELOG entry. This round JIM's plug-ins learned to route their collections, the tandem learned to carry the pulse, the room learned to warn before it wounds, and a minor's consent became the guardian's own verified click. The three products are cut together, so one number names one combination of all three. Merges on green suite.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #207 — The plug-ins carry the readings + three patent rounds (R38–R40)
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/207>
+
+> Four rounds on one branch, full suite green (1802 passed, 3 skipped).
+>
+> **The plug-ins carry the readings (R32).** Collected items route to where they do work: a `reading` walks the same intake the watch uses (vigil stand-down, detection, drift, baseline), an `environment` item lands where the offline stack's environment layer reads it, everything else rides as linked context.
+>
+> **The tandem carries the pulse (R38).** The readings that trigger a detection cross the Guardian→QRME handoff as the chat's `biometrics`, so the specialist's reply is conditioned on the pulse itself, not just a sentence describing it. Only what was actually measured ships — the stored resting baseline never travels as a current reading, and a note-only crisis carries prose alone. The vitals are sealed in the vault record beside the message.
+>
+> **The room warns before it wounds (R39).** `jim/hazards.py` reads collected environment items for the room's dangers on arrival — a deterministic, offline, auditable keyword table (gas, CO, smoke, falls, heat, cold, ergonomic strain, air quality), every entry carrying the reference its advice is drawn from. Hazards land as Life insights and ride back on the collect response, worst first.
+>
+> **The guardian holds the code (R40).** Parental consent is verified, not asserted: a minor's signup requires a guardian address distinct from their own, the activation code and link are delivered to the guardian's inbox, resends follow the same address, and activation stamps whose address consented and when onto the user record. Refusals translated ×10; the console signup shows the guardian field only when the birthdate makes it needed.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
+## #206 — The coach answers with the network cut
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/206>
+
+> Round 31: the offline coach stack — the always-on half of the product, built as the owner drew it (the Transformer diagram read as architecture).
+>
+> **The offline engine.** `jim/pipeline.py`: the question arrives as the input, and context joins it as residual add layers — `[user data]`, then the current readings (`[vitals]` from the bands, `[speech]`, `[tone]`, `[environment]`) — each add followed by a norm. Prediction chooses from stored knowledge weighted by the normalized context; the output side gets its own norm; every layer lands in the reply's provenance. The module never touches the network — a guard reads its imports and holds the promise.
+>
+> **The store grows three ways.** The curated pack jampacked to 39 hand-written referenced entries with a real shelf in all six areas (two new ratchets hold the total and the thinnest area); learned excursions now actually reach the coach — the old "the local model now uses them" note finally has behavior; and every paid model turn deposits its distilled answer (deduped by topic), so the same gap never costs tokens twice.
+>
+> **JIM imports as coach needs.** Misses are recorded as gaps; `GET /coach/{id}/curriculum` lists gaps first, then the monitored surface (bands with a learned baseline, active goals, the dose board) minus what's covered; `POST /coach/{id}/study` runs the excursion and learns the findings in one press; `GET /coach/{id}/store` shows the whole asset with provenance. All three routes carry their four doors (console + iOS/Android/Windows), every new word from the ten-language tables. On the wire the store's list is `excursions` and its text is `lesson` — one wire name, one type.
+>
+> Full JIM suite green over the final tree: 1785 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #205 — 0.65.0: cut in step
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/205>
+
+> The 0.65.0 alignment cut: the thirteen fields the release checklist names, the README banner and table row, and the CHANGELOG entry. No JIM code changed this round — the work was QRME's rooms and its home screen's friend faces — but the three products are cut together, so one number names one combination of all three.
+>
+> Full JIM suite green over this tree: 1775 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #204 — 0.64.0: the tour comes home, and the three cut together
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/204>
+
+> Two things in one commit, because the owner asked for them in one breath: the corrections, then the cut.
+>
+> **The tour returns to the front page.** The gallery split moved every picture to docs/gallery.md and kept a curated handful; the owner read the result and wanted the README the way it was. It is: the full illustrated tour stands in the README again, docs/gallery.md is gone, and the gallery guards read the front page alone, exactly as they did before the move. The split never reached a release, so it owes the changelog nothing.
+>
+> **The 0.64.0 cut.** The thirteen fields the release checklist names, the README banner and table row, and the CHANGELOG entry — the same cut in all three repositories. JIM's 0.64.0 carries the footsteps counter, its shrink to a footprint, the fifth wearable family, and the `</script>` escape-guard test.
+>
+> Suite: 1775 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #203 — The fifth wearable family is every other wrist
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/203>
+
+> The field report: a GT4 Pro-1 paired to Olywear, and its owner asking how the readings reach JIM when the watch only talks to its own app. The answer took three screenshots to establish — the vendor app never requests Health access, so the readings are captive — and the setup card should have said it in one.
+>
+> The picker gains **"Another brand's watch (via its own app)"**, and its recipe is a check, not a promise:
+>
+> 1. look for the health-store sync in the vendor app's settings;
+> 2. verify on the phone's side (iPhone → Health → your picture → Apps; Android → Health Connect → App permissions), because the toggle often is not in the app's menus;
+> 3. if the app appears there, follow the existing Apple Watch / Wear OS recipe — the drip reads the phone's health store, not the watch, so it works for any wrist whose app feeds it;
+> 4. if it never appears, the readings are captive to the vendor — the card says so out loud instead of implying every watch can be bridged, and points at the Monitor screen.
+>
+> One dict entry, no client changes — the picker renders from the API, which is what the setup route promised a new wearable family would cost. Also in the diff: one row in `unregistered_floors.txt` moved because the new test shifted a recorded floor's line number.
+>
+> Suite: 1775 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #202 — The chip shrinks to a footprint
+
+- merged · opened 2026-08-12 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/202>
+
+> The field report, minutes after the footsteps chip landed on a phone: it was three times too big, sitting on top of the chat's wardrobe box.
+>
+> The chip is now just the mark and the number — `👣 2` — at a third the size, tucked tighter into the corner. The full sentence ("{n} footsteps here — How many people hold accounts here") moved into the hover tooltip, so both wordings still stand in all ten languages and no key goes dead.
+>
+> - `app/src/Footsteps.tsx` — content reduced to the mark and the count; sentence + explainer joined in `title`
+> - `app/src/styles.css` — 9px type, tighter padding, closer to the corner
+>
+> Suite: 1775 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #201 — The footsteps show
+
+- merged · opened 2026-08-11 · merged 2026-08-12
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/201>
+
+> The field report, asked of all three products at once: "Is there a way to know how many people have accounts?"
+>
+> A counter now stands in the top-right corner of the console: how many people are enrolled here, as an aggregate — no name, pseudonym or id rides with the number. It travels on `/health`, the request every client already makes at launch for the version handshake, so it cost no new route and no new door. Only finished enrollments count: an email account only creates its user at verification, so the count is people, not attempts.
+>
+> - `jim/api.py` — `/health` carries `footsteps`: a `COUNT(*)` of users, nothing else
+> - `app/src/Footsteps.tsx` — the 👣 chip, fixed top-right, on onboarding and the signed-in shell alike; hidden entirely against a backend old enough not to answer
+> - `app/src/l10n.ts` — the chip's two rows in ten languages, verbatim the same wording as the QRME and PDI consoles
+> - `jim/tests/test_standalone.py` — the count moves exactly when an enrollment finishes
+> - `jim/tests/test_every_surface_is_drawn.py` — Footsteps classified as fixed chrome, like the version guard
+>
+> Suite: 1775 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #200 — The guard that only existed where the bug never was
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/200>
+
+> The `</script>` hardening of `_js` shipped in 0.63.0 — the helper escapes both the JS-string layer and the HTML-element layer, in all three products. But the *test* holding it existed in none of them: the fix travelled and the guard did not.
+>
+> This adds the one test — a value handed to `_js` cannot close the `<script>` element it sits in — and enters it into the shared cross-suite manifest (465 guards, byte-identical across the three repositories). The same commit lands in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #199 — 0.63.0: the console fits the phone + cut together at one version
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/199>
+
+> Two commits.
+>
+> **The console fits the phone it runs on.** The two field reports — the vertical layout that doesn't fit the screen, and the landscape list that stops scrolling halfway — share one root: a grid item refuses to shrink below its content, so the content pane grew past its track, the app overflowed the viewport, and the page half-scrolled instead of the pane. `min-height`/`min-width: 0` let the tracks clamp; the app height tracks `100dvh` where the browser has it, so the bottom row sits above the URL bar; the sidebar scrolls on its own where a landscape phone gets the desktop column. The same fix lands in all three consoles this cut.
+>
+> **0.63.0: cut together at one version.** The thirteen version fields the release checklist names all move in step. This product's story for the cut: the Guardian visits the link it was given (`POST /social/connection/{cid}/scrape`, already on main) and the layout fix above; the changelog and README row now tell it.
+>
+> Suite: 1773 passed, 3 skipped — run twice, once over the layout fix and once over the full cut.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #198 — Round 16: the last English — every remaining native row becomes a key or a reason
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/198>
+
+> ## What this round does
+>
+> The untranslated record held sixty-seven rows across the three shells as bare counts. This round ends the ambiguity: every real gap becomes a ten-language lookup, and everything that stays English stays with its reason written in the record.
+>
+> ### Keyed
+> - **Guidance metadata** — the sealed-in-PDI badge, pace, derived-from, supports, and the provenance line naming the model that answered. On Android via a `lang` parameter threaded into `GuidanceExtras`; on iOS in the first-aid view.
+> - **Custody surface** — sealed tandem chats, the no-exchanges-yet line, origin, seal, audit events. The same `cst.*` keys on Android and Windows, where the Windows lines had been hiding inside an interpolated list the counter could not see.
+> - **SOS headings** — coordinated response and how each severity resolves (headings only; safety steps stay English by rule).
+> - **Monitor** — the send-a-sample line and the person-transition pair.
+> - **Follow-up** — the Ask button and its about-guidance line.
+> - **Overview** — the rebuild button and the provider ready/no-key words; the audit-chain status pair is now one wording on both Windows spots that used to spell it two ways.
+>
+> ### The Windows pickers stop spelling wire words in XAML
+> The area and focus pickers derive their shown labels from the wire word (`mental_health` → "mental health"), same as iOS and Android, and selection reads by index — no second English, no mistranslated API value.
+>
+> ### The agreement guards earned their keep twice
+> - `fu.ask` nearly said "Ask" differently from the console's alarm surface in Japanese; the cross-client guard caught it and the new key carries the console's wording verbatim.
+> - The cross-shell guard caught five freshly minted keys shadowing rows the other shells already held — the audit-chain pair, the audit-events line, the monitor transition pair, the send-a-sample line and the rebuild button now ask `cust.*`, `mon.*` and `ov.rebuild` everywhere, with the duplicates deleted rather than recorded.
+>
+> ### The record becomes a floor with names
+> iOS 10 / Android 16 / Windows 4, and the record gains a paragraph naming every deliberate survivor: the terms sentence, the backend command line, the first-aid/CPR content under the safety-steps-stay-English rule, the LIVE · QRME badge, a language named in itself, the sample contact, the bpm unit, and the counter's own mis-parse fragments.
+>
+> ## Verification
+> Full local suite green before push: **1769 passed, 3 skipped**.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #197 — 0.62.0: cut together at one version
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/197>
+
+> The 0.62.0 cut for the eleven-round arc just merged in #196: the phones reach parity with the console (every backend route with a door on iOS, Android and Windows, the doorless ledgers closed at the four by-design rows), the voice pair with the device's own voice as the fallback, PATCH through the override the backend pins with a test, and the most-touched screens speaking the reader's language. Changelog entry, README story row, and all thirteen version fields the release checklist names.
+>
+> Suite: 1769 passed, 3 skipped locally before push.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #196 — The health core reaches the phones: the cabinet, the vigil, the bands
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/196>
+
+> ## What this round does
+>
+> The console has had doors on the medicine cabinet since 0.9.0, the vigil since 0.8.0 and the baseline bands since 0.6.0. The phones had none of the fourteen routes, and the per-shell doorless ledgers said so. This round builds the doors on all three shells.
+>
+> ### The three doors, on each shell
+>
+> - **Meds** on Life's schedule tab — today's board with per-slot Take/Skip, as-needed "Took one" with the ceiling line, the critical toggle (the console's "worth a check-in" checkbox), stop, 7-day adherence, and an add form in the user's own words. The board's disclaimer is shown verbatim from the wire.
+> - **The vigil** beside the crash watch on Safety — arm/update a steward with quiet days and the words they will read, sweep on open (the console's choice: idempotent, trips at most once), a check that reads without sweeping, disarm, and the "I'm okay" button.
+> - **Baseline bands** on Monitor — every metric's learned baseline and edges, or the learning line while provisional; margin nudges, drop/climb toggles, reset for user-set bands.
+>
+> ### Strings
+>
+> 52 `ns.*` keys in all three L10n tables, carried verbatim from the console's `med.*`/`set.vigil.*`/`bas.*` strings. `ns.vg.arm` and `ns.vg.update` are supplied here because the console hardcodes those two buttons in English. `ns.bas.none` is reconciled to `cont.nothing`'s wording (same sentence, drifted translations between two console keys) and the English-only `{s}` plural slot is dropped.
+>
+> ### Guards and ledgers
+>
+> - The shape fixture now **arms the vigil and stocks the cabinet** — driving into the state still beats recording that you did not. The two as-needed fields the scheduled-first board hides from the checker are recorded (`swift_shapes_unverified` 27 → 29).
+> - `wire_name_collisions` 13 → 14: `medications` is the board's rows and the adherence tally's rows under one name, served that way since 0.9.0.
+> - Doorless ledgers: 14 rows struck per shell (ios 105, android 106, windows 106).
+> - `unregistered_floors` line numbers follow the fixture edit.
+>
+> ## Tests
+>
+> Full suite: **1766 passed, 3 skipped.** The three shell CI jobs are the compile checks for the Swift/Kotlin/C# in this diff.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #195 — Care team, captures and the lent mic reach the phones
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/195>
+
+> ## What this round does
+>
+> The console has had doors on `/users/{id}/care-team`, the clinical captures and channel 2 since 0.22.0. The phones had none: no iOS, Android or Windows binding touched those twenty routes, and the per-shell doorless ledgers said so. This round builds the doors.
+>
+> ### The three shells
+>
+> - **iOS** — `CareTeamCard` on Family, `CapturesCard` on Monitor (PhotosPicker → base64), `MicCard` on Connect; typed structs and twenty bindings in `ApiClient.swift`. `careTeamUnlink` inlines its path literal so the doorless extractor can see it — a wrapper hides the route.
+> - **Android** — the same three panels in `Screens.kt`; bindings and data classes in `ApiClient.kt`; capture upload through `GetContent` and `Base64`.
+> - **Windows** — care-team card on `FamilyPage`, captures card on `MonitorPage` with `FileOpenPicker` anchored to the app window, mic card on `ConnectPage`; records carry `JsonPropertyName` throughout.
+>
+> ### Strings
+>
+> 38 `ns.*` keys added to all three L10n tables, translations carried verbatim from the console's `ct.*`/`ch.*` strings. `native_dead_keys` stays at zero — every key is asked for by every shell.
+>
+> ### Ledgers
+>
+> - Doorless: 20 rows struck per shell (ios 119, android 120, windows 120).
+> - `wire_name_collisions` 9 → 13 (`attached`, `goal`, `intimate`, `sealed`): backend facts the typed phones now surface; renaming served wire fields is an API break belonging to its own round.
+> - `android_keys_unverified` 6 → 9 and `swift_shapes_unverified` 22 → 27: the care-team linked state needs a real QRME organization through the tandem, which no fixture inside this suite can stand up, and the mic state GET never carries `note` (attach, handover and release do). Both ledgers' prose now states the ceiling-bump bargain instead of the no-longer-true "must never grow".
+>
+> ### Details the guards forced
+>
+> - Handover route is `earpiece` — `jim/mic.py` refuses non-private routes.
+> - Capture withdraw decodes the tombstoned record the DELETE returns, not an invented `withdrawn` key.
+> - Android `micStateOf` no longer reads `note` from the state GET, which never sends it.
+>
+> ## Tests
+>
+> Full suite: **1766 passed, 3 skipped.** The three shell CI jobs are the compile checks for the Swift/Kotlin/C# in this diff.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #194 — 0.61.1: cut together at one version
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/194>
+
+> Release prep for the joint cut: JIM-mini's part of app-v0.61.1.
+>
+> - The nine version fields the release checklist names, bumped 0.61.0 → 0.61.1 (build codes 61000 → 61001) — `pyproject.toml`, `jim/api.py`, `app/package.json`, both root entries of the lockfile, `project.yml` (marketing + project version), `build.gradle.kts` (name + code), `JimGuardian.csproj` (Version / AssemblyVersion / FileVersion)
+> - CHANGELOG `[0.61.1]` entry covering the accessibility statement + accountless report door, the aria-live announcements, the emptied known-gaps ledger, the open-signup keyhole and Terms 1.2, with the link definition the releasing doc asks for
+> - README banner → v0.61.1 and a new story-table row
+>
+> Tagging (`app-v0.61.1` on this commit) is the maintainer's step, per docs/releasing.md.
+>
+> Suite: 1766 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #193 — The backlog the statement promised, run to zero
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/193>
+
+> The accessibility round ended by admitting two barriers into `jim/tests/a11y_backlog.txt`. This round closes both and lowers the ceiling to zero.
+>
+> ## The answer is announced
+>
+> The coach's guidance card, the specialist's reply and the check-in's verdict appeared silently — a screen reader was never told an answer arrived. All three are `aria-live="polite"` / `role="status"` regions now, so the reply is announced instead of sitting unread below the form that asked for it.
+>
+> ## The shells carry the statement
+>
+> iOS, Android and Windows carried the report form and its lead, but not the per-need statement the console makes. The nine `ns.acc.needs.*` keys now ride in all three native L10n tables — the console's own translations, script-copied, not re-translated — and all three access views name every need before asking their three questions.
+>
+> ## Guards
+>
+> - `test_the_coach_and_the_checkin_tell_the_screen_reader` (repo-local)
+> - `test_the_shells_carry_the_statement` (shared — the three-way manifest moves to 461 rows, byte-identical across qrme, jim-mini and pdi)
+> - `a11y_backlog.txt`: 2 rows → 0 rows, ceiling 2 → 0
+>
+> Suite: 1766 passed, 3 skipped.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #192 — Ability is not a gate: the accessibility statement, behavior, guards and report door
+
+- merged · opened 2026-08-11 · merged 2026-08-11
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/192>
+
+> The statement, the behavior behind it, the guards, and the door — because a health guardian that assumes an able body has misunderstood its own job.
+>
+> **The statement, upfront.** README section before features; new console Access screen (**108**) in ten languages, reachable *before enrollment* via `#access` and linked under the sign-in form.
+>
+> **The behavior.** `POST /access/reports`: three questions and no diagnosis, no token, into a table with **no submitter column** — sealed to the PDI vault when configured, never relayed to the shared problems collector. `GET /access/reports` is held by the new reviewer role (`JIM_ADMIN_TOKEN`), which fails closed beyond localhost the way QRME's objection review taught — and its three refusal sentences ship translated rather than recorded in the untranslated backlog. Doors in the console and all three native shells, ten languages. The document root carries the page's real language, and `prefers-reduced-motion` now quiets the voice orb for people who asked their device for stillness.
+>
+> **The guards.** `test_ability_is_not_a_gate.py` (four tests) + `jim/tests/a11y_backlog.txt`, a ledger that only shrinks. Four new rows in `shared_guards.txt` (456 → 460), traveling to all three products.
+>
+> **The paperwork.** Terms 1.2 names the real door; the three questions enter the field-label catalog; the tutorial teaches screen 108.
+>
+> Suite: 1764 passed, 3 skipped locally before push. Same round lands in qrme and pdi.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #191 — The gate gets a keyhole, plans go free, and the terms say beta
+
+- merged · opened 2026-08-10 · merged 2026-08-10
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/191>
+
+> ## What
+>
+> - **The gate gets a keyhole.** `JIM_SIGNUP_KEY` closed account creation and no client could answer it. `/health` now reports whether the gate is set (never the key); the console and all three native shells store an invite key and send it as `x-signup-key`; the signup screen asks for one exactly when the deployment is gated, in ten languages. The stale `unsendable_headers.txt` row is struck with its reversal written in place; `shared_guards.txt` grows 455 → 456.
+> - **Free during the beta.** Both paid plans drop to $0; every price surface says "free during the beta, $20/$130 a month when it ends."
+> - **Terms 1.1.** Beta status and the accessibility commitment join the recorded-acceptance terms.
+>
+> Suite: 1754 passed / 3 skipped. Sibling PRs in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #190 — 0.61.0: the console the policy blanked
+
+- merged · opened 2026-08-10 · merged 2026-08-10
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/190>
+
+> ## What
+>
+> The 0.60.10 cut: all version fields bumped (Python, console package + lock, Android/iOS/Windows shells), CHANGELOG entry, README banner and history row.
+>
+> This release carries the console-blanking CSP fix and its over-HTTP guard, the bare-domain → `/app/` front door, and the twice-repaired, guarded release-bodies sweep.
+>
+> Suites: JIM-mini 1753 passed / 3 skipped. Sibling cut PRs in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #189 — The sweep measured the fetch, not the releases
+
+- merged · opened 2026-08-10 · merged 2026-08-10
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/189>
+
+> ## What
+>
+> The repaired sweep's first honest run failed claiming the kept release `app-v0.24.0` no longer carries the frozen body. The release was fine — the **fetch** had lost it: paginated `gh api` output was re-split into pages by a regex matching any `]` `[` pair, including one inside a release body's own markdown, and broken chunks were dropped silently.
+>
+> - `gh api --paginate --slurp` now returns pagination as one valid JSON document; the regex chunking is gone.
+> - A completeness guard proves the fetch returned every release the record names (rows and `# kept:`) before anything is compared.
+>
+> Identical to the sibling PRs in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #188 — The checker that could not start
+
+- merged · opened 2026-08-10 · merged 2026-08-10
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/188>
+
+> ## What
+>
+> - **Repairs the release-bodies sweep**: an earlier edit left the workflow's embedded Python unparseable (a misplaced `problems = []` and a dropped `if gone:`), so every scheduled run died on an IndentationError before checking anything. The block is restored to its intended shape.
+> - **Adds the guard that was missing**: `test_the_workflow_scripts_still_parse` extracts the Python heredocs from both release workflows and parses them (verified to fail against the broken version), and `test_the_frozen_opening_decides_staleness_for_this_product` drives the staleness decision with this product's own `# frozen-opens:` header — a stale body is caught, a fresh one passes, and a body merely quoting the phrase passes.
+> - `shared_guards.txt`: 453 → 455, byte-identical across the three repositories.
+>
+> Sibling PRs in davidsbianchi1984/qrme and davidsbianchi1984/pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #187 — The console the policy blanked
+
+- merged · opened 2026-08-10 · merged 2026-08-10
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/187>
+
+> ## What happened
+>
+> The first real deploy of the beta topology came up healthy — containers, certificates, all of it — and all three consoles rendered as blank dark pages. The nonce Content-Security-Policy meant for the server-rendered pages was stamped on the console's HTML too, and the console's bundle is an external same-origin script no nonce can reach, so the browser refused it. HTML 200, nothing running. No in-process test saw it: a `TestClient` reads the policy and enforces none of it.
+>
+> ## The fix
+>
+> - **`pagehead.console_policy()`** — `'self'` where the page policy names a nonce, still no inline script; `blob:` for previews and synthesised audio, `worker-src` for the service worker, `manifest-src` for the home screen.
+> - **The middleware picks the policy by path** — `/app` gets the console policy; every other page keeps the nonce policy unchanged.
+> - **`GET /` redirects to `/app/`** when a console is built. Measured live, the bare domain answered `{"detail": "Not Found"}`, and a tester types the domain, not the mount point. Recorded in `NOT_A_CLIENT_CALL`: no client constructs the address it is already standing on.
+>
+> ## Test-enforced
+>
+> `test_what_the_browser_enforces.py` now measures the console's headers over real HTTP, against a console dist the fixture lays down itself so CI asks the question without a front-end build. Three new guards enter `shared_guards.txt` (450 → 453), byte-identical across the three repositories. Guard on the guard: the stranger pages are asserted to keep their nonce policy, so the console's wider policy cannot leak.
+>
+> Full suite: 1,751 passed, 3 skipped.
+>
+> Sibling PRs carry the same fix in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #186 — JIM console doors: the 109-route backlog reaches zero
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/186>
+
+> The desktop console could not reach 109 of JIM's routes. Every one was present on the phone shells, which is why the union guard reported a healthy number for as long as it did — it was answering *some client can reach this*, and a phone could.
+>
+> Six screens (95–100), one per family: goals/habits/budgets, a child's account and its limits, what is held about you, who else is looking, what reaches out, and how it speaks. Each with a walkthrough lesson, a help direction, a drawing, and a manifest row.
+>
+> All three record files are now **empty rather than short** — `console_doorless.txt`, `doorless_routes.txt`, `unused_bindings.txt` — and the tests that read them assert emptiness.
+>
+> ## What driving the routes found
+>
+> Nothing in the backend was broken. What a running server disagreed with the route table about:
+>
+> - **`raiseEmergency` sent no credential.** The server requires one, and its reason beats the premise the binding was written on: an uncredentialed `POST /emergency/{id}` lets anybody reach `emergency_services` against anybody's account. The uncredentialed door for a bystander already existed and is a different one — a scanned care code, capped at `notify_contact`. The escalation policy says so in a field the client already reads.
+> - **`accessLog` answers an object, not the array its name suggests.** Its other three fields say whether anything is being recorded at all. On a vault-less deployment an empty `entries` list means *no log exists*, not *nobody looked* — typed as a list, the screen would have shown a person the wrong one of those two, silently.
+> - **`custodyProvenance` and `referralClinicians`** were bound without required query parameters, so both were a 422 every time.
+> - **The scan page is HTML and two `qr.svg` routes are SVG**; through the JSON helper all three came back `null`.
+> - **The social beacon and its code need the owner's token**, unlike the placed-code pair they resemble.
+>
+> Adding the text helper then made three of this round's own doors invisible to `clientpaths` — the third extractor false positive after the nested template and the `<img src>`.
+>
+> ## Two guards that could only pass while the problem existed
+>
+> The union guard asserted its backlog was *strictly* smaller than the console's; the liveness guard asserted the snapshot file was non-empty. Both rewritten to check what they were for.
+>
+> ## The four orphaned bindings
+>
+> `api.enroll` is the one worth naming. `POST /enroll` has always taken a name, a birthdate and a consent — every screen in front of it demanded an email address and a password. An address is a thing a person may not have, may not control, or may share with somebody they are trying not to be watched by. The backend never decided that a person without one does not get a guardian; the console did, by omission. The trade is stated rather than buried: no address means no recovery.
+>
+> Also wired: looking at a clinical capture (the image is on its own route and was listed with no way to see it), handing channel 2 over with its reason, and reading the vigil without sweeping it — a sweep can trip the vigil and send somebody to a person's door, which makes it a write, and a write should not be the only way to look.
+>
+> ## Verification
+>
+> Full suite: **802 passed, 1 skipped**. Console typecheck clean. Each fix injection-tested — broke it, confirmed the new test fails, restored, re-verified.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #185 — Cut 0.21.0
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/185>
+
+> Cut in step with QRME, which ran four door-audit rounds this release. No JIM
+> feature work: the five version strings, a changelog entry and release notes.
+>
+> The console-only backlog here stands at **109 routes** and is unchanged; the
+> ratchet holds it from rising.
+>
+> Full suite: **786 passed, 1 skipped**.
+>
+> Tag is the user's step — pushing `app-v0.21.0` fires the desktop release build
+> and lays `RELEASE_NOTES.md` over the release body.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #184 — The release title carries the product name
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/184>
+
+> Docs only. Records two things 0.20.1's tagging taught, in `docs/releasing.md` (all three repositories).
+>
+> ## The title carries the product name
+>
+> `JIM-mini app-v0.20.1`, not `app-v0.20.1`. Three repositories cut the same number in the same pass, so a release list, a notification and a search result otherwise show three entries reading `app-v0.20.1` with nothing to tell them apart. The worked example link in the doc now reads `&title=JIM-mini%20app-v0.19.0`.
+>
+> ## A draft creates no tag
+>
+> Saving the release form as a draft stores the release and leaves the tag unmade — the draft's URL says `untagged-…`. So the release workflow never fires, no installers are built, and `sync-release-notes.yml` never lays `RELEASE_NOTES.md` over the body, because the thing all of it listens for is the tag push. That is also why *Generate release notes* has nothing to offer on a draft: it needs a tag to diff against.
+>
+> Worth writing down because the failure is silent in the way this repository keeps finding: the release exists, it looks finished, and none of the machinery behind it has run.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #183 — Cut 0.20.1
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/183>
+
+> Five version strings — `pyproject.toml`, the FastAPI app, `app/package.json` and **both** root entries of `app/package-lock.json` — plus the dated changelog heading and rewritten release notes. QRME, JIM-mini and PDI move on one number, as they have since 0.1.6.
+>
+> ## What 0.20.1 carries here
+>
+> - The **per-client door audit** (`test_the_console_is_a_client_too.py`): the union backlog reads 69 while the console alone cannot reach 109 routes, and that gap is now visible, snapshotted and ratcheted.
+> - **`test_a_binding_is_not_a_door.py`**: a function in `api.ts` that no screen calls is not a door, and `doorless` counted it as one. Four here.
+> - **`clientpaths.py` restored** to what it claims to be — byte-identical across the three repositories. It brought the backlog **73 → 69** by finding doors that already existed: `POST /voice/speak` and `POST /watch/seed/{user_id}` via the new `fetch`/`window.open` forms, with both OAuth callbacks correctly exempted.
+> - **The pairing QR built from a literal**, so the audit can see a door that was always there rather than having it exempted as *not a client call*.
+>
+> ## Verification
+>
+> Full suite: **786 passed, 1 skipped**. Console builds. All five version strings verified programmatically against the changelog and release-notes headings.
+>
+> Tagging remains a manual step.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #182 — Ask each client the door question separately
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/182>
+
+> `clientpaths.doorless` unions the console with the iOS, Android and Windows shells, so a route only the phone calls counts as doored. JIM's union backlog reads **69**; the console alone cannot reach **109 routes**. The guard was answering *some client can reach this*, which was true, in place of *this client can reach this*, which was not.
+>
+> ## Added
+>
+> - **`test_the_console_is_a_client_too.py`** — the console's own backlog in `console_doorless.txt`, checked in both directions and ratcheted so it cannot grow past where it started. The union guard stays; a route no client anywhere calls is still worse. A phone-only capability is a legitimate design choice, which is what the snapshot is for: deferring one takes a deliberate edit and shows up in a diff.
+> - **`test_a_binding_is_not_a_door.py`** — the same mistake one level down. A function in `api.ts` that no screen calls is not a door, and `doorless` counts it as one. The docstring on `doorless` called this "a discipline rather than something the test can enforce"; it turned out to be enforceable in about twenty lines. *The test cannot check this* is a claim worth testing.
+>
+> ## Fixed
+>
+> - **`clientpaths.py` was not byte-identical across the three repositories**, though it says it is. This copy never received the `fetch`, `window.open`, `<img src>` and `<a href>` call forms from the previous round, so the backlog counted doors that existed: **73 → 69**, with `POST /voice/speak` and `POST /watch/seed/{user_id}` found by the new forms and both OAuth callbacks correctly exempted.
+> - **The pairing QR is built from a literal.** `Settings.tsx` rendered it as `getBase() + pair.qr_svg`, where the path arrives in a response body — a real door no static check can see. `GET /pair/qr.svg` sat in `NOT_A_CLIENT_CALL` for exactly that reason, which is an exemption made out of a blind spot; the last one of those turned out to have no door at all. Same request, now visible to the audit.
+>
+> ## Verification
+>
+> Full suite: **786 passed, 1 skipped**. Console typechecks.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #181 — The installer could not report, and nothing said so
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/181>
+
+> Found in QRME while going to write the setup instructions for `PROBLEM_COLLECTOR`, then checked here and in PDI. **All three had it.**
+>
+> ## The chain, and where it broke
+>
+> | link | state |
+> |---|---|
+> | `errors.ts` reads `__PROBLEM_COLLECTOR__` | ✅ |
+> | `vite.config.ts` defines it from `process.env.PROBLEM_COLLECTOR` | ✅ |
+> | `docs/cloud-model.md` says to rebuild with it set | ✅ |
+> | **`desktop-release.yml` passes it to the build** | ❌ |
+>
+> Three packaging steps — macOS signed, Windows signed, unsigned — each carefully threading its *signing certificate* through `env:`, and not one of them mentioning the collector.
+>
+> So **every installer this workflow has ever produced compiled an empty address**, whatever secrets were configured, and launch-time error reporting was inert in every shipped desktop build. Nothing failed. The define existed. The documentation was correct about what to set. The step that runs the build dropped it on the floor.
+>
+> `errors.ts` already anticipates the *neighbouring* mistake — it refuses to invent a product name because *"a repo whose vite.config.ts forgot the define would otherwise file its reports under whichever product this fallback named"*. The define was not forgotten. The environment feeding it was.
+>
+> ## The guard
+>
+> `test_the_installer_can_actually_report.py` checks the **chain**, not any one link. Build steps are found by what they run (`npm run dist`), not by what they are called — the name is the part most likely to change — and a guard-on-guard fails if that finder ever returns fewer than three, so a renamed command cannot make the file quietly vacuous.
+>
+> `every` rather than `some` matters: the workflow branches three ways on signing and a build comes from exactly one branch per platform, so a variable threaded through two of three still ships one silent platform.
+>
+> **Four injections verified**, including unwiring one step of three — the defect that shipped.
+>
+> ## Behaviour that did not change
+>
+> An unset secret still builds: it arrives as an empty string, exactly the state the source already reads as *no collector*. "Off by default" survives the wiring.
+>
+> ## What this changes on your side
+>
+> Set `PROBLEM_COLLECTOR` and `PROBLEM_TOKEN` as repository **secrets**, then re-run the desktop release. Setting them before this fix would have done nothing.
+>
+> `docs/cloud-model.md` stays byte-identical across the three repositories, verified by md5.
+>
+> **Suite: 778 passed, 1 skipped.**
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #180 — Cut 0.20.0
+
+- merged · opened 2026-07-31 · merged 2026-07-31
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/180>
+
+> All three repositories move together, as they always do — one number across QRME, JIM-mini and PDI, so a console and a backend that disagree about their version are disagreeing about something real.
+>
+> Five version strings: `pyproject.toml`, the `FastAPI(version=)` in `jim/api.py`, `app/package.json`, and both root entries of `app/package-lock.json`.
+>
+> ## Two rounds since 0.19.1
+>
+> ### The native shells record what breaks
+>
+> The consoles have logged failures **content-free** since 0.19.0 — the operation and the status, never the message, never the path as it was typed. That is the governing constraint: a crash report is worth having only if nothing private travels in it, and the safest way to guarantee that is to have nothing private to send.
+>
+> The web console has done it since 0.19.0. **iOS, Android and the desktop shell had not** — so a failure that happened only on a phone happened only in silence. All three now record on the same terms and post to the same gateway.
+>
+> `docs/cloud-model.md` (byte-identical across the three repositories) gains the gateway's container deploy path. The gateway lives in QRME's tree, but every product's console posts to it, so the instructions belong wherever somebody is reading about the contract.
+>
+> ### A guard that invented work
+>
+> Every earlier defect in `clientpaths.py` made it too **lenient**: a truncated path, a verb read off a neighbouring call, a route table read flat instead of recursed. Those are the failures you expect from a checker, and the ones its guard-on-guard was written to catch.
+>
+> This one was the other kind. A template literal may nest another inside an interpolation, and the extraction pattern's backtick alternative stopped at the *inner* opening backtick — so a call normalised to a path no route matches, and a route with a working door was reported as having none.
+>
+> Nothing failed. The suite stayed green. The route sat on the backlog looking like work, and a door-building round was aimed at a door that already existed. **A checker that invents work fails more quietly than one that misses some:** a miss is found by the bug it let through, while an invention is found only by somebody going to do the work and finding it done. Interpolations are now matched by counting braces, so a nested one passes through intact.
+>
+> ---
+>
+> `CHANGELOG.md` and `RELEASE_NOTES.md` updated. **Suite: 770 passed, 1 skipped.** Console typecheck clean.
+>
+> The tag is not created here — that stays yours.
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #179 — Record what breaks on the phone and the desktop shell too
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/179>
+
+> The console has recorded failures content-free since 0.19.0 — the operation and the status, never the message, never the path as it was actually called. The three native shells recorded nothing at all, so every failure a user hit on iOS, Android or Windows was invisible.
+>
+> ## The rule, in three more languages
+>
+> | | |
+> |---|---|
+> | `native/ios/Sources/Problems.swift` | `UserDefaults`, `Codable` rows |
+> | `native/android/…/Problems.kt` | `SharedPreferences`, JSON rows |
+> | `native/windows/Problems.cs` | `%LOCALAPPDATA%/jim-mini`, `System.Text.Json` |
+>
+> Each takes `method`, `path`, `status` and has no parameter a detail string could arrive through. The signature is the safeguard, and it matters here specifically: the backends put user input straight into their error messages — a device name, a body site, a language code. Good messages for the person reading them and the wrong thing to keep, so they are shown and never written down. Redaction happens on the way *in*, so the stored buffer never holds a value that would later have to be scrubbed.
+>
+> `POST /checkin/{id} → 500` identifies a bug; `POST /checkin/usr_0de08e794ed0` identifies a person. Only the first survives.
+>
+> ## Why the tests are structural
+>
+> One rule with four implementations drifts, and it drifts silently — a redaction narrowed on Android leaks nothing on the desktop, so nothing an ordinary test run would notice. There is no test runner for these sources here; the native workflow compiles them and stops. So `test_native_shells_record_nothing_private.py` reads them the way the TypeScript guard reads `errors.ts`: signature arity, stored fields, the four redaction patterns at full width, the FNV-1a constants, and both failure kinds at the call sites — including the request that never reached a server, which is the case an implementation forgets because it is an exception rather than a status.
+>
+> What it cannot check is behaviour: that Swift's FNV-1a and Kotlin's produce the same digits is asserted by neither, only that both are FNV-1a with the same constants. Stated in the file rather than hidden.
+>
+> ## The defect writing that guard exposed
+>
+> `Problems.attach` existed and was called nowhere. The Android shell would have recorded nothing and said nothing about it, because the recorder refuses to crash over a diagnostic — a missing attach has no symptom at all. Every structural check above passed while the feature was simply off on that platform.
+>
+> Worth naming as a class rather than a typo: those checks ask whether each piece is *correct*, and correctness of every piece is not the same as the feature being *on*. iOS and Windows have no equivalent step, which is exactly why the third platform's extra wire went unnoticed. `MainActivity.onCreate` now attaches, and `test_the_android_recorder_is_switched_on` fails if that line ever leaves.
+>
+> ## Scope
+>
+> These record only. Sending stays the console's job and happens only where a collector was compiled in, so native-shell failures do not reach the gateway aggregate. `native/README.md` says so rather than leaving it to be assumed.
+>
+> Also carries the previously-pushed gateway container deploy-path doc commit, which had no PR of its own.
+>
+> ## Checks
+>
+> - 770 passed, 1 skipped — full suite
+> - 19 passed — the new guard, with the attach line removed by injection to confirm it fails
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #178 — Stop the route guard inventing work
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/178>
+
+> `clientpaths.py` is byte-identical across the three repos, so this carries a fix found in QRME. Companion PRs [qrme#231](https://github.com/davidsbianchi1984/qrme/pull/231) and in pdi.
+>
+> ## The bug
+>
+> A template literal may nest another inside an interpolation:
+>
+> ```ts
+> `/marketplace${tag ? `?tag=${enc(tag)}` : ""}`
+> ```
+>
+> The backtick alternative was `` [^`]* ``, which stops at the **inner** opening backtick. The captured literal became `` /marketplace${tag ? ``, the query cut landed on the literal `?` inside it, and the call normalised to a path no route matches — so a route with a perfectly good client door was reported as having none.
+>
+> ## Why it is worth a commit here, where nothing changed
+>
+> **No JIM route was affected** — the count is 73 before and after, because no JIM call site uses that idiom yet. This lands anyway because the file is shared, and because the *kind* of failure is the point.
+>
+> Every earlier defect in that file made the guard too **lenient**: a truncated path, a verb read off a neighbouring call, a route table read flat rather than recursed. Those are the failures you expect from a checker, and they get found by the bug they let through.
+>
+> This one made it **invent work**. Nothing failed, the suite stayed green, and a route simply sat on the backlog looking like work — a door-building round was aimed at it before anyone noticed the door was already there. That fails more quietly than a miss, and is harder to notice, because the work looks real until you go to do it.
+>
+> The distinction is now written into the file so the next person reading it knows both directions exist.
+>
+> ## The fix
+>
+> Interpolations are matched by counting braces rather than by a pattern that cannot span a nested one, and the optional-query marker recognises a backtick as well as `"` and `'` — the `${x ? "?a=b" : ""}` idiom is usually written with a nested template.
+>
+> ## Notes
+>
+> - Route-guard tests green: 21 passed. Doorless backlog unchanged at 73, which is the expected result.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #177 — Cut 0.19.1
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/177>
+
+> 0.19.0 shipped its own error-reporting card and first-run notice **with no screen, no lesson and nothing for the assistant to point at** — while its release notes described the feature at length. The guard that now prevents that (jim#176) and the two drawings it asked for landed on `main` after the tag, so they need a version to ship in.
+>
+> Companion PRs [qrme#230](https://github.com/davidsbianchi1984/qrme/pull/230) and in pdi.
+>
+> ## The five strings
+>
+> | File | |
+> |---|---|
+> | `pyproject.toml` | what pip follows |
+> | `jim/api.py` | `FastAPI(version=…)`, what the release tag follows |
+> | `app/package.json` | what the installer filenames and the auto-updater follow |
+> | `app/package-lock.json` | **twice** — the lockfile header and the `""` entry under `"packages"` |
+>
+> `test_readme_gallery.py` asserts all five agree; it passes. Console builds with `0.19.1` in the bundle.
+>
+> ## What ships in it
+>
+> **No application behaviour changes.** Screens 93 and 94, their gallery rows, a lesson, assistant phrasings — and the guard that fails when a surface ships with none of them.
+>
+> For JIM the drawing carries the point the feature rests on: the unredacted form of the path on screen 93 names a photograph of somebody's body and whose it is, and the card draws an operation and a status and nothing else, because that is all the log holds.
+>
+> ## Notes
+>
+> - Suite green at time of writing; full run in flight.
+> - Tag creation stays yours — links follow when this merges.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #176 — Fail when a surface ships with no drawing, then draw the two that did
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/176>
+
+> Companion PRs in qrme and pdi. Two commits: the guard, then the drawings it asks for.
+>
+> ## The guard
+>
+> The gallery tests all check screens against the README — a reference with no file, a file with no reference, a gap in the numbering. Every one starts from the screens, and none asks the opposite question: **does this surface have a screen at all?** So a feature can ship with nothing drawn, nothing taught and nothing for the assistant to point at, and the suite stays green.
+>
+> That has happened three times. The followup loop, the adaptation profile and the anonymity posture each needed a dedicated catch-up round. Then the error-reporting card and its first-run notice went out in 0.19.0 the same way, while the release notes described the feature at length.
+>
+> It is the same shape of flaw this suite has found twice elsewhere: **a guard that only walks the relation in the direction where the answers already exist.** The doorless audit was a route with no client door; the redaction check read a shrinking snapshot and would have gone vacuous the day it emptied.
+>
+> `ui_screens.txt` is the missing direction. Every console surface carries a screen number, `undrawn`, or `unaudited`.
+>
+> **Why the mapping is declared rather than inferred.** Matching component names against screen titles resolved only ten of twenty-four, because titles are written for the person using the app ("What JIM Learned") and component names for the person editing it ("Baseline"). A fuzzy match would have produced a mapping that looked complete and was not — so `unaudited` is the honest seed for components that predate the file, and it is not a status a new component may use.
+>
+> **Both backlogs are ratcheted against a ceiling each repo declares for itself**, because this test is byte-identical across three repositories with different backlogs and one hardcoded number would be the largest of the three, leaving the other two slack to grow into. A ceiling left high after the backlog falls fails too — a ratchet that stops ratcheting re-opens the ground it gained.
+>
+> Verified by injection, five ways:
+>
+> ```
+> unclassified surface                        -> fails
+> silenced by writing `undrawn`               -> fails (the ratchet)
+> mapping points at a screen that not exist   -> fails
+> typo'd status ("undrwan")                   -> fails
+> component deleted, entry left behind        -> fails
+> raising the ceiling deliberately            -> passes, and shows in the diff
+> ```
+>
+> ## The drawings
+>
+> Screens **93 What Went Wrong** and **94 Before Anything Is Sent**, with gallery rows, a lesson, and assistant phrasings for the words somebody actually types when something has broken — "it failed", "something broke", "stop sending", "opt out".
+>
+> For JIM the redaction is the feature rather than a detail of it, and 93 says so: the unredacted form of the path it draws names a photograph of somebody's body and whose it is. The card draws an operation and a status and nothing else, because that is all the log holds — and the message it does not keep is the one that would have named which site on you.
+>
+> Both surfaces move off `undrawn`, and the ceiling drops to zero with them.
+>
+> ## Notes
+>
+> - No backend behaviour changes; screens, gallery, lesson, assistant phrasings and the new guard.
+> - Suite green: 751 passed, 1 skipped — up from 745.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #175 — Cut 0.19.0
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/175>
+
+> 0.18.0 is already released, so the error-capture and send work merged in jim#173 and jim#174 had nowhere to ship. Cut with the siblings so the suite carries one version. Companion PRs [qrme#228](https://github.com/davidsbianchi1984/qrme/pull/228) and [pdi#136](https://github.com/davidsbianchi1984/pdi/pull/136).
+>
+> ## The five strings
+>
+> They move together, as the releasing checklist says and as each of them has drifted at least once before — pyproject sat at 0.4.0 through the 0.4.1 cut, the lockfile roots at 0.3.3 through two:
+>
+> | File | |
+> |---|---|
+> | `pyproject.toml` | what pip follows |
+> | `jim/api.py` | `FastAPI(version=…)`, what the release tag follows |
+> | `app/package.json` | what the installer filenames and the auto-updater follow |
+> | `app/package-lock.json` | **twice** — npm writes the root version in the lockfile header *and* in the `""` entry under `"packages"` |
+>
+> `test_readme_gallery.py` asserts all five agree; it passes. Console builds with `0.19.0` in the bundle.
+>
+> ## What ships in it
+>
+> The console records every failed request and, where a build has a collector address, reports it once at launch. For JIM the distinction that makes it safe is not theoretical: `GET /users/{id}/captures/{id}/image → 404` identifies a bug, where the unredacted version of that path names a photograph of somebody's body and whose it is. Only the operation and the status are kept; the message — *unknown site 'knee'; one of scalp, face, eye, mouth…* — never is.
+>
+> Nothing sends before a first-run notice has been answered, and that notice shows the real payload rather than describing it.
+>
+> ## Two things found while cutting
+>
+> **`app-v0.16.0` and `app-v0.17.0` were never tagged.** Only `app-v0.15.0` and `app-v0.18.0` exist on the remote. Two versions were cut in the repo — strings bumped, changelog written, release notes staged — and then never released. The existing `[0.16.0]:` link reference points at a tag that does not exist, so it is already a dead link.
+>
+> This adds references for `[0.19.0]` (anticipating the tag, as the convention has always done) and `[0.18.0]` (that tag is real, and the reference was simply missing). `[0.17.0]` is deliberately left without one rather than writing a third link to nothing.
+>
+> **`cloudgw` stays at `0.1.0`.** It lives in QRME's repository and gained an endpoint pair this round, but its version is the gateway's own rather than part of the product release train. Flagged rather than changed.
+>
+> ## Notes
+>
+> - No functional changes in this commit — versions, changelog and release notes only.
+> - Suite green: 745 passed, 1 skipped.
+> - Tag creation stays yours — nothing here pushes `app-v0.19.0`.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #174 — Send the error reports, and refuse anything that is not one
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/174>
+
+> The consoles have recorded content-free failures since jim#173. This is the other half — they now **send** them, once at launch, alongside the update check. Companion PRs [qrme#227](https://github.com/davidsbianchi1984/qrme/pull/227) and [pdi#135](https://github.com/davidsbianchi1984/pdi/pull/135); `errors.ts`, `Problems.tsx`, `ProblemNotice.tsx` and the test are byte-identical across the three repos.
+>
+> ## For JIM the stakes are not theoretical
+>
+> `cap_` is a clinical capture. `GET /users/{id}/captures/{id}/image` names a photograph of somebody's body, and the unredacted version of that path names *whose*. The redaction has always run before the row is stored; what this change adds is a second party who would notice if it stopped.
+>
+> ## Nothing goes before the person has been asked
+>
+> Sending is opt-**out**, which only means something if the opting-out can happen *before* the first report rather than being discovered afterwards in a settings panel nobody opened. A switch nobody knows about is not a choice.
+>
+> So `sendProblems` refuses until a first-run notice has been answered. That notice **renders the actual payload** rather than describing it, from the same function that posts it — prose saying "we only send error codes" would be a claim you have to trust; showing the object means the notice cannot go stale while still reading honestly. Both answers are offered, and it appears only where a build has a collector at all, because interrupting somebody to explain a thing that cannot happen is how people learn these notices are noise.
+>
+> Driven end to end against a live gateway:
+>
+> ```
+> first launch, notice unanswered   -> awaiting-notice   (nothing sent)
+> person clicks "No thanks"         -> turned-off        (nothing sent, ever)
+> fresh install, before answering   -> awaiting-notice
+>               after "That's fine" -> sent
+> ```
+>
+> The aggregate then held exactly one row — from the install that agreed. The one that declined contributed nothing.
+>
+> After that first answer it is opt-out as normal: automatic, with the same switch on the Settings card, changeable whenever.
+>
+> ## Off by absence, not by flag
+>
+> The collector address is compiled in at build time and unset by default:
+>
+> ```bash
+> PROBLEM_COLLECTOR=https://gw.example.com PROBLEM_TOKEN=… npm run build
+> ```
+>
+> Unset, and the installer has nowhere to send and no code path that could acquire one — a stronger default than a boolean, because there is no address for a later mistake to switch on. The send swallows every failure; a diagnostic that can delay a launch has stopped being worth having.
+>
+> Sent from the renderer rather than the Electron main process, because that is where the buffer lives — a diagnostic needing an IPC channel of its own has more ways to go wrong than the bugs it finds. It lands beside the update check anyway: `setupAutoUpdate()` runs the moment the window is created.
+>
+> ## Counts are deltas
+>
+> Each row remembers how much of itself has been reported, so reopening the app twenty times does not turn one broken screen into twenty. Nothing is deleted after a send — the row is the user's own history. A failed send moves the watermark not at all:
+>
+> ```
+> send to a dead collector -> failed,  watermark sent=0 of 1
+> retry once it is up      -> sent,    watermark sent=1 of 1
+> ```
+>
+> ## The gateway refuses rather than redacts
+>
+> `cloudgw/problems.py` (QRME's repository) accepts exactly five top-level keys and five per problem and **422s on anything else** — an unknown field, a `platform` string long enough to hide a sentence, a `day` carrying a time of day, a path with an unredacted id still in it.
+>
+> It could redact that path itself; the pattern is right there. It does not, because then a build whose redaction had broken would keep working and nobody would learn that every report from those users had been arriving with a user id in it.
+>
+> What survives is **less than what arrives**: reports fold into counters keyed by product, version, platform, operation and status. Locale is validated and then dropped, and nothing records that a particular install sent anything, or when beyond the day. Reading that aggregate needs a narrower permission than writing to it — the posting token ships inside every installer and is public the moment somebody unzips one.
+>
+> ## Four bugs found by checking rather than reasoning
+>
+> **A gap in the guard itself.** Injecting a `detail` field into the outgoing report was caught — but only by the test comparing the wire shape against the gateway, which runs only in the repo that *ships* the gateway. Here, where a leak would cost the most, it would have passed. The five field names are now pinned locally too.
+>
+> **Every validator was wrong about its own rule.** All the gateway's patterns were anchored with `$`, which in Python matches before a trailing newline as well as at end of string — so `Win32\n` was accepted by a validator whose error message said newlines were not allowed. All now end `\Z`, with a test.
+>
+> **No CORS at all** — the one that would have made the rest pointless. The sender posts JSON with an `authorization` header, making it a non-simple request: the browser preflights with `OPTIONS` and refuses the real call unless that is answered. Every preflight would have 405'd, every report would have failed, and because the sender swallows failures the feature would have been dead in the field with nothing to show for it. Found by asking what an Electron renderer's origin actually *is*: `null`, since it loads from `file://` — which is also why no origin allowlist could have been written.
+>
+> **A 500 on the read, found by being careless rather than clever.** While driving the client, a scratch file of unrelated JSON got reused as the counter path. The aggregate loaded it — it parsed — and reading the aggregate then died sorting values with no `count`. Unparseable JSON had been handled; *parseable* JSON of the wrong shape had not. Rows are validated individually on load now.
+>
+> ## Notes
+>
+> - No backend changes. No new routes, so the doorless backlog is unaffected.
+> - Console typechecks and builds; suite green (745 passed, 1 skipped).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
+## #173 — Record what fails, without recording anything private
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/173>
+
+> Error collection across all three consoles, built so it cannot carry user data. Companion to [qrme#226](https://github.com/davidsbianchi1984/qrme/pull/226) and [pdi#134](https://github.com/davidsbianchi1984/pdi/pull/134); `errors.ts`, `Problems.tsx` and the test are byte-identical across the three repos.
+>
+> ## For JIM the constraint is not theoretical
+>
+> Every failed request already passes through one function, so catching them is ~30 lines. The hard part is what a failure may say about itself. JIM's backend puts user input straight into its error messages:
+>
+> ```
+> no device called 'Pixel Buds' on this account
+> unknown site 'knee'; one of scalp, face, eye, mouth…
+> unknown language 'xx'
+> ```
+>
+> A site on somebody's body. A device in their home. Good messages for the person reading them, and in a health product exactly the wrong thing to keep. So the message is shown to the user, who owns it, and **is never written to the log**. Same reasoning for the path: `/users/usr_8752921df161/captures/cap_9f2/image` identifies a person and a photograph of them; `GET /users/{id}/captures/{id}/image` identifies a bug.
+>
+> | Recorded | Never recorded |
+> |---|---|
+> | operation (`GET /users/{id}/captures/{id}/image`) | the error message |
+> | status (0 = never reached a server) | ids, tokens |
+> | count, date (day only) | request or response bodies |
+> | app version, platform, language | timestamps finer than a day |
+>
+> Redaction happens **on the way in**, so there is no moment at which the buffer holds something that would have to be scrubbed later. A day is the finest time recorded on purpose — a timestamp to the second is a movement record.
+>
+> ## Nothing transmits
+>
+> Local, capped at 50, with a Settings card showing the exact payload — the same object the copy button produces, from one function, so the preview cannot drift from what is copied. JIM's backend ships inside the installer, so for a desktop user there is no server on the other end; a copy and a paste is the honest path.
+>
+> ## Two mistakes caught by testing, not by reasoning
+>
+> **The redaction under-redacted.** Requiring six hex characters let `cap_9f2`, `req_77aa` and `usr_1` through — three of the first eight real paths, and `cap_` is a clinical capture. Widened, then validated against 239 real route segments across the three products to confirm it does not eat route names in the other direction.
+>
+> **The test checking that had the same shape of flaw** — it read segments from `doorless_routes.txt`, which shrinks every time a door is built, so it would have gone vacuous the day the backlog emptied. It now reads the live route table.
+>
+> ## Twelve tests hold the shape
+>
+> No parameter a message could arrive through, no field it could sit in, short ids caught as well as long, no real route name eaten. **Verified by injecting both leaks** — a `detail` parameter on the recorder, and the redaction narrowed back — and watching them fail.
+>
+> ## Notes
+>
+> - No backend changes. No new routes, so the doorless backlog stays at 73.
+> - Console typechecks and builds; full suite running at time of writing.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #172 — Exclude a desk's view and beacon QR from the doorless audit
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/172>
+
+> Companion to [qrme#225](https://github.com/davidsbianchi1984/qrme/pull/225), keeping `clientpaths.py` byte-identical across the three repos.
+>
+> QRME's desk view (`/desks/{desk_id}/view.webp`) and desk beacon QR (`/desk-beacons/{beacon_id}/qr.svg`) render in an `<img src>` rather than being fetched by the API client — the same category as the pair and medical-ID codes already in `NOT_A_CLIENT_CALL`. Counting them as doorless would mean building a door that cannot exist.
+>
+> JIM has no such routes, so this changes nothing about its own backlog. It is here because the helper is shared and drift between the copies is exactly what the byte-identical rule prevents.
+>
+> Both of JIM's guards were re-run against the updated helper: 7 passed, doorless unchanged at 73.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #171 — Channel 2 and the clinical camera reach a person
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/171>
+
+> Two of the four families deferred from #170. Both had complete backends and no caller anywhere — the microphone could be attached to a device, metered, handed to a call and released with its whole history read back; the camera could seal a photograph into the vault, release a chosen few to a clinician and withdraw one afterwards. None of it was reachable from the console or from any shell.
+>
+> ## Devices had to come first
+>
+> Not a separate feature — the precondition. A microphone attaches to a device the account already knows, never to a name typed in the moment, so what is listening is always something registered on purpose. `PUT /users/{id}/mic` answers `no device called 'X' on this account` otherwise, which is the backend enforcing exactly that.
+>
+> ## Every vocabulary is fetched, not typed out
+>
+> Mic types, gain levels, the twenty-one capture sites, the three kinds, and which sites count as intimate — all from the server. Two reasons, and the second matters more: a picker built from the server's own list **cannot offer a value the handler will refuse**, and the *rules* travel with the options instead of being restated in the client where they drift.
+>
+> ## Three details are the server's judgement rendered, not the console's invention
+>
+> **Ambient microphones are shown as refused, with the reason.** A conference phone or room array cannot be channel 2 — *"everyone it picks up would be lending their voice without being asked."* Listing them as unavailable answers the question a missing option would raise.
+>
+> **Gain is not volume.** Every level is the owner at a different distance, and the server reports `reaches_others` per level — so the buttons say it too:
+>
+> | level | reaches others | describes |
+> |---|---|---|
+> | `near_field` | no | you, speaking close to the microphone |
+> | `normal` | yes | you, at arm's length or across a desk |
+> | `wide` | yes | you, from anywhere in the room |
+>
+> The screen also states that a call narrows the channel regardless of the setting and that the setting returns afterwards — rather than leaving a silent override to be discovered.
+>
+> **An intimate site needs its own tick** before a file can be chosen, and attaching to a referral reports how many had to be named one at a time, since intimate captures are never swept in by a condition match.
+>
+> ## Coverage
+>
+> **Seventeen routes off the doorless list, 90 → 73.** Bindings and screen landed together, per the rule written into `clientpaths.doorless()` in #170 — the audit counts call sites, so a binding without a screen would flatter the number.
+>
+> ## Still deferred
+>
+> The medical referral flow and specialist tasks. Both want a configured QRME tandem — `/specialists/catalog` answers 409 without one — so a door built now would be a form that cannot complete. They stay on the list where the test keeps them visible.
+>
+> ## Notes
+>
+> - Console typechecks and builds clean; full suite running at time of writing.
+> - Local file reads cap against the server's own `max_bytes` (25 MB) before upload, and report the actual size when they exceed it.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #170 — Menus that keep their promises, and the routes with no door at all
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/170>
+
+> **This PR now carries two rounds.** The second was pushed onto the same branch while the first was still in CI, so they merge together.
+>
+> ---
+>
+> # 1. Every option JIM offers, it now has to accept
+>
+> A catalog endpoint is a menu; whatever it lists is what a user can pick. If the endpoint that *consumes* the choice refuses one of those values, the user meets an error for doing exactly what they were offered. Six checks now send the request rather than read source — languages in both delivery modes, model providers, robots, connectors. **All accepted.**
+>
+> ## The seventh is not about a dead button
+>
+> `/languages` sets `safety_content_translated` per language. That flag tells a user whether the **CPR and AED playbooks and the waiver terms** arrive in their language or fall back to English.
+>
+> The trap is **structural rather than present**:
+>
+> ```python
+> HAND_TRANSLATED = tuple(code for code in SUPPORTED if code != "en")
+> ```
+>
+> It is *derived*. Every non-default language is flagged `true` automatically, while the strings live in a hand-written table of twenty. **Adding a tenth language would promise translated resuscitation steps in the same commit that gives it none**, and nothing would have said so.
+>
+> Complete today — 20 × 9, no gaps. Verified by adding Korean and watching the check report `ko: 20 of 20 strings, e.g. 'Call emergency services now…'`.
+>
+> ---
+>
+> # 2. Which routes have no door?
+>
+> The inverse question — whether every route is reachable from a door a user can open. The quieter failure: a call to a missing route 404s and gets reported; **a route nobody calls produces nothing at all.**
+>
+> ## 101 of JIM's 219 routes, and the gap is not evenly spread
+>
+> Thirty-one sit under `/users/{id}/`, and they are not obscure:
+>
+> | Family | Routes with no caller |
+> |---|---|
+> | **channel-2 microphone** | set, gain, handover, release, history, delete |
+> | **clinical captures** | create, list, attach, image, delete |
+> | **medical referral** | clinicians, prepare, requests, released |
+> | **specialist tasks** | create, list, read, advance |
+> | **cloud-contribution** | preview, revoke |
+> | **alarms** | list, accept, clear, escalate |
+> | plus | incidents, beacons, locality, pages |
+>
+> The helper **dock** and the **tutorial** are two more families with routes and no caller.
+>
+> **Several of these have drawn screens in `docs/screens/` and rows in the README gallery.** Drawn, documented, and unreachable in every shipping client — worth saying plainly, because the gallery is what made them look done.
+>
+> Recorded in `jim/tests/doorless_routes.txt` as a ratchet: it cannot grow, and it must shrink deliberately.
+>
+> ## A correction carried from QRME
+>
+> The first version of this audit reported **zero** and passed — vacuously. `app.routes` is not flat: FastAPI wraps each `include_router` in an `_IncludedRouter` with no `path` of its own. `all_routes()` now recurses. Matching was never affected, so the guards from #168 and #169 stand; only enumeration was broken.
+>
+> ## Notes
+>
+> - Local suite (round 104): **725 passed**. Round 105's is running.
+> - `jim/tests/clientpaths.py` stays byte-identical with qrme's and pdi's copies.
+> - Tests only — no runtime behaviour changes.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
+## #169 — Check the verb, not just the address
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/169>
+
+> The route guard added in #168 accepted a **partial** router match — path right, method ignored. That passes a client sending `POST` where only `GET` is mounted, which answers **405**; from the user's side that is the same dead button as the 404 the guard exists to prevent. It now requires a full match.
+>
+> ## Reading the verb means reading four dialects
+>
+> | Surface | How the verb is written |
+> |---|---|
+> | console (TS) | labelled — `{ method: "POST" }` |
+> | iOS (Swift) | labelled — `method: "PUT"` |
+> | Android (Kotlin) | positional, right after the path |
+> | Windows (C#) | the helper's own name — `Post(...)`, or `HttpMethod.Get` |
+>
+> ## Scoping to the enclosing call also widened the net
+>
+> Double-quoted paths — those written without interpolation — had been skipped entirely, so **JIM's console went from 33 checked paths to 65 verb-and-path pairs**. Parsing the call with balanced parens is what makes both the verb and the wider coverage possible.
+>
+> ## Coverage
+>
+> | Surface | pairs checked | refused |
+> |---|---|---|
+> | console | 65 | 0 |
+> | iOS | 63 | 0 |
+> | Android | 53 | 0 |
+> | Windows | 62 | 0 |
+>
+> **No field bug came out of this** — all 243 pairs are accepted.
+>
+> Verified by injection rather than assertion: a C# `Post(` turned `Put(` produced `[windows] PUT /enroll … accepted here: POST`, and the tree was restored to a zero diff.
+>
+> ## A new class of guard
+>
+> Each language's verb reader gets its own liveness test. They are separate code and they fail quietly: if one stops matching, every call from that surface silently becomes a GET — and since most routes *do* serve a GET, the suite would stay green while checking almost nothing.
+>
+> ## Notes
+>
+> - `jim/tests/clientpaths.py` stays byte-identical with qrme's and pdi's copies (`acf4c50…`).
+> - `native/README.md` updated where it described the check as path-only, keeping both stated limits: routing-level matching cannot see refusals that happen *after* dispatch, and a path assembled at runtime is invisible to any static scan.
+> - Local suite: **719 passed**.
+> - Tests and docs only — no runtime behaviour changes.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #168 — Check JIM's four client surfaces against its own route table
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/168>
+
+> ## Why
+>
+> This guard comes from a bug in the sibling. QRME's community wall shipped its like, comment and share buttons **dead** — the console asked for a singular path segment the routes only map in the plural. Three things all looked fine:
+>
+> - the backend tests passed, because they used the reachable form
+> - the console compiled, because a template literal is only a string
+> - the button rendered, because rendering has nothing to do with resolving
+>
+> Nobody was comparing the two halves against each other. JIM has the same exposure and had none of the checking.
+>
+> ## What's checked now
+>
+> | Surface | Paths | Language | Previously checked |
+> |---|---|---|---|
+> | console | 33 | TypeScript template literals | ❌ |
+> | iOS | 46 | Swift `\(x)` | ❌ |
+> | Android | 43 | Kotlin `$x` / `${x}` | ❌ |
+> | Windows | 44 | C# `{x}` | ❌ |
+>
+> `native.yml` proves the three shells *compile*. It cannot say whether a path *resolves* — a path is a string in all three languages, so a mistyped one compiles, ships, and 404s in the field. All four surfaces now go through the real Starlette router rather than string comparison, because several routes are generic in their first segment and a shape test would either miss those or invent shapes the app doesn't have.
+>
+> ## Two tests guard the guard
+>
+> **`test_every_surface_is_actually_being_scanned`** — fails if a language's extraction pattern stops matching. A scan that silently finds nothing reads exactly like a scan that finds nothing wrong, which is the worst failure mode a test like this has.
+>
+> **`test_an_interpolated_query_does_not_truncate_the_path`** — pins a real defect found in the sibling's extractor while writing this. It cut a path at its first interpolation whenever a query followed, turning `/meds/${uid}/adherence?days=${d}` into bare `/meds` — a prefix that resolves for the wrong reason and takes the real tail with it. JIM's medication adherence board is that exact shape, so it's the fixture rather than a toy.
+>
+> ## Shared, deliberately
+>
+> `jim/tests/clientpaths.py` is byte-identical with qrme's and pdi's copies (md5 `38e1a310…`). The question doesn't differ by product, so neither should the answer; the repo root is located by walking up to `pyproject.toml` rather than counted in `.parent`s, which is the only thing that would otherwise differ between the three.
+>
+> ## Result
+>
+> **No field bug came out of this.** Every path JIM's four surfaces build resolves. Saying that plainly rather than dressing up a clean audit — the value is the guard, not a catch.
+>
+> The checks were verified the way the last round's were: by injecting the bug each one claims to catch. A `/enrollzz` typo in the Kotlin client produced:
+>
+> ```
+> [android] /enrollzz  (native/android/.../ApiClient.kt, from '/enrollzz')
+> ```
+>
+> and the tree was restored to zero diff afterward.
+>
+> ## Also
+>
+> `native/README.md` gains a **"Do the paths resolve?"** section beside its existing compile claim, stating both limits honestly: routing-level matching cannot see a refusal that happens *after* dispatch inside a handler, and a path assembled from pieces at runtime is invisible to any static scan.
+>
+> ## Tests
+>
+> `718 passed` (was 714 — the four new tests).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #167 — Cut 0.18.0
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/167>
+
+> 0.18.0 across all five version strings — `pyproject.toml`, `jim/api.py`'s `FastAPI(version=)`, `app/package.json`, and the two *root* entries of `app/package-lock.json` (root only; `node_modules/react-refresh` is genuinely at `0.17.0` and was correctly left alone). Plus the changelog heading, the README history row and current-release line, and a fresh `RELEASE_NOTES.md`.
+>
+> ## What it carries
+>
+> **The rest of what JIM knew reaches every shell.** The guidance effectiveness loop, the adaptation profile and the anonymity posture existed in the backend and the web console and nowhere else. All three now reach iOS, Android and Windows — so every feature with a console door has a native one.
+>
+> The followup card reads `/followup/{uid}` rather than the monitor reply, so a question opened in an *earlier* session is still asked. Saying guidance did not help re-runs the escalation ladder with that fact in it and names the people reachable now, as people rather than as a tier.
+>
+> **All four new doors got drawn and taught.** Screens **89 Did That Help?**, **90 What JIM Learned**, **91 Your Name Here** and **92 Community** join the gallery, each with a lesson and a phrase the assistant answers to — "it did not help", "what JIM knows about me", "pseudonym", "rooms".
+>
+> **Fixed** — the Windows palette had no `JimT3Brush`. The tier exists in the Android and iOS themes but the desktop resources stopped at `T2`, so a page reaching for it would have failed to load its resources rather than merely looking wrong.
+>
+> ## Verification
+>
+> - 714 tests passed on this content before the cut; console builds clean (`✓ built in 1.34s`).
+> - All five version strings verified; no stale root `0.17.0`.
+> - Scripture confirmed still the README's closing section and not itemized as a changelog item.
+>
+> Cut together with [qrme#220](https://github.com/davidsbianchi1984/qrme/pull/220) and [pdi#127](https://github.com/davidsbianchi1984/pdi/pull/127).
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #166 — Draw, teach and make findable what 0.16.0 and 0.17.0 shipped
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/166>
+
+> The community door, the effectiveness loop, the adaptation profile and the anonymity posture all had code and screens in the app — and **no drawing, no lesson, and no way for the help assistant to point anybody at them.** The convention here has been screen SVG + gallery row + lesson + help destination per feature; it had quietly stopped being followed.
+>
+> | # | Screen | Lesson chapter | Ask the assistant |
+> |---|---|---|---|
+> | 89 | Did That Help? | Being watched over | "it did not help", "follow up" |
+> | 90 | What JIM Learned | Being watched over | "what JIM knows about me" |
+> | 91 | Your Name Here | Getting started | "pseudonym", "hide my name" |
+> | 92 | Community | Beyond the app | "rooms", "local events" |
+>
+> ## The builder did the proofreading
+>
+> Two guards caught things before they rendered: it rejects a card title or subtitle that would overflow its box, and it rejects an accent colour that isn't in the palette. That second one caught `KeyError: 'cloud'` — `cloud` is an *icon* name in this repo, not an accent, and JIM's palette is red/green/amber/cyan/violet/brand/emer/pink/teal.
+>
+> JIM's tutorial has no chapter-ordering constraint (unlike QRME's, whose test caught me appending in the wrong place), and its lessons already interleave chapters, so appending was correct here. I checked rather than assumed.
+>
+> ## Verification
+>
+> - Gallery, tutorial, help and dock tests: **44 passed.** The tutorial test that demands every drawn screen have a lesson is what told me the four lessons were needed — it failed first, then passed.
+> - Assistant routing verified live: "did that help", "what jim knows about me", "pseudonym" and "rooms" each return their own direction.
+> - Full suite running; CI is the gate.
+>
+> Cut alongside [qrme#219](https://github.com/davidsbianchi1984/qrme/pull/219), which does the same for QRME's three.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #165 — Three more things JIM knew but only the web console asked about
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/165>
+
+> This finishes a native round that shipped the community bridge and stopped there. The other three features named in that round's own scope — the effectiveness loop, the user-specific model, the anonymity posture — had **zero** references in `native/ios`, `native/android` or `native/windows`, which is the same "door nobody can open" failure this project keeps relearning.
+>
+> | Feature | Route | Where it landed |
+> |---|---|---|
+> | **"Did that help?"** (spec [0039]) | `/followup/{uid}` | Monitor — `MonitorView.swift`, `MonitorScreen`, `MonitorPage.xaml` |
+> | **What JIM has learned about you** (claim 11) | `/adaptation/{uid}` | Overview — where these shells already keep baseline, model, language |
+> | **Your name here** (spec [0031] / box 212) | `/anonymity/{uid}` | Overview |
+>
+> ## Three deliberate details
+>
+> **The question survives a restart.** The followup card reads `/followup/{uid}` rather than the `monitor` reply. A question opened in an *earlier* session is therefore still asked — a question the app drops is a question nobody ever answers. (I briefly added a `followup` field to `MonitorResult` on two shells and then removed it: it would have been dead weight, and worse, it would have implied the question only exists in the session that raised it.)
+>
+> **"It did not" is not a complaint filed away.** It re-runs the escalation ladder with the ineffective-guidance rung and the screen names the humans reachable right now — the spec's second door, rendered as people (support person, crisis line, site responder, emergency contact) with their channel and status, rather than as a tier.
+>
+> **Both postures render from the server's own data.** The adaptation card shows counts off this user's own history — which guidance helped and how often — never a score, plus the statement that nothing was sent to a model vendor and a note when the sealed copy is in their vault. The anonymity card renders the `keeps` and `costs` lists verbatim, so what's on screen cannot drift from what the code does.
+>
+> ## Verification
+>
+> - Console builds clean (`✓ built in 1.19s`) — untouched by this round, checked for regressions.
+> - No Swift/Kotlin/.NET toolchain here, so **the iOS / Android / Windows jobs on this PR are the real check.** XAML well-formedness verified locally.
+> - Caught before pushing: `Dictionary<>` needed `System.Collections.Generic` in `ApiClient.cs`, `NavigationEventArgs` needed `Microsoft.UI.Xaml.Navigation` in `MonitorPage.xaml.cs`, and the live-assistance option key is `note` — I had written `detail` from memory and checked it against `jim/followup.py` instead.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #164 — Cut 0.17.0
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/164>
+
+> 0.17.0 across all five version strings — `pyproject.toml`, `jim/api.py`'s `FastAPI(version=)`, `app/package.json`, and the two *root* entries of `app/package-lock.json` (root only; no dependency at the same version was touched). Plus the changelog heading over the accumulated `[Unreleased]` content, the README history row and current-release line, and a fresh `RELEASE_NOTES.md`.
+>
+> ## What it carries
+>
+> **The community door opens on every shell.** The bridge out to QRME's rooms and local places reaches iOS, Android and Windows — FIG. 2's boxes 222–226, opened rather than reimplemented, because the moderation, the rooms and the languages already live in QRME. The "what JIM does not do" list is rendered from the booleans the server returns rather than typed out as reassurance, and opening a room records the visit *before* launching the browser.
+>
+> **Two things JIM already knew got screens.** The claim-11 adaptation profile ("What JIM has learned about you" — the confidence earned from your own history, which guidance actually helped and how often, with the reminder that nothing was sent to a model vendor to build it) and the anonymity posture ("Your name here" — what the choice keeps and what it costs).
+>
+> **Fixed** — the Windows palette had no `JimT3Brush`. The dimmest text tier exists in the Android (`Jim.T3`) and iOS (`Theme.t3`) themes but the desktop resources stopped at `T2`, so a page reaching for it would have failed to load its resources rather than merely looking wrong.
+>
+> ## Verification
+>
+> - Console builds clean (`✓ built in 1.37s`).
+> - Full suite ran clean on this content before the cut (714 passed); CI is the gate for the cut itself.
+> - Scripture confirmed still the README's closing section, and deliberately not itemized as a changelog item.
+>
+> Cut together with [qrme#217](https://github.com/davidsbianchi1984/qrme/pull/217) and [pdi#126](https://github.com/davidsbianchi1984/pdi/pull/126) so the suite carries one version.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #163 — The community bridge reaches the native shells
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/163>
+
+> The door out to QRME's rooms and local places shipped in the web console only; iOS, Android and Windows had no way to it at all. All three gain a **Community** panel alongside Sources / Social / Apps in Connect — FIG. 2's boxes 222–226 (interact with others, moderated storage, community interaction, local events and forums in every language), **opened rather than reimplemented**, because the moderation, the rooms and the languages already live in QRME.
+>
+> | Shell | Where |
+> |---|---|
+> | iOS | fourth segment in `ConnectView`, `CommunitySection` |
+> | Android | fourth `TabRow` tab in `ConnectScreen`, `CommunityPanel` |
+> | Windows | fourth `PivotItem` in `ConnectPage` |
+>
+> Each client also gains `community()` and `noteCommunityVisit()` plus the wire models for rooms, places and the posture.
+>
+> ## Two details are deliberate
+>
+> **The posture is data, not prose.** The "what JIM does not do" list — mirror the conversation here, post on your behalf, share your health data — is rendered from the booleans `/community/{uid}` returns, not typed out as reassurance. If the bridge's behaviour ever changed, the screen would change with it instead of continuing to promise the old thing.
+>
+> **The visit note is posted before the browser opens.** `/community/{uid}/visits` records that a door was opened — an event on the user's own timeline and nothing from inside the room. That note is the part that belongs to JIM, so it does not depend on the launch succeeding.
+>
+> ## Fixed
+>
+> The Windows palette had no `JimT3Brush`. The dimmest text tier exists in the Android (`Jim.T3`) and iOS (`Theme.t3`) themes but the desktop resources stopped at `T2` — so a page reaching for it would have failed to resolve its resources rather than merely looking wrong. Added, matching the other two shells.
+>
+> ## Verification
+>
+> No Swift/Kotlin/.NET toolchain exists in the authoring environment, so **the iOS / Android / Windows jobs from `native.yml` on this PR are the real check**. XAML well-formedness was verified locally, the Python suite is running, and the missing-brush problem above was caught by grepping the resource dictionary rather than by trusting that a brush used in one shell exists in another.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #162 — Two things JIM knew but never showed you
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/162>
+
+> An audit round for what had been skipped. The user-specific model and the anonymity posture were both real in the backend and completely invisible in the app — which, in this project's own repeated experience, reads in the field as the features not existing.
+>
+> ## What JIM has learned about you (Settings)
+>
+> The claim-11 adaptation profile, in plain terms:
+>
+> - the confidence it has earned, and **from how many pieces of your own history**,
+> - which guidance has actually helped, per condition, as counts (`anxiety: guidance helped 3 of 4 times`),
+> - the work you named and the tone you asked for,
+> - whether it is sealed in the vault,
+> - a **Rebuild** button, and the profile's own `method` line stating that nothing was sent to a model vendor to build it.
+>
+> Unbuilt, it says so and offers to build it from the history already on record.
+>
+> ## Your name here (Settings)
+>
+> The anonymity posture (`GET /anonymity/{user}`) as a readable card: the pseudonym you are known by, what the choice **keeps** (every emergency path, your own history and vault records) and what it **costs** (a dispatcher briefing cannot give responders a legal name, unless you left one for that purpose). Under your own name, it simply says so.
+>
+> ## Notes
+>
+> - No backend changes — new typed bindings (`adaptation`, `rebuildAdaptation`, `anonymity`) and two Settings cards.
+> - Console build green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #161 — The closing passage is not a release note
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/161>
+
+> Founder's direction: the Matthew 7:24–25 passage **stays at the end of every README** — that standing rule is unchanged and still test-enforced — but it does not belong in the list of what an update contains. It's how the documentation closes, not a feature that shipped.
+>
+> ## What changed
+>
+> - Removed the 0.14.3 changelog paragraph that announced it.
+> - Reworded the 0.14.3 README release-history row to describe the docs binding pass without quoting the passage.
+>
+> ## What did not change
+>
+> - The passage itself, byte-identical at the very end of every README.
+> - `jim/tests/test_readme_scripture.py`, which enforces that every `README*.md` closes with the root's block — still passing.
+>
+> Docs-binding tests green: 14 passed. The same change is in qrme and pdi.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #160 — Apple's door needs form_post, so give it one
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/160>
+
+> Found while writing up the client-registration steps, before the registrations were attempted.
+>
+> ## The bug
+>
+> `jim/oauth.py` sent `response_mode=query` while requesting the `email` scope. Apple's rule is that requesting **any** scope forces `response_mode=form_post` — `query` with a scope is rejected outright. So a freshly registered Apple Services ID would have failed on the very first sign-in attempt, and the failure would have read as "Sign in with Apple is broken" rather than as one wrong parameter in one dictionary.
+>
+> Google was and is unaffected: it returns on the query string, which a test now pins so this can't drift.
+>
+> ## The fix
+>
+> - Apple now gets `response_mode=form_post`, with the reason stated in a comment (it's Apple's rule, not our preference).
+> - `POST /auth/oauth/{provider}/callback` accepts the form-post return and delegates to the same handler as the GET.
+> - The body is parsed from the raw request with `urllib.parse.parse_qs` — the same approach the media upload already uses — so **no `python-multipart` dependency** arrives for the sake of one form.
+>
+> ## Tests
+>
+> `jim/tests/test_oauth.py` gains two: Apple's authorize URL carries `response_mode=form_post` and `scope=email`, and the POST door reads a urlencoded body (a cancelled sign-in comes back as 400 with Apple's own reason); Google's URL carries no `response_mode` and still returns on the query string.
+>
+> Five OAuth tests pass. The matching fix is in QRME (`qrme#212`'s branch), so both front doors behave the same way.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+>
+> ---
+> _Generated by [Claude Code](https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY)_
+
+## #159 — Cut 0.16.0, cite the publication number, and open the community door
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/159>
+
+> The 0.16.0 release cut, the publication number, and the QRME community bridge.
+>
+> ## The community door (FIG. 2 boxes 222–226)
+>
+> The filing describes community inside the guidance product — interact with others (222), moderate content for distribution (224), store it for community interaction (226) — and [0020] promises "our chat engines, your local events, and forums in all languages". All of that already exists in **QRME**, and the two products are built to run in tandem, so JIM shows the door rather than building a second social network inside a private health guardian.
+>
+> `GET /community/{user}` serves QRME's active rooms (topic, channel, heads, an openable URL) and the places its listings actually claim (`?locality=` filters them), in the language this user reads. The reasoning is in the code and in the response: a parallel community would duplicate a moderation stack that is hard to get right once, and would put someone's health data and their public posting in the same database — the separation the suite exists to preserve. So **nothing is mirrored into JIM, nothing is posted on the user's behalf, no health data crosses over**, and the reply states all three in its own `posture` block. Opening a door records the fact only (`POST /community/{user}/visits`) — never a word from inside the room. 409 without `JIM_QRME_URL`; an unreachable QRME is a quiet screen. Console: the new **Community** tab.
+>
+> ## Publication number
+>
+> Application 19/038,196 (526.P001) **published as US 2025/0246290 A1 on July 31, 2025** — now cited in the README masthead, `jim/__init__.py`, and the `docs/showcase.html` tagline, so the share page points at public record.
+>
+> ## Version cut — 0.15.0 → 0.16.0
+>
+> Five version strings, the `[0.16.0]` heading over the changelog content the feature PRs wrote, the README release line + history row, and `RELEASE_NOTES.md`. The release carries the round the filing was read verbatim: the guidance loop closing with a live person when counseling doesn't work, a user-specific model sealed in the PDI vault, anonymous enrollment with a briefing that won't invent an identity, the CPR pace cue with the companion relaying in the background, budgets, stress tracking, the offline knowledge pack, the QRME specialist attach bracket, DeepSeek and your-own-algorithm providers, and Google/Apple sign-in.
+>
+> ## Verification
+>
+> Full suite green: **712 passed** (6 new community tests). Console build green; version/changelog/README binding tests green.
+>
+> ## Tag and release
+>
+> The tag is yours to push — `app-v0.16.0`. `RELEASE_NOTES.md` is the ready-to-paste body.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
+## #158 — Five things in the filing that had no code behind them
+
+- merged · opened 2026-07-30 · merged 2026-07-30
+- `claude/jim-bands-voice-picker` → `main`
+- Author: davidsbianchi1984
+- Page: <https://github.com/davidsbianchi1984/jim-mini/pull/158>
+
+> A verbatim re-read of **526.P001** — clauses, original claims, specification text, and the figures — against the codebase. Everything else in the filing already had code behind it (declared conditions and sensitized detection, first aid with the CPR pace cue, the escalation ladder, smart-watch monitoring and delivery, Bluetooth/robot/neural/gesture embodiments, GPT providers, cross-session memory, references and provenance, predictive early warning, ergonomic and environmental-hazard conditions). These five did not.
+>
+> ## FIG. 2 box 212 — "choose name (anonymized)"
+>
+> Spec [0031]: the user name "may be **an anonymous user name**, the user's real name, or left to the user to decide."
+>
+> QRME has had anonymity since its first round; JIM took a `display_name` and that was your identity. `anonymous: true` now mints a pseudonym, **discards the typed name**, and the app never learns the real one. Every emergency path is untouched (proved by test, not asserted). The one place a name genuinely matters is a dispatcher briefing, so an anonymous user may leave a `legal_name` used *only* there — and without one the briefing reports no name **and says why**, beside the pseudonym they answer to, because a pseudonym passed off as an identity is worse than an honest absence. `GET /anonymity/{user}` states what the choice keeps and costs; the signup form says the same where the box is ticked.
+>
+> ## FIG. 2 box 230 / spec [0039] — did the counseling actually work?
+>
+> > "If the counseling is effective … resume monitoring. If the counseling provided … is not effective, the personal guidance system may alert a person to provide **live assistance** … a support person associated with the personal guidance system or … the emergency contact."
+>
+> JIM delivered guidance and never asked. Every delivered guidance now opens a follow-up (`GET/POST /followup/{user}`): "it helped" is recorded and monitoring resumes; "it didn't" re-runs the escalation ladder with a new `guidance_ineffective` rung (one tier up, floored at `check_in`) and names the humans reachable now — the deployment's support person (`JIM_LIVE_SUPPORT_NAME`/`_CHANNEL`), the 988 crisis line for a psychological condition, whoever is on shift (`jim/rota.py`), and the emergency contact. A rung and not a jump: an unhelped breathing exercise must reach a person without dispatching an ambulance, while an unhelped *critical* event, already at `notify_contact`, goes to emergency services. The question and the people render on the Monitor screen.
+>
+> ## Claim 11 — a user-specific version of the model
+>
+> `POST /adaptation/{user}` derives a versioned adaptation profile from this user's own stored history — declared conditions, check-in trend, life areas brought, tone, occupation ("professional roles"), and the follow-up record of **what actually helped them** — and seals it in the PDI vault when a tandem is configured (the claim's "secure, decentralized methods"; nothing to a model vendor). Confidence is earned from evidence volume, never fluency; three answered follow-ups before "this works for you" is a claim; guidance that keeps missing tells the coach to change approach and offer a human. The profile states in its own `method` field that the transformer's weights belong to the vendor and are not modified here.
+>
+> ## Clause 12 — autonomous tone refinement
+>
+> "Keep it short" in a coach prompt is now kept as a preference from that turn on (the turn that asked already gets the shorter answer), via a transparent phrase table rather than a hidden model read, and the reply reports `adapted_tone` instead of silently changing character.
+>
+> ## Spec [0019] — neutral by default, or sensitive when asked
+>
+> `PUT /personality` gains `beliefs_posture` (`neutral` — the default, stated in every prompt with an instruction never to infer beliefs — or `sensitive`, honoring only what the user declared and falling back to neutral when nothing is), `beliefs`, `explain_level` (`plain`/`standard`/`technical`, for "ability to quickly grasp and apply guidance"), and `occupation`.
+>
+> ## Also checked, already built
+>
+> QRME FIG. 2 box 214, "set scope of profile interactions (reactive, creative, etc.)", is enforced in QRME today: profiles carry `interaction_scope` (`reactive` default / `proactive`), and `POST /profiles/{id}/proactive/{interactor}` 403s for a reactive-only profile even for its owner, with an anti-spam gate beyond that.
+>
+> ## Tests
+>
+> 27 new: `test_followup.py` (6), `test_adaptation.py` (6), `test_posture.py` (8), `test_anonymity.py` (8). Full suite **706 passed**; console `npm run build` green.
+>
+> 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+>
+> https://claude.ai/code/session_015e8tKrkr36nt7UTKUPtELY
+
