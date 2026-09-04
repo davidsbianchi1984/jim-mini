@@ -49,6 +49,11 @@ Three rules hold throughout:
   is deliberately held shut — the 911 send — the page says so, and a test
   reads the source to prove the hold.
 
+The writing GitHub holds and a clone does not — every release note
+and every pull request body — is checked in under
+[`docs/github/`](docs/github/), so the argument for each change
+travels with the code.
+
 ### Components
 
 | Component | Where | What it is |

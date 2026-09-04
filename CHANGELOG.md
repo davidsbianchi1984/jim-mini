@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The writing that lived only in GitHub now travels with the clone.**
+  A clone carries the code, the commits and the tags; the argument for
+  each change does not. Release notes and pull request bodies live in
+  GitHub's database, and a downloaded copy of the repository arrived
+  without either. `docs/github/` is that record, checked in:
+  `RELEASE-NOTES.md` (267 releases, 75,497 words), `PULL-REQUESTS.md`
+  (278 pull requests with their conversation comments, 74,185 words),
+  `REVIEW-THREADS.md` and `repository.json`. `docs/github/harvest.py`
+  reads the owner and repository from the `origin` remote and rewrites
+  every page from the REST API, so the folder can be refreshed rather
+  than hand-maintained, and it closes its index on the same passage
+  every README in this repository closes on. Release assets stay on the
+  release pages — hundreds of gigabytes of built binaries do not belong
+  in a git history — and each release's asset count is listed beside its
+  notes.
+
 ## [3.1.5] - 2026-09-04
 
 ### Changed
