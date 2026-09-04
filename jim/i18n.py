@@ -2868,6 +2868,51 @@ SPECIALIST_STANDING: dict[str, str] = {
 }
 
 _REFUSALS: dict[str, dict[str, str]] = {
+    # The phone line (jim/telephony.py, jim/auth.require_voice_adapter) — 3.0.8.
+    'voice adapter token required': {
+        'es': 'se requiere el token del adaptador de voz',
+        'fr': "jeton de l'adaptateur vocal requis",
+        'de': 'Token des Sprachadapters erforderlich',
+        'pt': 'token do adaptador de voz obrigatório',
+        'it': "token dell'adattatore vocale richiesto",
+        'ja': '音声アダプターのトークンが必要です',
+        'zh': '需要语音适配器令牌',
+        'hi': 'वॉइस अडैप्टर टोकन आवश्यक है',
+        'ar': 'رمز محوّل الصوت مطلوب',
+    },
+    'invalid voice adapter token': {
+        'es': 'token del adaptador de voz no válido',
+        'fr': "jeton de l'adaptateur vocal invalide",
+        'de': 'ungültiges Token des Sprachadapters',
+        'pt': 'token do adaptador de voz inválido',
+        'it': "token dell'adattatore vocale non valido",
+        'ja': '音声アダプターのトークンが無効です',
+        'zh': '语音适配器令牌无效',
+        'hi': 'वॉइस अडैप्टर टोकन अमान्य है',
+        'ar': 'رمز محوّل الصوت غير صالح',
+    },
+    'this deployment is reachable beyond localhost but has no JIM_VOICE_SECRET configured — the reach-out call handlers stay closed until it is': {
+        'es': 'este despliegue es accesible más allá de localhost pero no tiene JIM_VOICE_SECRET configurado — los manejadores de llamadas de contacto permanecen cerrados hasta que lo esté',
+        'fr': "ce déploiement est joignable au-delà de localhost mais n'a pas de JIM_VOICE_SECRET configuré — les portes d'appel de contact restent fermées tant qu'il ne l'est pas",
+        'de': 'diese Installation ist über localhost hinaus erreichbar, hat aber kein JIM_VOICE_SECRET gesetzt — die Anruf-Türen bleiben geschlossen, bis es gesetzt ist',
+        'pt': 'esta instalação é alcançável além de localhost mas não tem JIM_VOICE_SECRET configurado — as portas das chamadas de contacto ficam fechadas até que esteja',
+        'it': 'questa installazione è raggiungibile oltre localhost ma non ha JIM_VOICE_SECRET configurato — le porte delle chiamate ai contatti restano chiuse finché non lo è',
+        'ja': 'このデプロイは localhost の外から到達できますが JIM_VOICE_SECRET が設定されていません — 設定されるまで連絡先通話の窓口は閉じたままです',
+        'zh': '此部署可从 localhost 之外访问，但未配置 JIM_VOICE_SECRET — 在配置之前，联系人通话入口保持关闭',
+        'hi': 'यह परिनियोजन localhost के बाहर से पहुँचा जा सकता है पर JIM_VOICE_SECRET सेट नहीं है — जब तक सेट न हो, संपर्क कॉल के द्वार बंद रहेंगे',
+        'ar': 'هذا النشر يمكن الوصول إليه خارج localhost لكن لم يُضبط JIM_VOICE_SECRET — تبقى أبواب اتصال جهات الاتصال مغلقة حتى يُضبط',
+    },
+    'that is not an event the phone line reports': {
+        'es': 'eso no es un evento que la línea telefónica reporte',
+        'fr': "ce n'est pas un événement que la ligne téléphonique signale",
+        'de': 'das ist kein Ereignis, das die Telefonleitung meldet',
+        'pt': 'isso não é um evento que a linha telefónica reporte',
+        'it': 'non è un evento che la linea telefonica riporti',
+        'ja': 'それは電話回線が報告するイベントではありません',
+        'zh': '这不是电话线路会报告的事件',
+        'hi': 'यह ऐसी घटना नहीं जिसकी सूचना फ़ोन लाइन देती है',
+        'ar': 'هذا ليس حدثًا يبلّغ عنه خط الهاتف',
+    },
     # The reach-out cascade (jim/reachout.py). JIM calling emergency
     # contacts one after another — these are the three ways that can be
     # asked to do something it cannot.
@@ -6074,6 +6119,10 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `jim/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The phone line's event body (jim/models.ReachOutEvent) — 3.0.8.
+    'event': {'en': 'What the phone line reported', 'es': 'Lo que reportó la línea telefónica', 'fr': 'Ce que la ligne téléphonique a signalé', 'de': 'Was die Telefonleitung gemeldet hat', 'pt': 'O que a linha telefónica reportou', 'it': 'Cosa ha riportato la linea telefonica', 'ja': '電話回線が報告した内容', 'zh': '电话线路报告的内容', 'hi': 'फ़ोन लाइन ने क्या सूचना दी', 'ar': 'ما أبلغ عنه خط الهاتف'},
+    'seconds': {'en': 'How long the call lasted', 'es': 'Cuánto duró la llamada', 'fr': 'Durée de l\'appel', 'de': 'Wie lange der Anruf dauerte', 'pt': 'Quanto durou a chamada', 'it': 'Quanto è durata la chiamata', 'ja': '通話の長さ', 'zh': '通话持续时间', 'hi': 'कॉल कितनी देर चली', 'ar': 'كم استغرقت المكالمة'},
+    'detail': {'en': 'What the phone line said about it', 'es': 'Lo que la línea telefónica dijo al respecto', 'fr': 'Ce que la ligne téléphonique en a dit', 'de': 'Was die Telefonleitung dazu sagte', 'pt': 'O que a linha telefónica disse sobre isso', 'it': 'Cosa ha detto la linea telefonica al riguardo', 'ja': '電話回線の補足', 'zh': '电话线路对此的说明', 'hi': 'फ़ोन लाइन ने इसके बारे में क्या कहा', 'ar': 'ما قاله خط الهاتف عنها'},
     # The hands (jim/hands.py), worded exactly as the sibling product
     # words them. Somebody who read the grant card on one console and
     # then meets a refusal on the other has to be reading the same
@@ -6721,3 +6770,83 @@ def circle_text(key: str, language: str) -> str:
 def circle_labels(language: str) -> dict[str, str]:
     return {k: (row.get(language) or row['en'])
             for k, row in _CIRCLE_LABELS.items()}
+
+#: The fixed sentences the phone line speaks on its own — the re-prompt
+#: after no key was pressed, the opt-out acknowledgement, the no-choice
+#: closing, the silence prompt, the closing, and the trouble line when JIM
+#: cannot be reached mid-call. Everything else the line says comes from JIM
+#: turn by turn; these are what the voice sidecar may say without asking.
+_SPOKEN_LINES: dict[str, dict[str, str]] = {
+    "repeat": {
+        "en": "I did not catch a key. Press 1 to hear the message, or 2 to not be called this way again.",
+        "es": "No detecté ninguna tecla. Pulsa 1 para escuchar el mensaje, o 2 para que no te llamen así de nuevo.",
+        "fr": "Je n'ai pas détecté de touche. Appuyez sur 1 pour entendre le message, ou sur 2 pour ne plus être appelé ainsi.",
+        "de": "Ich habe keine Taste erkannt. Drücken Sie 1, um die Nachricht zu hören, oder 2, um so nicht mehr angerufen zu werden.",
+        "pt": "Não detetei nenhuma tecla. Prima 1 para ouvir a mensagem, ou 2 para não voltar a ser contactado assim.",
+        "it": "Non ho rilevato alcun tasto. Premi 1 per ascoltare il messaggio, o 2 per non essere più chiamato così.",
+        "ja": "キーが押されませんでした。メッセージを聞くには1を、この方法で二度と電話を受けない場合は2を押してください。",
+        "zh": "没有检测到按键。按1收听消息，按2则不再以此方式接到来电。",
+        "hi": "कोई कुंजी नहीं मिली। संदेश सुनने के लिए 1 दबाएँ, या इस तरह दोबारा कॉल न पाने के लिए 2 दबाएँ।",
+        "ar": "لم ألتقط أي ضغطة. اضغط 1 لسماع الرسالة، أو 2 لعدم الاتصال بك بهذه الطريقة مجددًا.",
+    },
+    "declined": {
+        "en": "Understood. This number will not be called this way again. Goodbye.",
+        "es": "Entendido. No se volverá a llamar a este número de esta forma. Adiós.",
+        "fr": "Compris. Ce numéro ne sera plus appelé de cette façon. Au revoir.",
+        "de": "Verstanden. Diese Nummer wird so nicht mehr angerufen. Auf Wiederhören.",
+        "pt": "Entendido. Este número não voltará a ser contactado desta forma. Adeus.",
+        "it": "Capito. Questo numero non sarà più chiamato in questo modo. Arrivederci.",
+        "ja": "承知しました。この番号にこの方法で再び電話することはありません。失礼します。",
+        "zh": "明白了。不会再以此方式拨打此号码。再见。",
+        "hi": "समझ गया। इस नंबर पर इस तरह दोबारा कॉल नहीं की जाएगी। अलविदा।",
+        "ar": "مفهوم. لن يُتصل بهذا الرقم بهذه الطريقة مجددًا. وداعًا.",
+    },
+    "no_choice": {
+        "en": "No choice was made, so I will try the next person. Goodbye.",
+        "es": "No se eligió nada, así que probaré con la siguiente persona. Adiós.",
+        "fr": "Aucun choix n'a été fait, je vais donc essayer la personne suivante. Au revoir.",
+        "de": "Es wurde keine Wahl getroffen, daher versuche ich es bei der nächsten Person. Auf Wiederhören.",
+        "pt": "Não foi feita nenhuma escolha, por isso vou tentar a próxima pessoa. Adeus.",
+        "it": "Nessuna scelta è stata fatta, quindi proverò con la persona successiva. Arrivederci.",
+        "ja": "選択がなかったので、次の方に連絡します。失礼します。",
+        "zh": "未作选择，我将联系下一位。再见。",
+        "hi": "कोई चुनाव नहीं हुआ, इसलिए मैं अगले व्यक्ति से संपर्क करूँगा। अलविदा।",
+        "ar": "لم يُتخذ أي خيار، لذا سأجرّب الشخص التالي. وداعًا.",
+    },
+    "silence": {
+        "en": "I did not hear anything. Is there anything you would like to ask?",
+        "es": "No escuché nada. ¿Hay algo que quieras preguntar?",
+        "fr": "Je n'ai rien entendu. Y a-t-il quelque chose que vous voulez demander ?",
+        "de": "Ich habe nichts gehört. Möchten Sie etwas fragen?",
+        "pt": "Não ouvi nada. Há alguma coisa que queira perguntar?",
+        "it": "Non ho sentito nulla. C'è qualcosa che vorresti chiedere?",
+        "ja": "何も聞こえませんでした。何か質問はありますか？",
+        "zh": "我没有听到任何内容。你有什么想问的吗？",
+        "hi": "मुझे कुछ सुनाई नहीं दिया। क्या आप कुछ पूछना चाहेंगे?",
+        "ar": "لم أسمع شيئًا. هل هناك ما تودّ سؤاله؟",
+    },
+    "closing": {
+        "en": "Thank you for listening. Please check on them. Goodbye.",
+        "es": "Gracias por escuchar. Por favor, ve a ver cómo está. Adiós.",
+        "fr": "Merci de m'avoir écouté. Veuillez aller voir comment il va. Au revoir.",
+        "de": "Danke fürs Zuhören. Bitte sehen Sie nach der Person. Auf Wiederhören.",
+        "pt": "Obrigado por ouvir. Por favor, vá ver como está. Adeus.",
+        "it": "Grazie per l'ascolto. Per favore, vai a controllare come sta. Arrivederci.",
+        "ja": "お聞きいただきありがとうございます。様子を見に行ってください。失礼します。",
+        "zh": "感谢您的倾听。请去看看他们。再见。",
+        "hi": "सुनने के लिए धन्यवाद। कृपया उनका हाल देखें। अलविदा।",
+        "ar": "شكرًا لإصغائك. من فضلك اطمئنّ عليهم. وداعًا.",
+    },
+    "trouble": {
+        "en": "I am having trouble continuing this call. Please check on them and call your local emergency number if you believe this is an emergency. Goodbye.",
+        "es": "Tengo problemas para continuar esta llamada. Por favor, ve a ver cómo está y llama a tu número de emergencias local si crees que es una emergencia. Adiós.",
+        "fr": "J'ai du mal à poursuivre cet appel. Veuillez aller voir comment il va et appeler votre numéro d'urgence local si vous pensez qu'il s'agit d'une urgence. Au revoir.",
+        "de": "Ich kann diesen Anruf nicht fortsetzen. Bitte sehen Sie nach der Person und rufen Sie Ihre örtliche Notrufnummer an, wenn Sie glauben, dass es ein Notfall ist. Auf Wiederhören.",
+        "pt": "Estou com dificuldade em continuar esta chamada. Por favor, vá ver como está e ligue para o seu número de emergência local se acha que é uma emergência. Adeus.",
+        "it": "Ho difficoltà a continuare questa chiamata. Per favore, vai a controllare come sta e chiama il tuo numero di emergenza locale se pensi sia un'emergenza. Arrivederci.",
+        "ja": "この通話を続けることができません。様子を見に行き、緊急だと思われる場合はお住まいの地域の緊急番号に電話してください。失礼します。",
+        "zh": "我无法继续这通电话。请去看看他们，如果您认为这是紧急情况，请拨打当地的紧急电话。再见。",
+        "hi": "मैं यह कॉल जारी रखने में असमर्थ हूँ। कृपया उनका हाल देखें और यदि आपको लगे कि यह आपातकाल है तो अपने स्थानीय आपातकालीन नंबर पर कॉल करें। अलविदा।",
+        "ar": "أواجه صعوبة في متابعة هذه المكالمة. من فضلك اطمئنّ عليهم واتصل برقم الطوارئ المحلي إن كنت تعتقد أنها حالة طارئة. وداعًا.",
+    },
+}

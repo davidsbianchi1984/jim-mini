@@ -162,15 +162,19 @@ export function Safety() {
       {/* The reach-out operator. JIM rings the emergency contacts one after
           another — the cascade a crash-watch trip fires automatically, and
           that a person can start and watch here. The dialer's posture says the
-          911 line is built and held shut in source; the calls are *prepared*
-          because no telephony transport is wired yet. Contact-facing prose
-          goes through l10n like the rest of the chrome; the situation text and
-          contact names are the server's and render verbatim. */}
+          911 line is built and held shut in source, and — since 3.0.8 — what
+          the contact line is: wired and proven ready (calls ring through the
+          voice door), wired but not ringing right now (the door's own word,
+          note and fix), or not wired (each call prepared and documented, as
+          before). "Check the line" forces the proof past its cache. Contact-
+          facing prose goes through l10n like the rest of the chrome; the
+          situation text, contact names, the door's note and the line's words
+          are the server's and render verbatim. */}
       <h3>{tr("ro.title", lang)}</h3>
       <p className="muted">{tr("ro.pitch", lang)}</p>
       <div className="card">
         <p className="error"><strong>{tr("ro.posture.held", lang)}</strong></p>
-        {posture && (
+        {posture && !posture.wired && (
           <p className="muted small">
             {posture.transport_kind === "device_sim"
               ? tr("ro.posture.device", lang)
@@ -178,6 +182,27 @@ export function Safety() {
                   .replace("{provider}", posture.provider)}
             {" "}{tr("ro.posture.waiting", lang)}
           </p>
+        )}
+        {posture && posture.wired && posture.transport_ready && (
+          <p className="muted small">
+            {tr("ro.posture.live", lang).replace("{provider}", posture.provider)}
+          </p>
+        )}
+        {posture && posture.wired && !posture.transport_ready && (
+          <p className="error small">
+            {tr("ro.posture.down", lang)
+              .replace("{word}", posture.standing?.word ?? "")}
+            {posture.standing?.note && <> · {posture.standing.note}</>}
+            {posture.standing?.fix && <> · {posture.standing.fix}</>}
+          </p>
+        )}
+        {posture && posture.wired && (
+          <button className="secondary" disabled={busy}
+            onClick={() => run(async () => {
+              setPosture(await api.probeDialer(uid, token));
+            })}>
+            {tr("ro.posture.probe", lang)}
+          </button>
         )}
         <div className="row">
           <input value={roSituation} placeholder={tr("ro.start.ph", lang)}
@@ -215,6 +240,12 @@ export function Safety() {
               <div key={c.id} className="row">
                 <span>{c.name}</span>
                 <span className="muted">{tr(`ro.cs.${c.status}`, lang)}</span>
+                {c.status === "unplaced" && c.placement
+                  && <span className="muted small">{c.placement}</span>}
+                {c.status === "unreached" && c.ended
+                  && <span className="muted small">{c.ended}</span>}
+                {c.provider_call_id
+                  && <span className="muted small">{c.provider} · {c.provider_call_id}</span>}
               </div>
             ))}
           </div>

@@ -5147,6 +5147,15 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "ro.posture.waiting": {
     en: "No phone line is wired yet, so nothing rings — each call is prepared and documented.", es: "Todavía no hay línea telefónica conectada, así que nada suena: cada llamada se prepara y se documenta.", fr: "Aucune ligne téléphonique n'est encore raccordée, donc rien ne sonne — chaque appel est préparé et documenté.", de: "Noch ist keine Telefonleitung angeschlossen, also klingelt nichts — jeder Anruf wird vorbereitet und dokumentiert.", pt: "Ainda não há linha telefónica ligada, por isso nada toca — cada chamada é preparada e documentada.", it: "Nessuna linea telefonica è ancora collegata, quindi non squilla nulla: ogni chiamata viene preparata e documentata.", ja: "電話回線はまだ接続されていないため、何も鳴りません — 各通話は準備され、記録されます。", zh: "尚未接入电话线路，因此不会响铃 — 每通电话都已准备并记录在案。", hi: "अभी कोई फ़ोन लाइन नहीं जुड़ी है, इसलिए कुछ नहीं बजता — हर कॉल तैयार और दर्ज की जाती है।", ar: "لا يوجد خط هاتفي موصول بعد، لذا لا شيء يرن — كل مكالمة تُجهَّز وتُوثَّق.",
   },
+  "ro.posture.live": {
+    en: "The phone line answers. Contact calls ring through {provider}.", es: "La línea telefónica responde. Las llamadas a los contactos suenan a través de {provider}.", fr: "La ligne téléphonique répond. Les appels aux contacts passent par {provider}.", de: "Die Telefonleitung antwortet. Kontaktanrufe klingeln über {provider}.", pt: "A linha telefónica responde. As chamadas aos contactos tocam através de {provider}.", it: "La linea telefonica risponde. Le chiamate ai contatti squillano tramite {provider}.", ja: "電話回線は応答しています。連絡先への通話は{provider}を通じて発信されます。", zh: "电话线路已接通。联系人通话通过 {provider} 拨出。", hi: "फ़ोन लाइन जवाब दे रही है। संपर्कों को कॉल {provider} के ज़रिए जाती हैं।", ar: "خط الهاتف يستجيب. مكالمات جهات الاتصال تُجرى عبر {provider}.",
+  },
+  "ro.posture.down": {
+    en: "A phone line is configured but would not ring right now ({word}).", es: "Hay una línea telefónica configurada, pero ahora mismo no sonaría ({word}).", fr: "Une ligne téléphonique est configurée mais ne sonnerait pas pour l'instant ({word}).", de: "Eine Telefonleitung ist eingerichtet, würde aber gerade nicht klingeln ({word}).", pt: "Há uma linha telefónica configurada, mas neste momento não tocaria ({word}).", it: "Una linea telefonica è configurata ma al momento non squillerebbe ({word}).", ja: "電話回線は設定されていますが、今は鳴りません（{word}）。", zh: "已配置电话线路，但目前无法响铃（{word}）。", hi: "फ़ोन लाइन सेट है, लेकिन अभी घंटी नहीं बजेगी ({word})।", ar: "تم إعداد خط هاتفي لكنه لن يرن الآن ({word}).",
+  },
+  "ro.posture.probe": {
+    en: "Check the line", es: "Comprobar la línea", fr: "Vérifier la ligne", de: "Leitung prüfen", pt: "Verificar a linha", it: "Verifica la linea", ja: "回線を確認", zh: "检查线路", hi: "लाइन जाँचें", ar: "فحص الخط",
+  },
   "ro.none": {
     en: "No reach-outs yet.", es: "Aún no hay llamadas.", fr: "Aucun contact pour l'instant.", de: "Noch keine Kontaktversuche.", pt: "Ainda não há contactos.", it: "Ancora nessun contatto.", ja: "まだ連絡はありません。", zh: "暂无联系记录。", hi: "अभी तक कोई संपर्क नहीं।", ar: "لا محاولات تواصل بعد.",
   },
@@ -5193,6 +5202,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "ro.cs.declined": {
     en: "Asked not to be called", es: "Pidió no ser llamado", fr: "A demandé à ne plus être appelé", de: "Bat, nicht angerufen zu werden", pt: "Pediu para não ser chamado", it: "Ha chiesto di non essere chiamato", ja: "連絡しないよう希望", zh: "要求不要再联系", hi: "कॉल न करने को कहा", ar: "طلب عدم الاتصال به",
+  },
+  "ro.cs.unplaced": {
+    en: "Not rung", es: "No se llamó", fr: "Non appelé", de: "Nicht gewählt", pt: "Não chamado", it: "Non chiamato", ja: "発信されず", zh: "未拨出", hi: "कॉल नहीं हुई", ar: "لم يُتصل",
   },
   // The moderated mailbox — the coach agent reads, drafts, and replies, but
   // every send is held here for a person to approve. The message bodies and

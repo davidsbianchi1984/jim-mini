@@ -278,6 +278,11 @@ def sweep(user_id: str, now: datetime | None = None) -> dict:
     """Advance the clock. Re-ask when a deadline passed; trip when the last
     allowed attempt passed unanswered. Safe to call from anywhere, any
     number of times — the console poll, the ingest path, a status read."""
+    # A placed contact call the phone line never reported on is settled
+    # here and only here — a sweep advances the cascade, a read never does
+    # (jim/reachout.py, settle_stale).
+    from . import reachout
+    reachout.settle_stale(user_id)
     row = _row(user_id)
     st = status(user_id)
     if (row is None or not row["enabled"] or not row["concern_opened_at"]
@@ -391,8 +396,9 @@ def _trip(user_id: str, row, t: datetime) -> dict:
     # 911 dialer is the cascade's LAST rung, reached only once the contacts
     # are exhausted, and only when the arming ticked emergency services — the
     # ladder the owner drew, in that order (jim/reachout.py, jim/dialer.py).
-    # No telephony transport is wired, so each call comes back *prepared*:
-    # nothing rings, and nothing is ever claimed to have.
+    # Each call rings through the voice door when one is wired and ready
+    # (jim/telephony.py); with none, it comes back *prepared* — assembled,
+    # documented, and waiting — and nothing is ever claimed to have rung.
     contacts_list = _contacts_from(row, user)
     reach = (reachout.begin(
         user_id, contacts_list,
@@ -423,9 +429,13 @@ def _trip(user_id: str, row, t: datetime) -> dict:
         # the dialer holds that send shut either way.
         "call_emergency_services_yourself": True,
         # The cascade the trip started, so the record names the ladder that
-        # runs from here. Never a claim that a call was placed.
+        # runs from here. `placed` is the voice door's word on the first leg
+        # — true only when a phone house took the call (jim/telephony.py),
+        # false on a box with no line, where the leg is prepared and waits.
+        # Never a claim beyond what the line said.
         "reach_out": ({"started": True, "id": reach.get("reachout_id"),
                        "status": reach["status"],
+                       "placed": bool((reach.get("call") or {}).get("placed")),
                        "life_threatening": bool(row["contact_ems"])}
                       if reach else
                       {"started": False,
