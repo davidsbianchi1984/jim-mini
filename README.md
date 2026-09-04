@@ -78,15 +78,68 @@ test. None of them is a rule a person could follow with a pen; each is a
 specific arrangement of data, channels and checks inside a running
 system, and each is photographed on the screens below.
 
-| § | The technical problem | The particular solution, as built | What it changes in the machine | Reduced to practice in |
-|---|---|---|---|---|
-| 1 | A wrist sensor's readings are held inside a vendor's phone application and reach no other program without an application-store app. | A **deposit-only channel**: one URL per person carrying a per-person token, accepting a forgiving reading payload from the phone's own automation, with no read door on the same channel; and a **fold** that parses the phone's health export into the person's baseline without generating events. | Readings arrive at the guardian from a device the guardian has no application on, over a channel that cannot be read back, and the baseline exists before the first live reading. | `jim/watch.py` — `test_watch.py`, `test_the_wrist_is_a_surface.py` |
-| 2 | Fixed clinical thresholds fire on an individual whose normal sits far from the population's, and stay silent on drift inside the population's range. | Two independent evaluation layers over every sample: a **personal drift band** computed from the person's own readings and a sensitivity setting, and a **clinical alarm layer** of fixed condition rules; each layer decides alone and both land on the escalation ladder. | A drift inside clinical range can open a check-in, and a clinical alarm can never be lowered by a personal setting; the two cannot mask each other. | `jim/guardian.py`, `jim/earlywarning.py`, `jim/conditions.py` — `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` |
-| 3 | A plausible but wrong reading from a loose sensor, or a reading delayed for minutes in transit, drives an escalation as if it were true and current. | Every sample carries a **quality** and a **staleness contract** (device-stamped observation and send times, so device clock skew cancels out of the age); the escalation ladder reads both and **caps the highest reachable rung** by them, and a stranger's beacon scan is capped below contacting the person's own circle. | A poor or old signal can still open a check-in, and can never ring a contact or reach the held emergency send; the ladder's path is written down step by step and replayable. | `jim/signal.py`, `jim/freshness.py`, `jim/escalation.py` — `test_escalation_tree.py`, `test_signal_quality.py`, `test_how_old_is_the_reading.py` |
-| 4 | A model served over a network fails, is rate-limited, or is unreachable exactly when a health assistant is being asked for guidance. | A **provider chain with a deterministic local floor**: every provider error degrades to the offline stub rather than raising; every answer carries **provenance** — which provider produced it and, if degraded, from what — and the degrade is logged. | The assistant always answers, and the person and the record can tell a model's words from the stub's. | `jim/llm.py` — `test_byo_key.py`, `test_the_study_says_who_answered.py` |
-| 5 | A desktop shell can adopt whatever backend answers its port, including a stale one left running from an earlier version. | The shell reads the backend's **version from `/health`** and compares it to its own before adopting it; a mismatch is refused and shown. | A stale backend cannot be mistaken for the current one. | `jim/__main__.py`, `app/src` (`VersionGuard`) — `test_accounts.py` (`test_health_reports_the_version`) |
-| 6 | Every alarm in a monitor fires on a reading; a person on the floor with the sensor on its charger produces no reading and no alarm. | The **vigil** measures silence itself against the person's own event table — any sign of life is already an event, so activity resets the clock with no bookkeeping — and a **ticker** advances that clock on the server without anything reading it. | The absence of signals becomes an alarm condition that fires at three in the morning with every screen closed. | `jim/vigil.py`, `jim/ticker.py` — `test_vigil.py`, `test_the_clock_advances_without_a_read.py` |
-| 7 | Three products that must share a person's memory, specialists and custody without sharing code or a database. | Three separately deployable services that interoperate over **HTTP only** with **one tenant and one token per integration**; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three. | A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database. | `jim/qrme_client.py`, `jim/pdi_client.py` — `test_pdi_tandem.py`, `test_tandem.py` |
+<table width="100%">
+<thead>
+<tr>
+<th width="4%" align="left">§</th>
+<th width="23%" align="left">The technical problem</th>
+<th width="30%" align="left">The particular solution, as built</th>
+<th width="26%" align="left">What it changes in the machine</th>
+<th width="17%" align="left">Reduced to practice in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top">1</td>
+<td valign="top">A wrist sensor's readings are held inside a vendor's phone application and reach no other program without an application-store app.</td>
+<td valign="top">A <strong>deposit-only channel</strong>: one URL per person carrying a per-person token, accepting a forgiving reading payload from the phone's own automation, with no read door on the same channel; and a <strong>fold</strong> that parses the phone's health export into the person's baseline without generating events.</td>
+<td valign="top">Readings arrive at the guardian from a device the guardian has no application on, over a channel that cannot be read back, and the baseline exists before the first live reading.</td>
+<td valign="top"><code>jim/watch.py</code> — <code>test_watch.py</code>,<br><code>test_the_wrist_is_a_surface.py</code></td>
+</tr>
+<tr>
+<td valign="top">2</td>
+<td valign="top">Fixed clinical thresholds fire on an individual whose normal sits far from the population's, and stay silent on drift inside the population's range.</td>
+<td valign="top">Two independent evaluation layers over every sample: a <strong>personal drift band</strong> computed from the person's own readings and a sensitivity setting, and a <strong>clinical alarm layer</strong> of fixed condition rules; each layer decides alone and both land on the escalation ladder.</td>
+<td valign="top">A drift inside clinical range can open a check-in, and a clinical alarm can never be lowered by a personal setting; the two cannot mask each other.</td>
+<td valign="top"><code>jim/guardian.py</code>,<br><code>jim/earlywarning.py</code>,<br><code>jim/conditions.py</code> — <code>test_sensitivity_baseline.py</code>,<br><code>test_the_baseline_screen_is_the_home_of_limits.py</code></td>
+</tr>
+<tr>
+<td valign="top">3</td>
+<td valign="top">A plausible but wrong reading from a loose sensor, or a reading delayed for minutes in transit, drives an escalation as if it were true and current.</td>
+<td valign="top">Every sample carries a <strong>quality</strong> and a <strong>staleness contract</strong> (device-stamped observation and send times, so device clock skew cancels out of the age); the escalation ladder reads both and <strong>caps the highest reachable rung</strong> by them, and a stranger's beacon scan is capped below contacting the person's own circle.</td>
+<td valign="top">A poor or old signal can still open a check-in, and can never ring a contact or reach the held emergency send; the ladder's path is written down step by step and replayable.</td>
+<td valign="top"><code>jim/signal.py</code>,<br><code>jim/freshness.py</code>,<br><code>jim/escalation.py</code> — <code>test_escalation_tree.py</code>,<br><code>test_signal_quality.py</code>,<br><code>test_how_old_is_the_reading.py</code></td>
+</tr>
+<tr>
+<td valign="top">4</td>
+<td valign="top">A model served over a network fails, is rate-limited, or is unreachable exactly when a health assistant is being asked for guidance.</td>
+<td valign="top">A <strong>provider chain with a deterministic local floor</strong>: every provider error degrades to the offline stub rather than raising; every answer carries <strong>provenance</strong> — which provider produced it and, if degraded, from what — and the degrade is logged.</td>
+<td valign="top">The assistant always answers, and the person and the record can tell a model's words from the stub's.</td>
+<td valign="top"><code>jim/llm.py</code> — <code>test_byo_key.py</code>,<br><code>test_the_study_says_who_answered.py</code></td>
+</tr>
+<tr>
+<td valign="top">5</td>
+<td valign="top">A desktop shell can adopt whatever backend answers its port, including a stale one left running from an earlier version.</td>
+<td valign="top">The shell reads the backend's <strong>version from <code>/health</code></strong> and compares it to its own before adopting it; a mismatch is refused and shown.</td>
+<td valign="top">A stale backend cannot be mistaken for the current one.</td>
+<td valign="top"><code>jim/__main__.py</code>,<br><code>app/src</code> (<code>VersionGuard</code>) — <code>test_accounts.py</code> (<code>test_health_reports_the_version</code>)</td>
+</tr>
+<tr>
+<td valign="top">6</td>
+<td valign="top">Every alarm in a monitor fires on a reading; a person on the floor with the sensor on its charger produces no reading and no alarm.</td>
+<td valign="top">The <strong>vigil</strong> measures silence itself against the person's own event table — any sign of life is already an event, so activity resets the clock with no bookkeeping — and a <strong>ticker</strong> advances that clock on the server without anything reading it.</td>
+<td valign="top">The absence of signals becomes an alarm condition that fires at three in the morning with every screen closed.</td>
+<td valign="top"><code>jim/vigil.py</code>,<br><code>jim/ticker.py</code> — <code>test_vigil.py</code>,<br><code>test_the_clock_advances_without_a_read.py</code></td>
+</tr>
+<tr>
+<td valign="top">7</td>
+<td valign="top">Three products that must share a person's memory, specialists and custody without sharing code or a database.</td>
+<td valign="top">Three separately deployable services that interoperate over <strong>HTTP only</strong> with <strong>one tenant and one token per integration</strong>; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three.</td>
+<td valign="top">A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database.</td>
+<td valign="top"><code>jim/qrme_client.py</code>,<br><code>jim/pdi_client.py</code> — <code>test_pdi_tandem.py</code>,<br><code>test_tandem.py</code></td>
+</tr>
+</tbody>
+</table>
 
 ### The safety path, as built
 
