@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.1.4** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.5** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -617,6 +617,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.5** | **No functional changes — cut with the siblings.** QRME's screen 199 became a photograph, its AI mark became one badge hung off every profile picture rather than cropped in half by it, and a job title joined the field under every name; the three products keep one number |
 | **3.1.4** | **A screenshot is the whole screen** — the content column is unrolled before the shutter, so a capture is no longer the first phone-height of its screen, and 72 phone-height slices stand beside the whole pictures. Cut with the siblings |
 | **3.1.3** | **For examination** — every highlight names its problem, implementation, numbers and test. No functional changes; cut with the siblings |
 | **3.1.2** | **The screens are photographs, and the mechanisms are set out for examination** — 14, 44 and 45 are captures of the running console; the seven mechanisms on file each name the technical problem, the solution as built, what it changes in the machine and the test that holds it. Cut with the siblings |
