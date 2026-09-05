@@ -1658,6 +1658,10 @@ export const api = {
   health: () => req<{ status: string; version?: string; tandem: boolean;
                       console?: boolean; signup_key?: boolean;
                       footsteps?: number }>("/health"),
+  // `footsteps` is the count of enrolled people. The console stopped
+  // drawing it when the corner chip became a dock tab, but the server
+  // still sends it and PDI's console still draws it, so the shape of
+  // the reply is documented here rather than quietly narrowed.
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),
   enroll: (body: { display_name: string; birthdate: string; terms_consent: boolean }) =>
