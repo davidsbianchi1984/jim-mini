@@ -3,13 +3,10 @@ import { useSession } from "./store";
 import { t as tr, visitorLang } from "./l10n";
 import { applyTheme, loadTheme } from "./theme";
 import { ProblemNotice } from "./ProblemNotice";
-import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
-import { GuardianLights } from "./GuardianLights";
-import { Underway } from "./Underway";
 import { WalkAlong } from "./WalkAlong";
 import { onWalk } from "./walk";
-import { Help } from "./Help";
+import { EdgeDock } from "./EdgeDock";
 import { JimMiniOS } from "./JimMiniOS";
 import { Studio } from "./screens/Studio";
 import { Talk } from "./screens/Talk";
@@ -208,7 +205,6 @@ export function App() {
       return (
         <>
           <VersionGuard />
-          <Footsteps />
           <div className="content" style={{ maxWidth: 720, margin: "0 auto", padding: 20 }}>
             <button className="linkish" onClick={() => {
               setPublicAccess(false);
@@ -216,16 +212,15 @@ export function App() {
             }}>{tr("onb.back", visitorLang())}</button>
             <Access />
           </div>
-          <Help />
+          <EdgeDock />
         </>
       );
     }
-    return <><VersionGuard /><Footsteps /><Onboarding onAccess={() => setPublicAccess(true)} /><Help /></>;
+    return <><VersionGuard /><Onboarding onAccess={() => setPublicAccess(true)} /><EdgeDock /></>;
   }
   return (
     <div className="app">
       <VersionGuard />
-      <Footsteps />
       <aside className="sidebar" ref={bar}>
         <div className="brand">
           <span className="orb" />
@@ -287,17 +282,7 @@ export function App() {
       {/* Part of the shell: the help box is on every screen, like the
           version guard — the one screen without it is the one somebody is
           lost on. */}
-      <Help />
-      {/* Like Help: part of the shell, on every screen — the Guardian's
-          lights, minimizable, and never silently absent. */}
-      <GuardianLights />
-      {/* The task window, and shell furniture for the same reason: *which
-          agent is running, which tasks are still running* is a question you
-          ask when you do not know which screen to open, so it cannot live
-          on one of them. Beside the lights rather than inside them — that
-          panel answers whether anything is wrong, this one what is being
-          done, and folding the two together would blur both. */}
-      <Underway />
+      <EdgeDock />
       {/* Shell furniture for the sharpest version of the same reason: this
           one *has* to outlive the screen it started on, because the whole
           point of it is that the person changed screens. Inside `<main>` it

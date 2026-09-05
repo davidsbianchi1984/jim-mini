@@ -62,7 +62,7 @@ NOT_A_SURFACE = {
     # `undrawn`, which is a status for a surface that ought to have a drawing
     # and has not got one yet.
     "Underway",
-    "Footsteps",   # the corner counter; fixed chrome over every screen, like the version guard
+    "EdgeDock",    # the tab stack the shell floats; fixed chrome over every screen
     "VersionGuard", # a failure banner, deliberately not part of the tour
     # A mark, not a screen: the jim-mini OS lockup drawn on its own menu
     # button. Chrome the way `Help` is chrome — always on screen, never a

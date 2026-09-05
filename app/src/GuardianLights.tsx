@@ -18,9 +18,8 @@ import { useSession } from "./store";
  */
 
 const POLL_MS = 15000;
-const MIN_KEY = "jim.lights.min";
-// The standing ear's switch, remembered per browser like the minimize —
-// a consent this person gave on this machine, never a default.
+// The standing ear's switch, remembered per browser: a consent this
+// person gave on this machine, never a default.
 const EAR_KEY = "jim.ear.on";
 
 const COLORS = { green: "#43e08a", amber: "#ffb84d", red: "#e0687a" };
@@ -37,12 +36,12 @@ function worst(g: Glance): keyof typeof COLORS {
   return "green";
 }
 
-export function GuardianLights() {
+export function GuardianLights({ open, onToggle }:
+                               { open: boolean; onToggle: () => void }) {
   const { session } = useSession();
   const lang = visitorLang();
   const [glance, setGlance] = useState<Glance | null>(null);
   const [unreachable, setUnreachable] = useState(false);
-  const [min, setMin] = useState(() => localStorage.getItem(MIN_KEY) === "1");
   // The standing ear: while a sound-sensing monitor is plugged in, the
   // console can keep the device's recogniser listening and hand everything
   // heard to that monitor's door, where the cue vocabulary (jim/cues.py)
@@ -115,33 +114,16 @@ export function GuardianLights() {
   if (!glance) {
     if (!unreachable || !session.userId) return null;
     return (
-      <button className="wl-dot wl-dot-off"
+      <button className="edge-tab wl-tab wl-dot-off" type="button"
               onClick={load}
               aria-label={tr("lights.unreachable", lang)}
               title={tr("lights.unreachable", lang)}>
-        <span className="wl-dot-face" />
+        <span className="wl-glyph" aria-hidden="true">🚦</span>
+        <span className="edge-tab-word">{tr("dock.lights", lang)}</span>
       </button>
     );
   }
   const tone = worst(glance);
-
-  const setMinimized = (v: boolean) => {
-    setMin(v);
-    if (v) localStorage.setItem(MIN_KEY, "1");
-    else localStorage.removeItem(MIN_KEY);
-  };
-
-  if (min) {
-    return (
-      <button className="wl-dot"
-              onClick={() => setMinimized(false)}
-              aria-label={tr("lights.show", lang)}
-              title={tr("lights.title", lang)}>
-        <span className="wl-dot-face"
-              style={{ background: COLORS[tone] }} />
-      </button>
-    );
-  }
 
   const rows = [
     { color: COLORS.red, label: tr("lights.alarms", lang),
@@ -155,13 +137,21 @@ export function GuardianLights() {
   ];
 
   return (
-    <div className="watch-lights" role="status"
-         aria-label={tr("lights.title", lang)}
+    <>
+      <button className={"edge-tab wl-tab" + (open ? " on" : "")}
+              type="button" aria-expanded={open} onClick={onToggle}
+              aria-label={tr("dock.lights", lang)}
+              title={tr("dock.lights", lang)}
+              style={{ borderColor: COLORS[tone] }}>
+        <span className="wl-glyph" aria-hidden="true">🚦</span>
+        <span className="edge-tab-word">{tr("dock.lights", lang)}</span>
+      </button>
+      {open && (
+    <div className="edge-panel watch-lights" role="status"
+         aria-label={tr("dock.lights", lang)}
          style={{ borderColor: COLORS[tone] }}>
       <div className="wl-head">
         <span className="wl-name">{tr("lights.title", lang)}</span>
-        <button className="wl-min" onClick={() => setMinimized(true)}
-                aria-label={tr("lights.hide", lang)}>–</button>
       </div>
       {rows.map((r) => (
         <div className="wl-row" key={r.label}>
@@ -199,5 +189,7 @@ export function GuardianLights() {
           : tr("lights.alarm", lang)}
       </div>
     </div>
+      )}
+    </>
   );
 }

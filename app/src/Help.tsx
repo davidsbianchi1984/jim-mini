@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { api } from "./api";
+import { t as tr, visitorLang } from "./l10n";
 
 /**
  * The help box, on every screen.
  *
- * Mounted in App outside the tab switch, because "available on all screens" is
- * a property of the shell rather than something each screen can be trusted to
- * remember — and the one screen that forgets is the one somebody is stuck on.
+ * Mounted from the edge dock rather than by any screen, because "available
+ * on all screens" is a property of the shell rather than something each
+ * screen can be trusted to remember — and the one screen that forgets is
+ * the one somebody is stuck on.
+ *
+ * It was a "?" bubble fixed to a corner. It is a tab on the dock now: the
+ * same panel, opened beside the tab instead of over the corner of whatever
+ * screen was underneath.
  *
  * Deliberately faceless and unnamed, matching QRME's: the Guardian is the
  * character in this product, and the help box is just the map. Anything
  * beyond the app's own doors it hands to the Coach — which is JIM.
  */
-export function Help() {
-  const [open, setOpen] = useState(false);
+export function Help({ open, onToggle }:
+                     { open: boolean; onToggle: () => void }) {
+  const lang = visitorLang();
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -38,18 +45,20 @@ export function Help() {
     }
   }
 
-  if (!open) {
-    return (
-      <button className="help-fab" onClick={() => setOpen(true)}
-              aria-label="Help">?</button>
-    );
-  }
-
   return (
-    <div className="help-panel" role="dialog" aria-label="Help">
+    <>
+      <button className={"edge-tab help-fab" + (open ? " on" : "")}
+              type="button" aria-expanded={open} onClick={onToggle}
+              aria-label={tr("dock.help", lang)} title={tr("dock.help", lang)}>
+        <span className="help-mark" aria-hidden="true">?</span>
+        <span className="edge-tab-word">{tr("dock.help", lang)}</span>
+      </button>
+      {open && (
+    <div className="edge-panel help-panel" role="dialog"
+         aria-label={tr("dock.help", lang)}>
       <header>
-        <strong>Help</strong>
-        <button className="help-close" onClick={() => setOpen(false)}
+        <strong>{tr("dock.help", lang)}</strong>
+        <button className="help-close" onClick={onToggle}
                 aria-label="Close help">×</button>
       </header>
       <div className="help-body">
@@ -72,5 +81,7 @@ export function Help() {
         </button>
       </div>
     </div>
+      )}
+    </>
   );
 }

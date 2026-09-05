@@ -32,9 +32,17 @@ LANGS = ("en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar")
 
 
 def test_the_widget_is_mounted_in_the_shell():
+    """The lights are shell chrome, not a screen's own furniture. They are
+    mounted from the edge dock now rather than from App directly — the dock
+    is what App mounts — so this follows the one hop rather than passing on
+    an absence."""
     app = (REPO / "app/src/App.tsx").read_text(encoding="utf-8")
-    assert "<GuardianLights />" in app, (
-        "the Guardian lights are no longer part of the shell")
+    assert "<EdgeDock />" in app, (
+        "the edge dock is no longer part of the shell, so nothing floats "
+        "the lights over the screens at all")
+    dock = (REPO / "app/src/EdgeDock.tsx").read_text(encoding="utf-8")
+    assert "<GuardianLights" in dock, (
+        "the Guardian lights are no longer a tab on the dock")
 
 
 def test_a_failed_first_fetch_leaves_a_dot_not_a_blank():
@@ -63,8 +71,10 @@ def test_the_dot_retries_when_pressed():
 def test_every_word_it_shows_is_on_the_table():
     for key in ("lights.title", "lights.alarms", "lights.vigil",
                 "lights.crash", "lights.quiet", "lights.asking",
-                "lights.alarm", "lights.show", "lights.hide",
-                "lights.unreachable"):
+                # `lights.show` and `lights.hide` went with the minimize
+                # button: the dock's tab is the closed state now, so there
+                # is nothing to show or hide and no string for it.
+                "lights.alarm", "dock.lights", "lights.unreachable"):
         block = re.search(rf'"{re.escape(key)}":\s*\{{(.*?)\n  \}}', L10N, re.S)
         assert block, f"{key} is not on the console's table"
         for lang in LANGS:
