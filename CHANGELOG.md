@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.7] - 2026-09-05
+
+### Changed
+
+- **One edge dock instead of three floating widgets.** The help circle,
+  the Guardian lights and the underway count each floated where they were
+  put, so a narrow window stacked them over each other and over the tab
+  bar, and each carried its own minimize button and its own pair of
+  show/hide strings. They are one dock on the left edge now, the way
+  QRME's is: three tabs, one open at a time, and the closed tab *is* the
+  minimized state — which is why `lights.show`, `lights.hide`,
+  `und.show`, `und.hide`, `steps.count` and `steps.tip` are gone rather
+  than translated ten ways for nothing.
+
+  The dock cannot cover the tab bar. Its travel ceiling is measured, not
+  guessed: the stack's own height plus `--tabbar-h` as the bar publishes
+  it, read at mount and on every resize. A guessed number is what put the
+  old widgets on top of the controls in the first place.
+
 ## [3.1.6] - 2026-09-05
 
 ### Fixed
@@ -12304,7 +12323,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.7...HEAD
+[3.1.7]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.6...app-v3.1.7
 [3.1.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.5...app-v3.1.6
 [3.1.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.4...app-v3.1.5
 [3.1.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.3...app-v3.1.4
