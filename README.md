@@ -25,168 +25,6 @@ version number names one tested combination of all three.
 > where it is reduced to practice in this repository, and the release that
 > first shipped it — is [docs/invention-disclosure.md](docs/invention-disclosure.md).
 
-## For examination
-
-This page is written to be checked, not believed, and it is written for
-an examiner. Every section grounds the product in three things: the
-**technical problem** in the machine, the **implementation** as built —
-named modules, named constants, named tests — and a **measurable effect**
-that follows from the implementation and not from a description of it.
-Three rules hold throughout:
-
-- **A photograph outranks a drawing.** Every `.png` under `docs/screens/`
-  and `docs/walkthrough/` is a capture of the running console taken by
-  `tools/shoot_screens.py` and `tools/walkthrough.py` against a live
-  backend; an `.svg` is a design drawing and is captioned as one. The
-  36 watch faces are drawings by design, and each links to the working
-  face at jim-mini.com.
-- **Every behaviour stated here is held by a test.** The suite
-  (`python -m pytest`, 3,300-plus cases) reads this file: the release
-  banner, the release table, the gallery, the screen numbering, the
-  screen count and the closing passage all fail the build when they
-  drift from the product.
-- **Nothing is claimed that the product does not do.** Where a behaviour
-  is deliberately held shut — the 911 send — the page says so, and a test
-  reads the source to prove the hold.
-
-The writing GitHub holds and a clone does not — every release note
-and every pull request body — is checked in under
-[`docs/github/`](docs/github/), so the argument for each change
-travels with the code.
-
-### Components
-
-| Component | Where | What it is |
-|---|---|---|
-| API server | `jim/` | FastAPI over SQLite: every door the clients use, the guardian's detection and escalation, the audit chain, the offline gate. |
-| Web console | `app/` | React and TypeScript. The 45 numbered screens photographed below, in ten languages. |
-| Watch surface | `app/` at `#watch`, `docs/watch/` | 36 working faces at wrist size in any browser, on the same API as the phones. |
-| iOS, Android, Windows shells | `native/ios/`, `native/android/`, `native/windows/` | Native shells at parity with the console; every route they call is a route the server publishes. |
-| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
-| Wrist channel | `jim/watch.py` | A deposit-only drip URL a phone automation posts readings to; a health export seeds weeks of baseline. |
-| The safety ladder | `jim/crashwatch.py`, `jim/vigil.py`, `jim/escalation.py`, `jim/reachout.py`, `jim/dialer.py`, `jim/ticker.py` | Detection, the question, the contacts rung in turn, the held 911 send, and the clock that advances without a read. |
-| The phone line | `jim/telephony.py` and the voice sidecar (`docker/voice` in the QRME repository) | JIM's half of a stateless sidecar that holds the phone house's credential and speaks one small protocol; five houses behind one interface. |
-| The coding assistant and its box | `jim/appedits.py`, `jim/workroom.py` | A model drafts a change to the app as a diff; the box tries it inside four kernel-held walls; oversight reads the outcome beside the diff and nothing applies until the next publish-merge. |
-| The model layer | `jim/llm.py`, `jim/loadouts.py`, `jim/cloud.py` | Provider menu by region, bring-your-own key per request, the offline stub, the cloud gateway; who answered is on the record. |
-| Memory and the vault | `jim/recall.py`, `jim/storage.py`, `jim/pdi_client.py` | Long-term memory sealed in the PDI vault, shown and forgettable down to the vectors. |
-| The tandem | `jim/qrme_client.py`, `jim/specialists.py` | QRME's specialist profiles reached from the coach. |
-| The record | `jim/audit.py`, `jim/offline.py` | The hash-chained audit log and the one gate every socket passes. |
-| The stack | `docker/beta-compose.yml` in the QRME repository | All three products, the sidecars (ears, film, forge, renderer, voice, cloud gateway) and Caddy, deployed as one. |
-
-### The mechanisms on file
-
-The seven numbered mechanisms in the invention disclosure. Each row names
-the technical problem in the machine, the particular structure this code
-uses to solve it, what that structure changes about how the machine
-behaves, and where the structure is reduced to practice and held by a
-test. None of them is a rule a person could follow with a pen; each is a
-specific arrangement of data, channels and checks inside a running
-system, and each is photographed on the screens below.
-
-<table width="100%">
-<thead>
-<tr>
-<th width="4%" align="left">§</th>
-<th width="23%" align="left">The technical problem</th>
-<th width="30%" align="left">The particular solution, as built</th>
-<th width="26%" align="left">What it changes in the machine</th>
-<th width="17%" align="left">Reduced to practice in</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td valign="top">1</td>
-<td valign="top">A wrist sensor's readings are held inside a vendor's phone application and reach no other program without an application-store app.</td>
-<td valign="top">A <strong>deposit-only channel</strong>: one URL per person carrying a per-person token, accepting a forgiving reading payload from the phone's own automation, with no read door on the same channel; and a <strong>fold</strong> that parses the phone's health export into the person's baseline without generating events.</td>
-<td valign="top">Readings arrive at the guardian from a device the guardian has no application on, over a channel that cannot be read back, and the baseline exists before the first live reading.</td>
-<td valign="top"><code>jim/<wbr>watch.py</code> — <code>test_<wbr>watch.py</code>,<br><code>test_<wbr>the_<wbr>wrist_<wbr>is_<wbr>a_<wbr>surface.py</code></td>
-</tr>
-<tr>
-<td valign="top">2</td>
-<td valign="top">Fixed clinical thresholds fire on an individual whose normal sits far from the population's, and stay silent on drift inside the population's range.</td>
-<td valign="top">Two independent evaluation layers over every sample: a <strong>personal drift band</strong> computed from the person's own readings and a sensitivity setting, and a <strong>clinical alarm layer</strong> of fixed condition rules; each layer decides alone and both land on the escalation ladder.</td>
-<td valign="top">A drift inside clinical range can open a check-in, and a clinical alarm can never be lowered by a personal setting; the two cannot mask each other.</td>
-<td valign="top"><code>jim/<wbr>guardian.py</code>,<br><code>jim/<wbr>earlywarning.py</code>,<br><code>jim/<wbr>conditions.py</code> — <code>test_<wbr>sensitivity_<wbr>baseline.py</code>,<br><code>test_<wbr>the_<wbr>baseline_<wbr>screen_<wbr>is_<wbr>the_<wbr>home_<wbr>of_<wbr>limits.py</code></td>
-</tr>
-<tr>
-<td valign="top">3</td>
-<td valign="top">A plausible but wrong reading from a loose sensor, or a reading delayed for minutes in transit, drives an escalation as if it were true and current.</td>
-<td valign="top">Every sample carries a <strong>quality</strong> and a <strong>staleness contract</strong> (device-stamped observation and send times, so device clock skew cancels out of the age); the escalation ladder reads both and <strong>caps the highest reachable rung</strong> by them, and a stranger's beacon scan is capped below contacting the person's own circle.</td>
-<td valign="top">A poor or old signal can still open a check-in, and can never ring a contact or reach the held emergency send; the ladder's path is written down step by step and replayable.</td>
-<td valign="top"><code>jim/<wbr>signal.py</code>,<br><code>jim/<wbr>freshness.py</code>,<br><code>jim/<wbr>escalation.py</code> — <code>test_<wbr>escalation_<wbr>tree.py</code>,<br><code>test_<wbr>signal_<wbr>quality.py</code>,<br><code>test_<wbr>how_<wbr>old_<wbr>is_<wbr>the_<wbr>reading.py</code></td>
-</tr>
-<tr>
-<td valign="top">4</td>
-<td valign="top">A model served over a network fails, is rate-limited, or is unreachable exactly when a health assistant is being asked for guidance.</td>
-<td valign="top">A <strong>provider chain with a deterministic local floor</strong>: every provider error degrades to the offline stub rather than raising; every answer carries <strong>provenance</strong> — which provider produced it and, if degraded, from what — and the degrade is logged.</td>
-<td valign="top">The assistant always answers, and the person and the record can tell a model's words from the stub's.</td>
-<td valign="top"><code>jim/<wbr>llm.py</code> — <code>test_<wbr>byo_<wbr>key.py</code>,<br><code>test_<wbr>the_<wbr>study_<wbr>says_<wbr>who_<wbr>answered.py</code></td>
-</tr>
-<tr>
-<td valign="top">5</td>
-<td valign="top">A desktop shell can adopt whatever backend answers its port, including a stale one left running from an earlier version.</td>
-<td valign="top">The shell reads the backend's <strong>version from <code>/<wbr>health</code></strong> and compares it to its own before adopting it; a mismatch is refused and shown.</td>
-<td valign="top">A stale backend cannot be mistaken for the current one.</td>
-<td valign="top"><code>jim/<wbr>_<wbr>_<wbr>main_<wbr>_<wbr>.py</code>,<br><code>app/<wbr>src</code> (<code>VersionGuard</code>) — <code>test_<wbr>accounts.py</code> (<code>test_<wbr>health_<wbr>reports_<wbr>the_<wbr>version</code>)</td>
-</tr>
-<tr>
-<td valign="top">6</td>
-<td valign="top">Every alarm in a monitor fires on a reading; a person on the floor with the sensor on its charger produces no reading and no alarm.</td>
-<td valign="top">The <strong>vigil</strong> measures silence itself against the person's own event table — any sign of life is already an event, so activity resets the clock with no bookkeeping — and a <strong>ticker</strong> advances that clock on the server without anything reading it.</td>
-<td valign="top">The absence of signals becomes an alarm condition that fires at three in the morning with every screen closed.</td>
-<td valign="top"><code>jim/<wbr>vigil.py</code>,<br><code>jim/<wbr>ticker.py</code> — <code>test_<wbr>vigil.py</code>,<br><code>test_<wbr>the_<wbr>clock_<wbr>advances_<wbr>without_<wbr>a_<wbr>read.py</code></td>
-</tr>
-<tr>
-<td valign="top">7</td>
-<td valign="top">Three products that must share a person's memory, specialists and custody without sharing code or a database.</td>
-<td valign="top">Three separately deployable services that interoperate over <strong>HTTP only</strong> with <strong>one tenant and one token per integration</strong>; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three.</td>
-<td valign="top">A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database.</td>
-<td valign="top"><code>jim/<wbr>qrme_<wbr>client.py</code>,<br><code>jim/<wbr>pdi_<wbr>client.py</code> — <code>test_<wbr>pdi_<wbr>tandem.py</code>,<br><code>test_<wbr>tandem.py</code></td>
-</tr>
-</tbody>
-</table>
-
-
-### The safety path, as built
-
-| Rung | Module | Held by |
-|---|---|---|
-| A critical reading opens "are you okay?" and re-asks on a deadline | `jim/crashwatch.py` | `test_crashwatch.py`, `test_the_crash_watch_rings_the_same_bell.py` |
-| The clock advances without anyone looking | `jim/ticker.py` | `test_the_clock_advances_without_a_read.py` |
-| Silence over days asks a steward to check in | `jim/vigil.py` | `test_vigil.py` |
-| The emergency contacts are rung one after another, keypad consent first, a grounded conversation on 1 | `jim/reachout.py` | `test_the_reachout_cascade.py`, `test_a_call_event_decides_reached_or_unreached.py` |
-| The call rings through the voice door; a door that refuses or does not answer leaves the leg unplaced, never pretended | `jim/telephony.py` | `test_the_contact_call_rings_through_the_voice_door.py`, `test_the_dialer_posture_is_proven.py` |
-| The 911 send is built to the send and held shut in source | `jim/dialer.py` (`SEND_ENABLED = False`) | `test_the_dialer_is_held_shut.py`, `test_the_transport_never_carries_911.py` |
-| Every rung lands on the hash-chained record | `jim/audit.py` | `test_a_chain_with_a_hole_in_it_is_not_evidence.py` |
-
-### Where each highlight is proven
-
-Each row: the technical problem, the implementation with its own numbers, the test that holds it, and the photograph.
-
-| Highlight | The technical problem | As built, with its numbers | Test | Screen |
-|---|---|---|---|---|
-| Offline is enforced at every socket | A privacy promise made in prose leaks through one forgotten HTTP call. | `jim/offline.py` refuses every non-loopback connect at the socket layer while the gate is up; no module opts in. | `test_nothing_leaves_the_host.py` | 23 |
-| Ten languages, refusals included | A refusal in English to a reader in Arabic is a wall, not an answer. | `jim/i18n.py` keeps every refusal sentence as a constant with ten translations; a refusal raised anywhere is rendered through it. | `test_the_guardian_refuses_in_one_language.py` | every screen |
-| Ability is not a gate | A screen that needs a mouse locks out the person the guardian exists for. | `app/src/screens/Access.tsx` exposes every control to keyboard and reader; the guard reads the markup rather than trusting a checklist. | `test_ability_is_not_a_gate.py` | 37 |
-| The wrist channel and the watch | A watch app needs a store, a phone pairing and a vendor account before it shows one number. | `jim/watch.py` serves the face as one HTTP payload a browser on the wrist reads; 36 faces are drawn from the same rows; `native/wear/` is the same face packaged. | `test_watch.py`, `test_the_wrist_is_a_surface.py`, `test_the_watch_you_actually_wear.py` | 12, faces 01–36 |
-| The personal baseline and every limit on one screen | Population thresholds fire on the wrong person and stay silent on the right one. | `jim/guardian.py` keeps a per-person resting baseline as an exponential average with `_BASELINE_ALPHA = 0.05`, provisional until `_BASELINE_MIN_SAMPLES = 5`; every limit is set on one screen and rounds up. | `test_sensitivity_baseline.py`, `test_the_baseline_screen_is_the_home_of_limits.py` | 08, 13 |
-| Bring your own model key | A key in the server's configuration is every caller's key. | `jim/llm.py` reads the caller's key from one request header into a context variable for that request only; never stored, never logged. | `test_byo_key.py` | 15 |
-| The coach, grounded in the vault and the watched pages | A model answering from its training answers about somebody else. | `jim/coach.py` conditions every answer on the person's sealed records; `jim/lookout.py` keeps watched pages fresh and says when one changed. | `test_the_lookout.py`, `test_the_lookout_grows_ears.py` | 07 |
-| Signal quality caps the escalation | A loose sensor's plausible reading escalates as if it were true. | `jim/signal.py` carries a trust score per sample and no escalation rises above `TRUST_FLOOR = 0.5`; `jim/freshness.py` expects a heartbeat every `HEARTBEAT_MS = 90000` ms and keeps the last 500 readings for the judgement. | `test_how_old_is_the_reading.py` | 08 |
-| The medicine cabinet | A dose forgotten and a dose doubled look the same to a reminder that only rings. | `jim/meds.py` records each dose taken against its schedule; the next reminder is computed from the record, not the clock alone. | `test_meds.py` | 17 |
-| The care circle | Everyone in a family getting every alarm is nobody getting the right one. | `jim/careteam.py` holds roles and reach order; each escalation step names who was tried and how. | `test_careteam.py` | 18 |
-| The money guardian | A rate limit on a card is a rule the bank keeps, not the person. | `jim/money.py` keeps the person's own ceilings and refuses over them before the request leaves. | `test_the_money_guardian.py` | 13 |
-| Beacons and the rota | A printed code at a door that points somewhere new is a door that lies. | `jim/beacons.py` deactivates rather than deletes; `jim/rota.py` keeps who is on duty when the code is scanned. | `test_beacons.py` | 31 |
-| The engaged session and its permits | An assistant session that outlives its owner's attention acts alone. | `jim/engaged.py` binds a session to a person's presence; `jim/permits.py` grants each reach as a revocable row. | `test_an_engaged_session_reaches_no_further_than_its_owner.py` | 38, 39 |
-| The agent's hands and look permits | An agent that can see the screen can see everything on it. | `jim/hands.py` grants a look per screen per permit; the agent's hands reach the theme and the list switches, and nothing else. | `test_the_agents_hands_reach_the_look.py`, `test_the_guardian_gets_eyes_and_hands.py` | 42 |
-| Widgets that cannot leave their box | A model-written widget runs in the page that holds the session. | `jim/widgets.py` serves each widget in a sandboxed frame with no ambient credential. | `test_the_widget_cannot_leave_its_box.py` | 40 |
-| The moderated mailbox | Mail answered by a model in the person's name leaves before the person sees it. | `jim/mailbox.py` holds every outbound letter in a queue the person approves. | `test_the_moderated_mailbox.py` | 44 |
-| The training corpus and the learn task | A local model cannot learn from exchanges nobody kept. | `jim/corpus.py` banks each exchange; the learn task plants itself when capture is on and archives the bank itself. | `test_the_training_corpus.py`, `test_the_learn_task_plants_itself.py` | 43 |
-| App edits held for company oversight | A change a user proposes to the app lands nowhere, or lands everywhere. | `jim/appedits.py` holds each proposal as a row with a state; the reviewer's queue is a screen; `BOX_SLOTS = 2` bounds how many are tried at once. | `test_the_held_screens_buttons_match_the_wire.py` | 45 |
-| The coding assistant's box — a draft tried inside four walls before a person judges it | A model's patch run on the server is the model running the server. | `jim/workroom.py` runs each draft under `unshare -rmnp` as `nobody`, with `LIMITS` of 300 s wall, 240 s CPU, 2 GiB address space, 32 processes above the account's running count, 16 MiB per file and 64 KiB of output; the tree is read-only, hidden places are covered by a 64 MiB tmpfs, scratch is 256 MiB; at most `MAX_ROUNDS = 3` tries; a probe forks 400 processes before the box is trusted. | `test_the_assistant_gets_a_box.py`, `test_the_box_opens_on_the_hosted_cloud.py` | 40, 45 |
-| The dialer is built to the send, and held shut | An emergency call placed by software is either impossible or already happening. | `jim/dialer.py` carries the whole cascade to a real telephony transport and keeps `SEND_ENABLED = False` in source; no setting, plan or waiver opens it. | `test_the_dialer_posture_is_proven.py` | — |
-| Two guardians working together | Two people's guardians that cannot see each other cannot cover for each other. | `jim/family.py` links two guardians with a mutual, revocable grant; each sees only what the other allowed. | `test_two_guardians_working_together.py` | 25 |
-
 ## Who it is for
 
 Anyone who wants their own numbers watched on their own terms. The same
@@ -196,7 +34,7 @@ condition, and an elder whose family wants to know the quiet is ordinary
 quiet. Every capability below works for every account; nothing is gated,
 worded, or designed around one generation.
 
-## What it does
+## Features
 
 **Watching**
 
@@ -254,18 +92,17 @@ worded, or designed around one generation.
 | **Clinical handoff** | A sealed, revocable summary a person can hand to a clinician. See [docs/hipaa-baa.md](docs/hipaa-baa.md). |
 | **Honest degradation** | A refused key is a translated sentence naming the fix; a printed letter is never reported as a person notified; a stub answer is never dressed as the model you chose. |
 
-## Product surfaces
+## The safety path, as built
 
-| Surface | Where | Notes |
+| Rung | Module | Held by |
 |---|---|---|
-| API server | `jim/` | FastAPI + SQLite. `python -m jim serve` or `uvicorn jim.api:app`. |
-| Web console | `app/` | React + TypeScript (Vite). |
-| Watch surface | `app/` at `#watch` | The 36 faces below as working screens, in any browser, at wrist size. |
-| iOS shell | `native/ios/` | SwiftUI. |
-| Android shell | `native/android/` | Kotlin. |
-| Windows shell | `native/windows/` | C# / WinUI. |
-| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
-| Wrist channel | `jim/watch.py` | A phone automation drips Health readings to a per-user URL; a one-time export seeds weeks of baseline. |
+| A critical reading opens "are you okay?" and re-asks on a deadline | `jim/crashwatch.py` | `test_crashwatch.py`, `test_the_crash_watch_rings_the_same_bell.py` |
+| The clock advances without anyone looking | `jim/ticker.py` | `test_the_clock_advances_without_a_read.py` |
+| Silence over days asks a steward to check in | `jim/vigil.py` | `test_vigil.py` |
+| The emergency contacts are rung one after another, keypad consent first, a grounded conversation on 1 | `jim/reachout.py` | `test_the_reachout_cascade.py`, `test_a_call_event_decides_reached_or_unreached.py` |
+| The call rings through the voice door; a door that refuses or does not answer leaves the leg unplaced, never pretended | `jim/telephony.py` | `test_the_contact_call_rings_through_the_voice_door.py`, `test_the_dialer_posture_is_proven.py` |
+| The 911 send is built to the send and held shut in source | `jim/dialer.py` (`SEND_ENABLED = False`) | `test_the_dialer_is_held_shut.py`, `test_the_transport_never_carries_911.py` |
+| Every rung lands on the hash-chained record | `jim/audit.py` | `test_a_chain_with_a_hole_in_it_is_not_evidence.py` |
 
 ## Capabilities, and what each one rests on
 
@@ -306,7 +143,7 @@ is handed on, never widened. The refusals are published by name at
 `GET /hands/vocabulary`, so a client that knew only what was permitted
 could not draw a documented refusal as a missing feature.
 
-## The screens you'll meet
+## Screenshots
 
 The app screens a person actually lives in — every major component
 and tool, drawn at phone scale in the product's dark-OLED style.
@@ -398,6 +235,19 @@ faces have their own gallery below.
   </tr>
 </table>
 
+## Product surfaces
+
+| Surface | Where | Notes |
+|---|---|---|
+| API server | `jim/` | FastAPI + SQLite. `python -m jim serve` or `uvicorn jim.api:app`. |
+| Web console | `app/` | React + TypeScript (Vite). |
+| Watch surface | `app/` at `#watch` | The 36 faces below as working screens, in any browser, at wrist size. |
+| iOS shell | `native/ios/` | SwiftUI. |
+| Android shell | `native/android/` | Kotlin. |
+| Windows shell | `native/windows/` | C# / WinUI. |
+| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
+| Wrist channel | `jim/watch.py` | A phone automation drips Health readings to a per-user URL; a one-time export seeds weeks of baseline. |
+
 ## On the wrist
 
 Every face below is a working screen. Select any drawing to open that face
@@ -483,6 +333,72 @@ them); the links under them are the product.
     <td align="center" width="25%"><a href="https://jim-mini.com/#watch/36-agents"><img src="docs/watch/36-agents.svg" width="120" alt="36 Agents"></a><br><sub><a href="https://jim-mini.com/#watch/36-agents">36 · Agents</a></sub></td>
   </tr>
 </table>
+
+## The console, driven
+
+Every picture below was photographed while `tools/walkthrough.py` drove
+the 3.0.10 release gate: a live backend, a member enrolled during the
+run, and whatever the drive put on screen still on it. Nothing here is
+staged — the monitor shows the reading the drip channel actually
+carried, the check-in is the one the harness logged, and the care team
+holds the invitation that actually went out. Re-take the set with
+`python3 tools/walkthrough.py`.
+
+<table>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/01-home.png"><img src="docs/walkthrough/01-home.png" width="460" alt="Home — the front door"></a><br><sub>Home — the front door</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/02-monitor.png"><img src="docs/walkthrough/02-monitor.png" width="460" alt="Monitor — the reading that landed"></a><br><sub>Monitor — the reading that landed</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/03-checkin.png"><img src="docs/walkthrough/03-checkin.png" width="460" alt="Check-in — logged during the drive"></a><br><sub>Check-in — logged during the drive</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/04-coach.png"><img src="docs/walkthrough/04-coach.png" width="460" alt="Coach — answering in its own shape"></a><br><sub>Coach — answering in its own shape</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/05-careteam.png"><img src="docs/walkthrough/05-careteam.png" width="460" alt="Care team — the invitation out"></a><br><sub>Care team — the invitation out</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/06-channel.png"><img src="docs/walkthrough/06-channel.png" width="460" alt="Channel — the drip road minted"></a><br><sub>Channel — the drip road minted</sub></td>
+</tr>
+</table>
+
+## Quick start
+
+```bash
+# Server
+pip install -e .
+python -m jim            # launcher menu: choose your device
+python -m jim serve      # just the API
+
+# Console
+cd app && npm install && npm run dev
+
+# Tests
+python -m pytest
+```
+
+To run alongside the sister products:
+
+```bash
+JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app                     # tandem with QRME
+JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=... uvicorn jim.api:app    # with the PDI vault
+```
+
+## Configuration
+
+Everything is environment-driven; the defaults run locally with no keys.
+
+| Variable | Purpose |
+|---|---|
+| `JIM_OFFLINE` | `1` guarantees nothing leaves the host. |
+| `ANTHROPIC_API_KEY` (or `JIM_LLM=stub`) | Conversation model. OpenAI, Gemini, Grok, DeepSeek, Perplexity, Ollama, and custom endpoints are also supported (`JIM_*_MODEL`, `JIM_OLLAMA_URL`, `JIM_CUSTOM_LLM_URL`). |
+| `JIM_MODEL` | Model override for the default provider. |
+| `ELEVENLABS_API_KEY` | Spoken voice; without it the device voice stands in and says so. |
+| `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
+| `JIM_VOICE_URL` / `JIM_VOICE_SECRET` / `JIM_TELEPHONY_PROVIDER` | The phone line: the voice sidecar's address, the secret both containers share, and which house it is keyed for. Unset, every contact call is prepared and documented and nothing rings. |
+| `JIM_TICK_SECONDS` | How often JIM's own clock sweeps the running clocks (default 30; `0` turns the ticker off). |
+| `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms (default: the system temp directory); it must sit outside the places the box hides. |
+| `JIM_CORS_ORIGINS` | Allowed console origins. |
+
+See [docs/hosting.md](docs/hosting.md) for production deployment and
+[docs/cloud-model.md](docs/cloud-model.md) for the model-provider details.
 
 ## Feature reference: every behaviour, defined
 
@@ -588,46 +504,24 @@ leaves the host — held at every socket in the codebase and verified by
 tests. Sensitive payloads can live in the PDI vault on-premises; see the
 tandem flow in [docs/diagrams/tandem-flow.svg](docs/diagrams/tandem-flow.svg).
 
-## Quick start
+## Architecture
 
-```bash
-# Server
-pip install -e .
-python -m jim            # launcher menu: choose your device
-python -m jim serve      # just the API
-
-# Console
-cd app && npm install && npm run dev
-
-# Tests
-python -m pytest
-```
-
-To run alongside the sister products:
-
-```bash
-JIM_QRME_URL=http://localhost:8000 uvicorn jim.api:app                     # tandem with QRME
-JIM_PDI_URL=http://localhost:8100 JIM_PDI_TOKEN=... uvicorn jim.api:app    # with the PDI vault
-```
-
-## Configuration
-
-Everything is environment-driven; the defaults run locally with no keys.
-
-| Variable | Purpose |
-|---|---|
-| `JIM_OFFLINE` | `1` guarantees nothing leaves the host. |
-| `ANTHROPIC_API_KEY` (or `JIM_LLM=stub`) | Conversation model. OpenAI, Gemini, Grok, DeepSeek, Perplexity, Ollama, and custom endpoints are also supported (`JIM_*_MODEL`, `JIM_OLLAMA_URL`, `JIM_CUSTOM_LLM_URL`). |
-| `JIM_MODEL` | Model override for the default provider. |
-| `ELEVENLABS_API_KEY` | Spoken voice; without it the device voice stands in and says so. |
-| `JIM_QRME_URL` / `JIM_PDI_URL` / `JIM_PDI_TOKEN` | Tandem links to the sister products. |
-| `JIM_VOICE_URL` / `JIM_VOICE_SECRET` / `JIM_TELEPHONY_PROVIDER` | The phone line: the voice sidecar's address, the secret both containers share, and which house it is keyed for. Unset, every contact call is prepared and documented and nothing rings. |
-| `JIM_TICK_SECONDS` | How often JIM's own clock sweeps the running clocks (default 30; `0` turns the ticker off). |
-| `JIM_WORKROOMS` | Where the coding assistant's box builds its rooms (default: the system temp directory); it must sit outside the places the box hides. |
-| `JIM_CORS_ORIGINS` | Allowed console origins. |
-
-See [docs/hosting.md](docs/hosting.md) for production deployment and
-[docs/cloud-model.md](docs/cloud-model.md) for the model-provider details.
+| Component | Where | What it is |
+|---|---|---|
+| API server | `jim/` | FastAPI over SQLite: every door the clients use, the guardian's detection and escalation, the audit chain, the offline gate. |
+| Web console | `app/` | React and TypeScript. The 45 numbered screens photographed below, in ten languages. |
+| Watch surface | `app/` at `#watch`, `docs/watch/` | 36 working faces at wrist size in any browser, on the same API as the phones. |
+| iOS, Android, Windows shells | `native/ios/`, `native/android/`, `native/windows/` | Native shells at parity with the console; every route they call is a route the server publishes. |
+| Wear OS app | `native/wear/` | Standalone: the pulse read on the wrist, words never audio. |
+| Wrist channel | `jim/watch.py` | A deposit-only drip URL a phone automation posts readings to; a health export seeds weeks of baseline. |
+| The safety ladder | `jim/crashwatch.py`, `jim/vigil.py`, `jim/escalation.py`, `jim/reachout.py`, `jim/dialer.py`, `jim/ticker.py` | Detection, the question, the contacts rung in turn, the held 911 send, and the clock that advances without a read. |
+| The phone line | `jim/telephony.py` and the voice sidecar (`docker/voice` in the QRME repository) | JIM's half of a stateless sidecar that holds the phone house's credential and speaks one small protocol; five houses behind one interface. |
+| The coding assistant and its box | `jim/appedits.py`, `jim/workroom.py` | A model drafts a change to the app as a diff; the box tries it inside four kernel-held walls; oversight reads the outcome beside the diff and nothing applies until the next publish-merge. |
+| The model layer | `jim/llm.py`, `jim/loadouts.py`, `jim/cloud.py` | Provider menu by region, bring-your-own key per request, the offline stub, the cloud gateway; who answered is on the record. |
+| Memory and the vault | `jim/recall.py`, `jim/storage.py`, `jim/pdi_client.py` | Long-term memory sealed in the PDI vault, shown and forgettable down to the vectors. |
+| The tandem | `jim/qrme_client.py`, `jim/specialists.py` | QRME's specialist profiles reached from the coach. |
+| The record | `jim/audit.py`, `jim/offline.py` | The hash-chained audit log and the one gate every socket passes. |
+| The stack | `docker/beta-compose.yml` in the QRME repository | All three products, the sidecars (ears, film, forge, renderer, voice, cloud gateway) and Caddy, deployed as one. |
 
 ## Documentation
 
@@ -643,30 +537,12 @@ See [docs/hosting.md](docs/hosting.md) for production deployment and
 | [docs/releasing.md](docs/releasing.md) | How releases are cut. |
 | [docs/gallery.md](docs/gallery.md) | The full desktop and phone screen gallery. |
 
-## The console, driven
+### For examination
 
-Every picture below was photographed while `tools/walkthrough.py` drove
-the 3.0.10 release gate: a live backend, a member enrolled during the
-run, and whatever the drive put on screen still on it. Nothing here is
-staged — the monitor shows the reading the drip channel actually
-carried, the check-in is the one the harness logged, and the care team
-holds the invitation that actually went out. Re-take the set with
-`python3 tools/walkthrough.py`.
-
-<table>
-<tr>
-<td align="center" width="50%"><a href="docs/walkthrough/01-home.png"><img src="docs/walkthrough/01-home.png" width="460" alt="Home — the front door"></a><br><sub>Home — the front door</sub></td>
-<td align="center" width="50%"><a href="docs/walkthrough/02-monitor.png"><img src="docs/walkthrough/02-monitor.png" width="460" alt="Monitor — the reading that landed"></a><br><sub>Monitor — the reading that landed</sub></td>
-</tr>
-<tr>
-<td align="center" width="50%"><a href="docs/walkthrough/03-checkin.png"><img src="docs/walkthrough/03-checkin.png" width="460" alt="Check-in — logged during the drive"></a><br><sub>Check-in — logged during the drive</sub></td>
-<td align="center" width="50%"><a href="docs/walkthrough/04-coach.png"><img src="docs/walkthrough/04-coach.png" width="460" alt="Coach — answering in its own shape"></a><br><sub>Coach — answering in its own shape</sub></td>
-</tr>
-<tr>
-<td align="center" width="50%"><a href="docs/walkthrough/05-careteam.png"><img src="docs/walkthrough/05-careteam.png" width="460" alt="Care team — the invitation out"></a><br><sub>Care team — the invitation out</sub></td>
-<td align="center" width="50%"><a href="docs/walkthrough/06-channel.png"><img src="docs/walkthrough/06-channel.png" width="460" alt="Channel — the drip road minted"></a><br><sub>Channel — the drip road minted</sub></td>
-</tr>
-</table>
+The technical problem each mechanism solves, the structure this code uses
+to solve it, what that changes in the machine, and where it is reduced to
+practice and held by a test:
+[docs/examination.md](docs/examination.md).
 
 ## Release history
 
