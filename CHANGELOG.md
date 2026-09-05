@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.6] - 2026-09-05
+
 ### Fixed
 
 - **A guard with an expiry date on it.** The appointment left behind by an
@@ -12302,7 +12304,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.6...HEAD
+[3.1.6]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.5...app-v3.1.6
 [3.1.5]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.4...app-v3.1.5
 [3.1.4]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.3...app-v3.1.4
 [3.1.3]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.2...app-v3.1.3

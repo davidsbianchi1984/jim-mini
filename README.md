@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.1.5** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.6** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -676,6 +676,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.6** | **The writing travels with the clone** — `docs/github/` carries 267 release notes and 279 pull request bodies into the repository, so a clone holds the argument for every change and not only the diff; the long pages are split into parts GitHub will render on a phone. A guard that booked an appointment at a hardcoded `2026-09-04T14:30` stopped expiring — the two cases it held were failing on an untouched `main` for a reason that had nothing to do with the product |
 | **3.1.5** | **No functional changes — cut with the siblings.** QRME's screen 199 became a photograph, its AI mark became one badge hung off every profile picture rather than cropped in half by it, and a job title joined the field under every name; the three products keep one number |
 | **3.1.4** | **A screenshot is the whole screen** — the content column is unrolled before the shutter, so a capture is no longer the first phone-height of its screen, and 72 phone-height slices stand beside the whole pictures. Cut with the siblings |
 | **3.1.3** | **For examination** — every highlight names its problem, implementation, numbers and test. No functional changes; cut with the siblings |
