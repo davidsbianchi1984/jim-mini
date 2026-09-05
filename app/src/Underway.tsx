@@ -8,9 +8,10 @@ import { useSession } from "./store";
  * are still running*, asked for twice and answerable until now only by
  * visiting five different screens and knowing which five.
  *
- * Pinned like its sibling `GuardianLights`, minimizable to a dot, and
- * unreachable is a state it shows rather than one it hides in: a failed first
- * fetch renders an unlit dot that retries on press. The lights answer *is
+ * A tab on the edge dock beside its sibling `GuardianLights` — it was
+ * pinned with a minimize-to-a-dot, which is the tell that it was in the
+ * way. Unreachable is a state it shows rather than one it hides in: a
+ * failed first fetch renders a tab that retries on press. The lights answer *is
  * anything wrong*; this answers *what is my guardian doing*, and they are
  * different questions with different answers, which is why they are two
  * pinned things rather than one crowded one.
@@ -31,14 +32,13 @@ import { useSession } from "./store";
  */
 
 const POLL_MS = 15000;
-const MIN_KEY = "jim.underway.min";
 
-export function Underway() {
+export function Underway({ open, onToggle }:
+                         { open: boolean; onToggle: () => void }) {
   const { session } = useSession();
   const lang = visitorLang();
   const [win, setWin] = useState<UnderwayWindow | null>(null);
   const [unreachable, setUnreachable] = useState(false);
-  const [min, setMin] = useState(() => localStorage.getItem(MIN_KEY) === "1");
 
   const load = useCallback(() => {
     const { userId, userToken } = session;
@@ -57,36 +57,33 @@ export function Underway() {
   if (!win) {
     if (!unreachable || !session.userId) return null;
     return (
-      <button className="uw-dot uw-dot-off"
+      <button className="edge-tab uw-tab uw-dot-off" type="button"
               onClick={load}
               aria-label={tr("und.unreachable", lang)}
-              title={tr("und.unreachable", lang)} />
-    );
-  }
-
-  const setMinimized = (v: boolean) => {
-    setMin(v);
-    if (v) localStorage.setItem(MIN_KEY, "1");
-    else localStorage.removeItem(MIN_KEY);
-  };
-
-  if (min) {
-    return (
-      <button className="uw-dot" onClick={() => setMinimized(false)}
-              aria-label={tr("und.show", lang)}
-              title={tr("und.title", lang)}>
-        {win.underway.length}
+              title={tr("und.unreachable", lang)}>
+        <span className="uw-glyph" aria-hidden="true">⟳</span>
+        <span className="edge-tab-word">{tr("dock.underway", lang)}</span>
       </button>
     );
   }
 
   return (
-    <div className="underway" role="status"
-         aria-label={tr("und.title", lang)}>
+    <>
+      <button className={"edge-tab uw-tab" + (open ? " on" : "")}
+              type="button" aria-expanded={open} onClick={onToggle}
+              aria-label={tr("dock.underway", lang)}
+              title={tr("dock.underway", lang)}>
+        <span className="uw-glyph" aria-hidden="true">⟳</span>
+        {/* The count that was the whole of the minimized dot rides the tab
+            now, so what the dot said is said without opening anything. */}
+        <span className="edge-tab-n">{win.underway.length}</span>
+        <span className="edge-tab-word">{tr("dock.underway", lang)}</span>
+      </button>
+      {open && (
+    <div className="edge-panel underway" role="status"
+         aria-label={tr("dock.underway", lang)}>
       <div className="uw-head">
         <span className="uw-name">{tr("und.title", lang)}</span>
-        <button className="uw-min" onClick={() => setMinimized(true)}
-                aria-label={tr("und.hide", lang)}>–</button>
       </div>
 
       {/* Stated by the server rather than inferred from an empty list, so
@@ -144,5 +141,7 @@ export function Underway() {
         </div>
       )}
     </div>
+      )}
+    </>
   );
 }

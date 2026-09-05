@@ -63,8 +63,19 @@ APP = REPO / "app" / "src" / "App.tsx"
 
 #: The floating things, by class. Each is `position: fixed`, and each has
 #: to clear the bottom bar on a phone.
-FLOATS = (".help-fab", ".help-panel", ".watch-lights", ".wl-dot",
-          ".underway", ".uw-dot")
+## The shape after the dock
+##
+## The four floats became one. The help bubble, the Guardian's lights, the
+## task window and the footsteps chip are a single stack of tabs on the
+## right edge now, so there is one fixed thing to ask about instead of six
+## — and the clearance it needs is no longer a CSS `bottom` at all: the
+## dock's top is a percentage a person drags, so it clamps itself in
+## `EdgeDock.tsx` against the bar's measured height. What that clamp must
+## not become is a guess, which is the question this file has always asked;
+## `test_the_light_sat_on_the_menu.py` reads the clamp itself.
+##
+## What is left here is the half that is still CSS: the panel a tab opens.
+FLOATS = (".edge-panel",)
 
 
 def _blocks() -> list[tuple[int, str]]:
@@ -114,16 +125,21 @@ def _phone_block() -> str:
 
 
 def test_every_floating_thing_clears_the_bar_on_a_phone():
-    """A float with no phone rule keeps its desktop offset, which is where
+    """A float with no phone rule keeps its desktop size, which is where
     the task window was: `bottom: 84px`, in the middle of a phone screen,
-    on top of the Hands screen's checkboxes."""
+    on top of the Hands screen's checkboxes.
+
+    The dock answers this by measuring rather than by a rule — see
+    `test_the_light_sat_on_the_menu.py`. What is asked here is that the
+    panel a tab opens still has a phone rule of its own, because a panel
+    sized for a desktop is the same defect one element along.
+    """
     block = _phone_block()
     adrift = [name for name in FLOATS if name not in block]
     assert not adrift, (
         f"{len(adrift)} floating element(s) have no phone rule and keep "
-        f"their desktop offset: {adrift}. On a phone the bottom of the "
-        "screen is the tab bar, so a float placed against the bottom on a "
-        "desktop is placed against the menu here.")
+        f"their desktop size: {adrift}. On a phone the bottom of the "
+        "screen is the tab bar, and the glass is narrower.")
 
 
 def test_the_phone_rule_is_declared_after_the_rule_it_overrides():
@@ -155,14 +171,22 @@ def test_the_phone_rule_is_declared_after_the_rule_it_overrides():
 
 def test_the_clearance_is_measured_rather_than_guessed():
     """`76px` was a guess about the bar's height. The bar is as tall as its
-    labels, and its labels are translated into ten languages."""
-    for name in FLOATS:
-        _, rule = _winning_rule(name)
-        assert "--tabbar-h" in rule, (
-            f"{name} clears the bar by a hard-coded number rather than by "
-            "`--tabbar-h`. That number is a guess about how tall the bar "
-            "is; the bar is as tall as its labels, and a language with "
-            "longer words wraps them sooner.")
+    labels, and its labels are translated into ten languages.
+
+    The clearance moved out of the stylesheet with the dock: the thing that
+    has to clear the bar is a stack whose top a person drags, so it is
+    clamped in TypeScript against the height the bar publishes. The
+    question is unchanged — measured, not guessed — and this reads it where
+    it now lives.
+    """
+    src = (REPO / "app" / "src" / "EdgeDock.tsx").read_text(encoding="utf-8")
+    assert "--tabbar-h" in src, (
+        "the dock clears the bar by a hard-coded number rather than by "
+        "`--tabbar-h`. That number is a guess about how tall the bar is; "
+        "the bar is as tall as its labels, and a language with longer "
+        "words wraps them sooner.")
+    assert not re.search(r"\b76\b", src), (
+        "the guess this round replaced is back in the dock")
 
 
 def test_the_bar_actually_publishes_its_height():

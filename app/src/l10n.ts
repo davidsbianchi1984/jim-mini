@@ -18,12 +18,6 @@ export type Lang = "en" | "es" | "fr" | "de" | "pt" | "it" | "ja" | "zh"
 const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   // The footsteps chip in the corner. The same two rows stand verbatim in
   // the sibling consoles — one wording, one translation.
-  "steps.count": {
-    en: "{n} footsteps here", es: "{n} pasos por aquí", fr: "{n} pas par ici", de: "{n} Fußspuren hier", pt: "{n} passos por aqui", it: "{n} passi qui", ja: "ここに{n}の足あと", zh: "这里有 {n} 个足迹", hi: "यहाँ {n} क़दमों के निशान", ar: "{n} أثر أقدام هنا",
-  },
-  "steps.tip": {
-    en: "How many people hold accounts here", es: "Cuántas personas tienen cuenta aquí", fr: "Combien de personnes ont un compte ici", de: "Wie viele Menschen hier ein Konto haben", pt: "Quantas pessoas têm conta aqui", it: "Quante persone hanno un account qui", ja: "ここにアカウントを持つ人の数", zh: "这里有多少人持有账户", hi: "यहाँ कितने लोगों के खाते हैं", ar: "كم شخصًا يملك حسابًا هنا",
-  },
   "spec.ask": { en: "Ask them", es: "Preguntarles", fr: "Leur demander", de: "Frag sie", pt: "Perguntar-lhes", it: "Chiedi a loro", ja: "\u3053\u306e\u4eba\u306b\u805e\u304f", zh: "\u53bb\u95ee\u4ed6\u4eec", hi: "\u0909\u0928\u0938\u0947 \u092a\u0942\u091b\u0947\u0902", ar: "\u0627\u0633\u0623\u0644\u0647\u0645" },
   "spec.fallback": { en: "Specialist", es: "Especialista", fr: "Sp\u00e9cialiste", de: "Fachperson", pt: "Especialista", it: "Specialista", ja: "\u5c02\u9580\u5bb6", zh: "\u4e13\u5bb6", hi: "\u0935\u093f\u0936\u0947\u0937\u091c\u094d\u091e", ar: "\u0627\u0644\u0645\u062e\u062a\u0635" },
   "spec.held": { en: "Their reply is waiting for its owner to approve it \u2014 held, not refused.", es: "Su respuesta espera la aprobaci\u00f3n de su propietario: retenida, no rechazada.", fr: "Leur r\u00e9ponse attend l'approbation de son propri\u00e9taire : retenue, pas refus\u00e9e.", de: "Ihre Antwort wartet auf die Freigabe ihres Eigent\u00fcmers \u2014 zur\u00fcckgehalten, nicht abgelehnt.", pt: "A resposta aguarda a aprova\u00e7\u00e3o do seu propriet\u00e1rio \u2014 retida, n\u00e3o recusada.", it: "La loro risposta attende l'approvazione del proprietario: trattenuta, non rifiutata.", ja: "\u8fd4\u4fe1\u306f\u30aa\u30fc\u30ca\u30fc\u306e\u627f\u8a8d\u5f85\u3061\u3067\u3059 \u2014 \u62d2\u5426\u3067\u306f\u306a\u304f\u4fdd\u7559\u3055\u308c\u3066\u3044\u307e\u3059\u3002", zh: "\u4ed6\u4eec\u7684\u56de\u590d\u6b63\u5728\u7b49\u5f85\u5176\u6240\u6709\u8005\u6279\u51c6 \u2014 \u662f\u88ab\u6682\u5b58\uff0c\u800c\u4e0d\u662f\u88ab\u62d2\u7edd\u3002", hi: "\u0909\u0928\u0915\u093e \u0909\u0924\u094d\u0924\u0930 \u0909\u0938\u0915\u0947 \u0938\u094d\u0935\u093e\u092e\u0940 \u0915\u0940 \u092e\u0902\u091c\u093c\u0942\u0930\u0940 \u0915\u0940 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u092e\u0947\u0902 \u0939\u0948 \u2014 \u0930\u094b\u0915\u093e \u0917\u092f\u093e \u0939\u0948, \u0905\u0938\u094d\u0935\u0940\u0915\u093e\u0930 \u0928\u0939\u0940\u0902\u0964", ar: "\u0631\u062f\u0651\u0647\u0645 \u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u0645\u0648\u0627\u0641\u0642\u0629 \u0645\u0627\u0644\u0643\u0647 \u2014 \u0645\u062d\u062c\u0648\u0632\u060c \u0644\u0627 \u0645\u0631\u0641\u0648\u0636." },
@@ -206,20 +200,6 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     ja: "動いているものはありません", zh: "没有正在运行的内容",
     hi: "कुछ भी नहीं चल रहा", ar: "لا شيء قيد التشغيل",
   },
-  "und.hide": {
-    en: "Hide what is running", es: "Ocultar lo que está en marcha",
-    fr: "Masquer ce qui est en cours", de: "Ausblenden, was läuft",
-    pt: "Ocultar o que está em curso", it: "Nascondi cosa è in corso",
-    ja: "進行中のものを隠す", zh: "隐藏正在运行的内容",
-    hi: "जो चल रहा है उसे छिपाएँ", ar: "إخفاء ما يعمل الآن",
-  },
-  "und.show": {
-    en: "Show what is running", es: "Mostrar lo que está en marcha",
-    fr: "Afficher ce qui est en cours", de: "Anzeigen, was läuft",
-    pt: "Mostrar o que está em curso", it: "Mostra cosa è in corso",
-    ja: "進行中のものを表示", zh: "显示正在运行的内容",
-    hi: "जो चल रहा है वह दिखाएँ", ar: "إظهار ما يعمل الآن",
-  },
   "und.unreachable": {
     en: "Cannot reach the Guardian — press to try again",
     es: "No se puede contactar con el Guardián: pulsa para reintentar",
@@ -373,6 +353,18 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "day.meet.open": { en: "Start one here", es: "Iniciar uno aquí", fr: "En démarrer une ici", de: "Hier eine starten", pt: "Iniciar um aqui", it: "Avviane una qui", ja: "ここで開始", zh: "在此开始", hi: "यहाँ शुरू करें", ar: "ابدأ واحدة هنا" },
   "day.meet.told": { en: "the people in the room were told", es: "se informó a las personas en la sala", fr: "les personnes présentes ont été informées", de: "die Anwesenden wurden informiert", pt: "as pessoas na sala foram informadas", it: "le persone presenti sono state informate", ja: "その場の人たちに伝えました", zh: "房间里的人已被告知", hi: "कमरे में मौजूद लोगों को बताया गया", ar: "أُبلغ من في الغرفة" },
   "day.meet.end": { en: "End the meeting", es: "Terminar la reunión", fr: "Terminer la réunion", de: "Die Besprechung beenden", pt: "Terminar a reunião", it: "Termina la riunione", ja: "会議を終了する", zh: "结束这场会议", hi: "बैठक समाप्त करें", ar: "أنهِ الاجتماع" },
+  "dock.move": {
+    en: "Move the tabs up or down", es: "Mueve las pestañas arriba o abajo", fr: "Déplacer les onglets vers le haut ou le bas", de: "Die Reiter nach oben oder unten schieben", pt: "Mover as abas para cima ou para baixo", it: "Sposta le schede in su o in giù", ja: "タブを上下に動かす", zh: "上下移动标签", hi: "टैब ऊपर या नीचे खिसकाएँ", ar: "حرّك علامات التبويب لأعلى أو لأسفل",
+  },
+  "dock.help": {
+    en: "Help", es: "Ayuda", fr: "Aide", de: "Hilfe", pt: "Ajuda", it: "Aiuto", ja: "ヘルプ", zh: "帮助", hi: "सहायता", ar: "المساعدة",
+  },
+  "dock.lights": {
+    en: "Guardian", es: "Guardián", fr: "Gardien", de: "Wächter", pt: "Guardião", it: "Guardiano", ja: "ガーディアン", zh: "守护者", hi: "अभिभावक", ar: "الحارس",
+  },
+  "dock.underway": {
+    en: "Underway", es: "En curso", fr: "En cours", de: "Laufend", pt: "Em curso", it: "In corso", ja: "実行中", zh: "进行中", hi: "जारी", ar: "قيد التنفيذ",
+  },
   "lights.title": {
     en: "Guardian", es: "Guardián", fr: "Gardien", de: "Wächter",
     pt: "Guardião", it: "Guardiano", ja: "ガーディアン", zh: "守护者",
@@ -540,20 +532,6 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
     de: "braucht dich jetzt", pt: "precisa de si agora",
     it: "ha bisogno di te ora", ja: "今すぐ対応が必要", zh: "现在需要你",
     hi: "अभी आपकी ज़रूरत है", ar: "يحتاجك الآن",
-  },
-  "lights.show": {
-    en: "Show the Guardian lights", es: "Mostrar las luces del Guardián",
-    fr: "Afficher les voyants du Gardien", de: "Wächter-Lichter zeigen",
-    pt: "Mostrar as luzes do Guardião", it: "Mostra le luci del Guardiano",
-    ja: "ガーディアンライトを表示", zh: "显示守护者指示灯",
-    hi: "अभिभावक लाइटें दिखाएँ", ar: "إظهار أضواء الحارس",
-  },
-  "lights.hide": {
-    en: "Minimize the Guardian lights", es: "Minimizar las luces del Guardián",
-    fr: "Réduire les voyants du Gardien", de: "Wächter-Lichter minimieren",
-    pt: "Minimizar as luzes do Guardião", it: "Riduci le luci del Guardiano",
-    ja: "ガーディアンライトを最小化", zh: "最小化守护者指示灯",
-    hi: "अभिभावक लाइटें छोटी करें", ar: "تصغير أضواء الحارس",
   },
   "lights.unreachable": {
     en: "The Guardian lights can’t reach the backend — press to retry",

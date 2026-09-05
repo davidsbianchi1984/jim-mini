@@ -1,4 +1,8 @@
 :root {
+  /* Where the dock's top sits, republished by EdgeDock on every move so a
+     panel can size itself against the room below it. The default is the
+     dock's own, for the first paint before the component mounts. */
+  --dock-y: 72vh;
   --card: #182238; --card2: #1f2b45; --line: #26314e;
   --txt: #eef1f7; --t2: #8a94ad; --t3: #626d88;
   /* Seven rules already said var(--muted) and no rule ever defined it, so
@@ -321,14 +325,6 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .vg-close { margin-left: auto; background: none; border: 0; color: #ffb3c0;
   font-size: 18px; line-height: 1; cursor: pointer; }
 
-/* The footsteps in the corner: how many people hold accounts here. A quiet
-   chip, not a banner — it shares the fixed layer with the version guard but
-   never competes with it for attention. */
-.footsteps { position: fixed; top: 6px; right: 8px; z-index: 90;
-  padding: 1px 6px; border-radius: 999px; background: rgba(13, 23, 41, .85);
-  border: 1px solid #2f4a72; color: #9fb4d8; font-size: 9px;
-  line-height: 1.4; pointer-events: auto; }
-
 /* The error-reporting notice: shown once, before anything is sent. Calm on
    purpose — the version guard above is an alarm, this is a question. */
 .problem-notice { margin: 12px 0; padding: 14px 16px; border-radius: 12px;
@@ -375,12 +371,63 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 }
 
 /* The help box, matching QRME's. */
-.help-fab { position: fixed; right: 22px; bottom: 22px; width: 46px;
-  height: 46px; border-radius: 50%; font-size: 20px; font-weight: 800;
-  color: #43e08a; background: rgba(67,224,138,0.14);
-  border: 1px solid #43e08a; cursor: pointer; z-index: 50; }
+/* ---- The edge dock ------------------------------------------------------
+   Every control the shell floats over the screens, as one stack of tabs on
+   the right edge — carried over from QRME's 3.1.2 dock rather than
+   re-invented, so the two consoles are learned once.
+
+   Fixed, like the corner widgets it replaces, and for the same reason: a
+   control that has to be pressable whatever is on screen. Under the menu
+   drawer (60) so an open menu wins, above every card. The panels sit at 50
+   and the tabs at 48, so a panel opens over the neighbouring tabs and still
+   under the drawer. */
+.edge-dock {
+  position: fixed; right: 0; top: 72%; z-index: 48;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+.edge-grip {
+  width: 28px; height: 22px; min-height: 22px; padding: 0; border: 0;
+  border-radius: 8px 0 0 8px; cursor: grab; touch-action: none;
+  background: rgba(255,255,255,0.08); color: var(--muted);
+  font-size: 16px; line-height: 1; display: grid; place-items: center;
+}
+.edge-grip:active { cursor: grabbing; }
+.edge-tab {
+  display: flex; align-items: center; gap: 8px;
+  height: 36px; min-height: 36px; padding: 0 12px 0 10px;
+  border: 1px solid var(--line); border-right: 0;
+  border-radius: 10px 0 0 10px; cursor: pointer;
+  background: rgba(10,18,32,0.88); color: var(--t2);
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.edge-tab:hover { background: rgba(67,224,138,0.18); color: var(--txt); }
+.edge-tab.on { background: rgba(67,224,138,0.28); color: var(--txt);
+  border-color: var(--brand); }
+.edge-tab-n { font-size: 12px; font-weight: 800; }
+.wl-tab, .uw-tab { font-weight: 700; }
+.wl-glyph, .uw-glyph { font-size: 15px; line-height: 1; }
+.help-mark { font-size: 16px; font-weight: 800; width: 14px;
+  text-align: center; }
+.edge-panel {
+  position: absolute; z-index: 50;
+  width: min(360px, calc(100vw - 64px));
+  max-height: min(60vh, calc(100vh - var(--dock-y, 72vh) - 12px));
+  overflow-y: auto; box-sizing: border-box;
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5); display: flex; flex-direction: column;
+}
+/* High on the glass a panel hangs from the dock's top edge; low, it stands
+   on the dock's bottom edge and grows upward, so it never opens off the
+   bottom of a phone. */
+.edge-panel { right: 100%; margin-right: 6px; }
+.edge-dock:not(.low) .edge-panel { top: 0; }
+.edge-dock.low .edge-panel { bottom: 0;
+  max-height: min(60vh, calc(var(--dock-y, 72vh) + 40px)); }
+
+.help-fab { color: var(--brand); }
 .help-fab:hover { background: rgba(67,224,138,0.26); }
-.help-panel { position: fixed; right: 22px; bottom: 22px; width: min(360px, calc(100vw - 44px));
+.help-panel { width: min(360px, calc(100vw - 44px));
   background: var(--card); border: 1px solid var(--line); border-radius: 16px;
   box-shadow: 0 20px 50px rgba(0,0,0,.5); display: flex; flex-direction: column; z-index: 50; }
 .help-panel header { display: flex; align-items: center; justify-content: space-between;
@@ -465,9 +512,9 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 
 
 /* The Guardian's lights — QRME's agent-lights widget, for the product
-   whose agents are the watches it keeps. Bottom-left; Help owns
-   bottom-right. Ring color = worst light; minimizes to a dot. */
-.watch-lights { position: fixed; left: 22px; bottom: 22px; width: 176px;
+   whose agents are the watches it keeps. A panel on the edge dock now,
+   opened from its tab; the ring color is still the worst light. */
+.watch-lights { width: 176px;
   height: 176px; border-radius: 50%; border: 3px solid var(--line);
   background: radial-gradient(120% 120% at 50% 20%, #12233a 0%, #0b1120 70%);
   box-shadow: 0 16px 40px rgba(0,0,0,.55);
@@ -476,8 +523,6 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .wl-head { display: flex; align-items: center; gap: 6px; max-width: 130px; }
 .wl-name { font-size: 11px; font-weight: 700; color: var(--muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wl-min { background: none; border: 0; color: var(--muted); font-size: 16px;
-  line-height: 1; cursor: pointer; padding: 0 2px; }
 .wl-row { display: flex; align-items: center; gap: 8px; width: 128px; }
 .wl-light { width: 12px; height: 12px; border-radius: 50%; flex: none;
   box-shadow: 0 0 8px currentColor; }
@@ -497,23 +542,8 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
    a green ellipse. The declared width and height both said 22 and the guard
    next door read them and passed; nothing here could see the rectangle.
 
-       asked     how big is the dot declared
-       mattered  how big is the dot drawn
-
-   So the button is the tap target and carries no paint, and `.wl-dot-face`
-   is the circle. The target keeps its 44px on a phone and the face shrinks
-   inside it, which is what the field report asked for without giving up the
-   thing the 44px is there for. */
-.wl-dot { position: fixed; left: 22px; bottom: 22px; z-index: 40;
-  width: 46px; height: 46px; padding: 0; border: 0; background: none;
-  display: grid; place-items: center; cursor: pointer; }
-.wl-dot-face { width: 46px; height: 46px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.25);
-  box-shadow: 0 8px 24px rgba(0,0,0,.45); }
-/* The unreachable state: the same dot, unlit. Gray on purpose — the
-   three live colors all mean "the backend answered". */
-.wl-dot-off .wl-dot-face { background: #2c3a52;
-  border-color: rgba(255,255,255,0.35); }
+/* The unreachable state: the tab, unlit. Gray on purpose — the three live
+   colors all mean "the backend answered". */
 
 @media (max-width: 760px) {
   .watch-lights {
@@ -750,12 +780,12 @@ body.theme-paper select { background: #fff; color: var(--txt); }
   margin-top: 10px; }
 
 
-/* The task window — "what is my guardian doing" — pinned opposite its
-   sibling the lights. It shipped rendering nine uw-* classes that no rule
+/* The task window — "what is my guardian doing" — a panel on the edge
+   dock beside its sibling the lights. It shipped rendering nine uw-* classes that no rule
    styled: raw spans, words glued together, a panel sprawling across the
    page foot. A field screenshot read "sensingwrist". A card rather than a
    dial, because its rows arrive in unknown number. */
-.underway { position: fixed; right: 22px; bottom: 84px; width: 232px;
+.underway { width: 232px;
   max-height: 46vh; overflow-y: auto; border-radius: 16px;
   border: 1px solid var(--line);
   background: radial-gradient(120% 120% at 50% 0%, #12233a 0%, #0b1120 75%);
@@ -765,8 +795,6 @@ body.theme-paper select { background: #fff; color: var(--txt); }
   justify-content: space-between; }
 .uw-name { font-size: 11px; font-weight: 700; color: var(--muted);
   text-transform: uppercase; letter-spacing: .04em; }
-.uw-min { background: none; border: 0; color: var(--muted); font-size: 16px;
-  line-height: 1; cursor: pointer; padding: 0 2px; }
 .uw-quiet { font-size: 12px; color: var(--muted); }
 .uw-row { display: flex; flex-wrap: wrap; align-items: baseline;
   gap: 2px 6px; padding: 4px 0; border-bottom: 1px solid var(--line);
@@ -780,20 +808,10 @@ body.theme-paper select { background: #fff; color: var(--txt); }
 .uw-today { display: flex; flex-direction: column; gap: 2px;
   margin-top: 4px; border-top: 1px solid var(--line); padding-top: 6px; }
 .uw-foot { font-size: 11px; color: var(--muted); margin-top: 4px; }
-.uw-dot { position: fixed; right: 22px; bottom: 84px; width: 46px;
-  height: 46px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.25); color: var(--txt);
-  background: radial-gradient(120% 120% at 50% 20%, #12233a 0%, #0b1120 70%);
-  cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.45);
-  font-weight: 700; z-index: 40; }
-.uw-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
+.wl-dot-off, .uw-dot-off { color: var(--muted);
+  border-color: rgba(255,255,255,0.35); }
 @media (max-width: 760px) {
-  .underway { right: 12px;
-    bottom: calc(76px + env(safe-area-inset-bottom)); width: 200px;
-    max-height: 38vh; padding: 10px 12px; }
-  .uw-dot { right: 12px;
-    bottom: calc(76px + env(safe-area-inset-bottom));
-    width: 22px; height: 22px; opacity: 0.75; font-size: 10px; }
+  .underway { width: 200px; max-height: 38vh; padding: 10px 12px; }
 }
 
 /* The mute on the voice sphere. Below the label, clear of the sphere
@@ -849,7 +867,7 @@ body.theme-paper select { background: #fff; color: var(--txt); }
 
 /* The four boxes beside the coach conversation — the estate's chat rail,
    JIM's telling: each opens the screen the setting already lives on.
-   Fixed to the right edge, below where the footsteps sit. */
+   Fixed to the right edge, clear of the edge dock's tabs. */
 .coach-rail { position: fixed; right: 6px; top: calc(50% - 40px);
               display: flex; flex-direction: column; gap: 8px; z-index: 40; }
 .coach-rail-btn { display: flex; flex-direction: column; align-items: center;
@@ -915,23 +933,16 @@ body.theme-paper select { background: #fff; color: var(--txt); }
   .help-fab, .help-panel {
     bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
   }
-  .watch-lights {
-    left: 12px;
-    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
-    width: 132px; height: 132px; padding: 12px; gap: 4px;
-  }
-  .wl-dot {
-    left: 12px;
-    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
-    width: 44px; height: 44px;
-  }
-  .wl-dot-face {
-    width: 22px; height: 22px; opacity: 0.75;
-    box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  }
-  .underway, .uw-dot {
-    right: 12px;
-    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
-  }
+  /* The face shrinks a notch on a phone: still a watch face, just a
+     smaller wrist. */
+  .watch-lights { width: 132px; height: 132px; padding: 12px; gap: 4px; }
   .underway { width: min(232px, calc(100vw - 24px)); }
+  /* The dock on a phone: the tabs lose their words and keep their glyphs,
+     and grow to the 44px every other control gets — a tab is a tap target
+     first. The panel keeps inside the glass. */
+  .edge-tab { height: 44px; min-height: 44px; padding: 0 10px 0 8px;
+    gap: 6px; }
+  .edge-tab-word { display: none; }
+  .edge-grip { width: 34px; height: 28px; min-height: 28px; }
+  .edge-panel { width: min(360px, calc(100vw - 58px)); margin-right: 4px; }
 }
