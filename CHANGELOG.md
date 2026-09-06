@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-09-06
+
 ### Fixed
 
 - **The 3.2.0 lockfile asked npm for a package that does not exist.** The
@@ -12377,7 +12379,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.1...HEAD
+[3.2.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.0...app-v3.2.1
 [3.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.10...app-v3.2.0
 [3.1.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.9...app-v3.1.10
 [3.1.9]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.8...app-v3.1.9
