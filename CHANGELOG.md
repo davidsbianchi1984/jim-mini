@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-09-06
+
+### Changed
+
+- **Version only.** Nothing in the console changed this round. The three
+  products are deployed together and read each other's version, so they
+  move together: QRME 3.3.0 carries the occupation catalogue — the tier
+  between a position's title and its family, sixty-four groups reaching
+  29,710 of 45,153 positions — and this release keeps the trio in step.
+
 ## [3.2.1] - 2026-09-06
 
 ### Fixed
@@ -12379,7 +12389,8 @@ the three-product suite (with
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.3.0...HEAD
+[3.3.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.1...app-v3.3.0
 [3.2.1]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.2.0...app-v3.2.1
 [3.2.0]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.10...app-v3.2.0
 [3.1.10]: https://github.com/davidsbianchi1984/jim-mini/compare/app-v3.1.9...app-v3.1.10
