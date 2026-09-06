@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.3.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.3.1** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -552,6 +552,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.3.1** | **Version only** — nothing in the console changed this round. QRME 3.3.1 puts a version check at the end of the deploy block and examines the occupation catalogue; this keeps the trio in step |
 | **3.3.0** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version; QRME 3.3.0 carries the occupation catalogue, and this keeps the trio in step |
 | **3.2.1** | **The release that could not build** — 3.2.0's lockfile bump rewrote `ejs` from `^3.1.10` to `^3.2.0` along with the project's own version, because both happened to be at 3.1.10. That release of `ejs` does not exist, so `npm ci` answered 404 and the image never built. `ejs` is restored, and a new guard fingerprints the lockfile with the project's own version fields masked so a release bump cannot move a dependency unnoticed |
 | **3.2.0** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version, so they are cut together |
