@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.1.9** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.10** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -552,6 +552,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.10** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version, so they are cut together |
 | **3.1.9** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version, so they are cut together |
 | **3.1.8** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version, so they are cut together |
 | **3.1.7** | **One edge dock instead of three floating widgets** — the help circle, the Guardian lights and the underway count each floated where they were put, stacking over each other and over the tab bar on a narrow window. They are three tabs on one left-edge dock now, the way QRME's is, and the closed tab *is* the minimized state — so six show/hide strings are gone rather than translated ten ways for nothing. The dock's travel ceiling is measured off `--tabbar-h` as the bar publishes it, not guessed, which is what put the old widgets over the controls |
