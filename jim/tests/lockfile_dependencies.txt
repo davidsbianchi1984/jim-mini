@@ -1,0 +1,25 @@
+# The dependency fingerprint of app/package-lock.json.
+#
+# One line: SHA256  <hex>. It is the lockfile hashed with the project's own
+# two version fields — the top-level `version` and `packages[""].version` —
+# masked out. A release bump moves those two and nothing else, so this
+# number does not move when the app's version does.
+#
+# It moves when a dependency does, and that is the whole point. Changing
+# one on purpose is fine. Changing one without noticing is how 3.2.0
+# shipped `ejs` pinned at a version npm has never published: the project
+# was at 3.1.10, so was `ejs`, and a blind substitution of the release
+# number rewrote both. `npm ci` answered 404 and every image build on
+# every product died before it started.
+#
+# To change a dependency on purpose: make the change, run this test, read
+# the new hash out of the failure, add a line under CHANGED saying what
+# moved and why, and record it here.
+
+SHA256  495ab10c2255be4570f017e5badc57f3f14202b6785ec8cd3ba097b52e92f566
+
+# CHANGED
+#
+# 2026-09-06  ejs restored to ^3.1.10. The 3.2.0 cut rewrote it to ^3.2.0
+#             along with the project's own version; that release of ejs
+#             does not exist.

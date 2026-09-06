@@ -1,4 +1,4 @@
-# status: manifest — 550 guards carried by all three products
+# status: manifest — 553 guards carried by all three products
 #
 # The questions QRME, JIM-mini and PDI all ask. One test-function name per
 # line, present in every one of the three suites.
@@ -86,6 +86,7 @@ test_a_real_share_of_the_writes_meets_a_model
 test_a_reflected_parameter_is_not_markup
 test_a_refusal_reaches_the_reader
 test_a_refusal_with_nothing_readable_is_not_given_an_invented_sentence
+test_a_release_bump_moves_no_dependency
 test_a_renamed_case_is_the_wire_key
 test_a_report_lands_and_folds
 test_a_report_needs_no_account_and_keeps_no_name
@@ -437,6 +438,7 @@ test_the_last_answer_does_not_depend_on_the_translator
 test_the_ledger_names_no_table_that_is_gone
 test_the_lifted_sentence_is_the_translated_one
 test_the_light_stays_inside_the_glass
+test_the_lockfile_agrees_with_the_manifest
 test_the_manifest_has_not_gone_stale
 test_the_manifest_points_at_files_that_exist
 test_the_manifest_says_how_many_it_carries
@@ -458,6 +460,7 @@ test_the_pane_can_only_sit_at_the_bottom
 test_the_policy_names_a_nonce_rather_than_permitting_everything
 test_the_probe_is_actually_talking_to_a_server
 test_the_product_carries_exactly_the_languages_the_others_do
+test_the_project_version_is_what_the_mask_covers
 test_the_prose_and_the_manifest_agree_on_how_many
 test_the_prose_names_every_file_the_manifest_does
 test_the_python_suite_runs_where_it_is_checked

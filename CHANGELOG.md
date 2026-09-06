@@ -6,6 +6,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The 3.2.0 lockfile asked npm for a package that does not exist.** The
+  version cut rewrote `app/package-lock.json` by substituting the old
+  number for the new one, and the lockfile records the project's own
+  version in two places alongside the resolved version of every
+  dependency in the tree. The project had been at 3.1.10; so had `ejs`,
+  four levels down under `app-builder-lib`. The substitution rewrote both.
+  There is no `ejs@3.2.0`, so `npm ci` answered 404 and every image build
+  on all three products died at `Dockerfile:26` before a line of the app
+  was compiled. `ejs` is pinned at `^3.1.10` again, which is where it
+  always was.
+
+### Added
+
+- **A guard so a release cannot move a dependency again.**
+  `test_a_release_bump_moves_no_dependency` hashes the lockfile with the
+  project's own two version fields masked out, and compares that against
+  the fingerprint written down in `lockfile_dependencies.txt`. A version
+  bump touches only the masked fields, so the number does not move; a
+  dependency change does, and the failure prints the new hash to record
+  once the change is deliberate. Two companion guards keep the mask
+  honest — one proves a bump leaves the fingerprint alone while moving
+  any dependency does not, the other proves the masked fields still agree
+  with `app/package.json`.
+
 ## [3.2.0] - 2026-09-06
 
 - **Version only.** Nothing here changed this round. The three products
