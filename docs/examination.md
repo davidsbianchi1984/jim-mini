@@ -27,7 +27,7 @@ referred to below are shown in [the README](../README.md#screenshots).
 
 ## The mechanisms on file
 
-The fifteen numbered mechanisms in the invention disclosure. Each row names
+The seven numbered mechanisms in the invention disclosure. Each row names
 the technical problem in the machine, the particular structure this code
 uses to solve it, what that structure changes about how the machine
 behaves, and where the structure is reduced to practice and held by a
@@ -94,62 +94,6 @@ system, and each is photographed on the screens below.
 <td valign="top">Three separately deployable services that interoperate over <strong>HTTP only</strong> with <strong>one tenant and one token per integration</strong>; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three.</td>
 <td valign="top">A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database.</td>
 <td valign="top"><code>jim/<wbr>qrme_<wbr>client.py</code>,<br><code>jim/<wbr>pdi_<wbr>client.py</code> — <code>test_<wbr>pdi_<wbr>tandem.py</code>,<br><code>test_<wbr>tandem.py</code></td>
-</tr>
-<tr>
-<td valign="top">8</td>
-<td valign="top">A critical reading that goes unanswered has nobody to call, and a call that reaches a voicemail counts as a person reached.</td>
-<td valign="top">A <strong>cascade</strong> from the person outward: the contact chooses on the keypad before anything else, and one call event decides reached or unreached for the whole ladder; a crash watch measuring a pulse in minutes is its acute trigger, beside the vigil's days; a real telephony transport rings, speaks, listens and reports.</td>
-<td valign="top">The ladder ends at a person who pressed a key, not at a ring. A contact who chose never to be called is never called again.</td>
-<td valign="top"><code>jim/<wbr>reachout.py</code>,<br><code>jim/<wbr>crashwatch.py</code>,<br><code>jim/<wbr>telephony.py</code> — <code>test_<wbr>the_<wbr>reachout_<wbr>cascade.py</code>,<br><code>test_<wbr>a_<wbr>call_<wbr>event_<wbr>decides_<wbr>reached_<wbr>or_<wbr>unreached.py</code>,<br><code>test_<wbr>the_<wbr>ladder_<wbr>ends_<wbr>at_<wbr>a_<wbr>person.py</code></td>
-</tr>
-<tr>
-<td valign="top">9</td>
-<td valign="top">An emergency call placed by software is either impossible or already happening.</td>
-<td valign="top">The dialer is built to completion and <strong>held shut by a constant in source</strong>, <code>SEND_ENABLED = False</code>, that no setting, plan or waiver opens; a test walks every door and shows each shut.</td>
-<td valign="top">The whole path is real and rehearsed — briefing, relay, transport — and the one irreversible act needs a source change to exist.</td>
-<td valign="top"><code>jim/<wbr>dialer.py</code> — <code>test_<wbr>the_<wbr>dialer_<wbr>is_<wbr>held_<wbr>shut.py</code>,<br><code>test_<wbr>the_<wbr>dialer_<wbr>posture_<wbr>is_<wbr>proven.py</code></td>
-</tr>
-<tr>
-<td valign="top">10</td>
-<td valign="top">Mail answered by a model in the person's name leaves before the person sees it.</td>
-<td valign="top">Every outbound letter is composed as a <strong>draft in a moderation queue</strong>; the send is the owner's act.</td>
-<td valign="top">The agent can carry on correspondence and cannot speak for the person unread.</td>
-<td valign="top"><code>jim/<wbr>mailbox.py</code>,<br><code>jim/<wbr>mailer.py</code> — <code>test_<wbr>the_<wbr>moderated_<wbr>mailbox.py</code></td>
-</tr>
-<tr>
-<td valign="top">11</td>
-<td valign="top">A sealed machine with no local model answers with a stub, and a local model cannot learn from exchanges nobody kept.</td>
-<td valign="top">Every exchange is <strong>banked on the machine</strong>; a standing learn task plants itself in the vault when capture is on, archives the bank on its own clock, and is taken back when capture is off.</td>
-<td valign="top">Offline mode becomes capable over time without one byte leaving the host.</td>
-<td valign="top"><code>jim/<wbr>corpus.py</code> — <code>test_<wbr>the_<wbr>training_<wbr>corpus.py</code>,<br><code>test_<wbr>the_<wbr>learn_<wbr>task_<wbr>plants_<wbr>itself.py</code></td>
-</tr>
-<tr>
-<td valign="top">12</td>
-<td valign="top">A change a user proposes to the app lands nowhere, or lands everywhere.</td>
-<td valign="top">Each proposal is <strong>a row with a state</strong>: submitted, tried, reviewed, applied; the reviewer's queue is a screen; <code>BOX_SLOTS = 2</code> bounds how many are tried at once.</td>
-<td valign="top">Users edit the app and the company decides what ships, on a screen, with the wire matching the buttons.</td>
-<td valign="top"><code>jim/<wbr>appedits.py</code> — <code>test_<wbr>the_<wbr>app_<wbr>edit_<wbr>seam.py</code>,<br><code>test_<wbr>the_<wbr>held_<wbr>screens_<wbr>buttons_<wbr>match_<wbr>the_<wbr>wire.py</code></td>
-</tr>
-<tr>
-<td valign="top">13</td>
-<td valign="top">A draft written by an assistant has to run somewhere before a person can judge it, and anywhere it runs it can reach.</td>
-<td valign="top">The draft runs in a <strong>workroom confined by an AppArmor profile on the host and a seccomp filter carried with the container</strong>, with no route out.</td>
-<td valign="top">The person judges what the draft did, on a hosted deployment or a busy server alike.</td>
-<td valign="top"><code>jim/<wbr>workroom.py</code>,<br><code>docker/<wbr>jim-box.apparmor</code>,<br><code>docker/<wbr>jim-box.seccomp.json</code> — <code>test_<wbr>the_<wbr>assistant_<wbr>gets_<wbr>a_<wbr>box.py</code></td>
-</tr>
-<tr>
-<td valign="top">14</td>
-<td valign="top">A page the person relies on changes, and nothing they use knows until they look.</td>
-<td valign="top">"Keep an eye on this page" is <strong>one standing task in the vault's resident</strong>, re-run inside the facility with no cron or caller; the coach answers from the watched pages beside the sealed records, says when one changed and why a fetch failed, and hears a video into words.</td>
-<td valign="top">The person's assistant knows what changed before the person asks, from inside the vault.</td>
-<td valign="top"><code>jim/<wbr>lookout.py</code>,<br><code>jim/<wbr>coach.py</code> — <code>test_<wbr>the_<wbr>lookout.py</code>,<br><code>test_<wbr>the_<wbr>lookout_<wbr>grows_<wbr>ears.py</code></td>
-</tr>
-<tr>
-<td valign="top">15</td>
-<td valign="top">A camera or a speaker in the home is either a recording nobody wants kept or a sensor nobody reads.</td>
-<td valign="top">The room is read for <strong>cues</strong> — visual and verbal — and the cue alone is kept, timestamped and graded, on the same ladder and under the same quality caps as a reading.</td>
-<td valign="top">A fall or a call for help reaches the guardian; the footage never exists.</td>
-<td valign="top"><code>jim/<wbr>cues.py</code> — <code>test_<wbr>what_<wbr>a_<wbr>room_<wbr>saw_<wbr>and_<wbr>heard.py</code>,<br><code>test_<wbr>channel_<wbr>two_<wbr>carries_<wbr>what_<wbr>it_<wbr>hears.py</code></td>
 </tr>
 </tbody>
 </table>
