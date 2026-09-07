@@ -599,6 +599,24 @@ public record Finetune(
     [property: JsonPropertyName("trained_at")] string TrainedAt,
     [property: JsonPropertyName("active")] bool? Active);
 
+public record ConditionNet(
+    [property: JsonPropertyName("user_id")] string UserId,
+    [property: JsonPropertyName("trained")] bool Trained,
+    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("trained_on")] int TrainedOn,
+    [property: JsonPropertyName("loss_before")] double? LossBefore,
+    [property: JsonPropertyName("loss_after")] double? LossAfter,
+    [property: JsonPropertyName("sealed_bytes")] int SealedBytes);
+
+public record ConditionNetTraining(
+    [property: JsonPropertyName("trained")] bool Trained,
+    [property: JsonPropertyName("samples")] int Samples,
+    [property: JsonPropertyName("steps")] int Steps,
+    [property: JsonPropertyName("loss_before")] double? LossBefore,
+    [property: JsonPropertyName("loss_after")] double? LossAfter,
+    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("reason")] string? Reason);
+
 public record FinetuneSwitchResult(
     [property: JsonPropertyName("user_id")] string UserId,
     [property: JsonPropertyName("active")] bool Active,
@@ -2057,6 +2075,16 @@ public sealed class ApiClient
     /// The pass runs with the backend's network blocked.</summary>
     public Task<Finetune> RunFinetune(string uid, string token) =>
         Send<Finetune>(Post($"/finetune/{uid}", new { }, token));
+
+    /// <summary>The condition network: trained or initial, and the last
+    /// turns it conditioned (claims 22 and 26).</summary>
+    public Task<ConditionNet> ConditionNet(string uid, string token) =>
+        Send<ConditionNet>(Get($"/condition-net/{uid}", token));
+
+    /// <summary>Fit the attention layers to this person's own readings,
+    /// here, with the network blocked.</summary>
+    public Task<ConditionNetTraining> TrainConditionNet(string uid, string token) =>
+        Send<ConditionNetTraining>(Post($"/condition-net/{uid}/train", new { }, token));
 
     /// <summary>Training and using are two decisions.</summary>
     public Task<FinetuneSwitchResult> SetFinetuneActive(

@@ -842,6 +842,46 @@ export interface Finetune {
   active?: boolean;
 }
 
+/** The condition network's state — trained or initial, loss before and
+ *  after, sealed size — and the last turns it conditioned. The attention
+ *  rows carry indices, weights, trust and times only. */
+export interface ConditionNet {
+  user_id: string;
+  trained: boolean;
+  version: number;
+  trained_on: number;
+  loss_before: number | null;
+  loss_after: number | null;
+  updated_at: string | null;
+  sealed_bytes: number;
+  parameters: number;
+  emphases: string[];
+  encrypted_at_rest: boolean;
+  external_transmission: boolean;
+  trains_every_readings: number;
+  recent: {
+    id: string;
+    surface: string;
+    weights_version: number;
+    temperature: number;
+    engagement: number;
+    predicted_deviation: number;
+    attention: { reading: number; weight: number; trust: number; at: string | null }[];
+    emphases: Record<string, number>;
+    created_at: string;
+  }[];
+}
+
+export interface ConditionNetTraining {
+  trained: boolean;
+  samples: number;
+  steps: number;
+  loss_before: number | null;
+  loss_after: number | null;
+  version: number;
+  reason?: string;
+}
+
 export interface AdaptationProfile {
   built: boolean; note?: string; version?: number;
   evidence_items?: number; confidence?: number; vaulted?: boolean;
@@ -2140,6 +2180,13 @@ export const api = {
   setFinetuneActive: (uid: string, token: string, active: boolean) =>
     req<{ user_id: string; active: boolean; digest: string; backend: string }>(
       `/finetune/${uid}/active`, { method: "PUT", token, body: { active } }),
+  // The condition network (claims 22 and 26): the attention weights' state
+  // and the last turns they conditioned; and the pass that fits them here.
+  conditionNet: (uid: string, token: string) =>
+    req<ConditionNet>(`/condition-net/${uid}`, { token }),
+  trainConditionNet: (uid: string, token: string) =>
+    req<ConditionNetTraining>(`/condition-net/${uid}/train`,
+      { method: "POST", token }),
   adaptation: (uid: string, token: string) =>
     req<AdaptationProfile>(`/adaptation/${uid}`, { token }),
   rebuildAdaptation: (uid: string, token: string) =>

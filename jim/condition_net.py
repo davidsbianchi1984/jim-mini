@@ -458,6 +458,10 @@ def render(c: dict) -> str:
 
 def record(user_id: str, surface: str, c: dict) -> str:
     conn = db.connect()
+    # Commit only what this call opened: a caller mid-transaction keeps
+    # its own commit, and a call that opened the write must not leave the
+    # lock held for a request on another thread to run into.
+    opened = not conn.in_transaction
     cid = db.new_id("cond")
     conn.execute(
         "INSERT INTO condition_conditioning (id, user_id, surface,"
@@ -466,7 +470,7 @@ def record(user_id: str, surface: str, c: dict) -> str:
         (cid, user_id, surface, c["version"], c["temperature"],
          c["engagement"], c["predicted_deviation"],
          json.dumps(c["attention"]), json.dumps(c["emphases"]), db.utcnow()))
-    if not conn.in_transaction:
+    if opened:
         conn.commit()
     return cid
 

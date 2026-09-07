@@ -2418,6 +2418,16 @@ object ApiClient {
         request("/finetune/$uid/active", "PUT",
                 JSONObject().put("active", active), token).optBoolean("active")
 
+    /** The condition network: trained or initial, and the last turns it
+     *  conditioned (claims 22 and 26). */
+    suspend fun conditionNet(uid: String, token: String): JSONObject =
+        request("/condition-net/$uid", token = token)
+
+    /** Fit the attention layers to this person's own readings, here, with
+     *  the network blocked. */
+    suspend fun trainConditionNet(uid: String, token: String): JSONObject =
+        request("/condition-net/$uid/train", "POST", JSONObject(), token)
+
     suspend fun adaptation(uid: String, token: String): AdaptationProfile =
         adaptationOf(request("/adaptation/$uid", token = token))
 

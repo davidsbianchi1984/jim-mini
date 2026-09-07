@@ -1045,6 +1045,26 @@ struct Finetune: Decodable {
     let active: Bool?
 }
 
+struct ConditionNet: Decodable {
+    let user_id: String
+    let trained: Bool
+    let version: Int
+    let trained_on: Int
+    let loss_before: Double?
+    let loss_after: Double?
+    let sealed_bytes: Int
+}
+
+struct ConditionNetTraining: Decodable {
+    let trained: Bool
+    let samples: Int
+    let steps: Int
+    let loss_before: Double?
+    let loss_after: Double?
+    let version: Int
+    let reason: String?
+}
+
 struct FinetuneSwitchResult: Decodable {
     let user_id: String
     let active: Bool
@@ -2573,6 +2593,20 @@ actor ApiClient {
                            active: Bool) async throws -> FinetuneSwitchResult {
         try await request("/finetune/\(uid)/active", method: "PUT",
                           body: ["active": active], token: token)
+    }
+
+    /// The condition network: trained or initial, and the last turns it
+    /// conditioned (claims 22 and 26).
+    func conditionNet(uid: String, token: String) async throws -> ConditionNet {
+        try await request("/condition-net/\(uid)", token: token)
+    }
+
+    /// Fit the attention layers to this person's own readings, here, with
+    /// the network blocked.
+    func trainConditionNet(uid: String,
+                           token: String) async throws -> ConditionNetTraining {
+        try await request("/condition-net/\(uid)/train", method: "POST",
+                          token: token)
     }
 
     func anonymity(uid: String, token: String) async throws -> AnonymityPosture {
