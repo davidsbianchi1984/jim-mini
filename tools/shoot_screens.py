@@ -790,9 +790,17 @@ def numbered(tabs: list[str]) -> list[tuple[str, str, str]]:
 
 
 def main(shots: list[tuple[str, str, str]]) -> None:
-    """``shots`` is (screen number, tab id, filename stem)."""
+    """``shots`` is (screen number, tab id, filename stem).
+
+    ``SHOT_ONLY=78,13`` re-shoots those screens alone, the way the sibling's
+    harness does — a fix to one screen should not rewrite sixty captures.
+    """
     from playwright.sync_api import sync_playwright
 
+    only = {n.strip() for n in os.environ.get("SHOT_ONLY", "").split(",")
+            if n.strip()}
+    if only:
+        shots = [s for s in shots if str(s[0]) in only]
     build_console()
     global SIBLING_HERE
     sibling = start_sibling()
