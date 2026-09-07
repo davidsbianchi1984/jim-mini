@@ -282,7 +282,7 @@ export function Settings() {
               setCn(await api.conditionNet(session.userId, session.userToken));
             } catch (e) { setCnError((e as Error).message); }
             finally { setCnBusy(false); }
-          }}>{tr(cnBusy ? "set.cn.training" : "set.cn.train", lang)}</button>
+          }}>{cnBusy ? tr("set.cn.training", lang) : tr("set.cn.train", lang)}</button>
         </div>
         {cnError && <p className="muted small">{cnError}</p>}
       </div>
