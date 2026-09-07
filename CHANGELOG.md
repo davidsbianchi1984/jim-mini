@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The invention disclosure is retired.** The application as filed and as published, US 2025/0246290 A1, lives in `docs/patents/`, with the
+  receipt, application data sheet, specification, claims, abstract and
+  drawings as the Office received them. The dated summary at
+  `docs/invention-disclosure.md` was written before the filing was
+  public and is not needed beside it; the examination page remains where
+  each mechanism's reduction to practice is shown.
+
 ## [3.3.1] - 2026-09-06
 
 ### Changed

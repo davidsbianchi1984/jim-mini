@@ -27,7 +27,7 @@ referred to below are shown in [the README](../README.md#screenshots).
 
 ## The mechanisms on file
 
-The seven numbered mechanisms in the invention disclosure. Each row names
+Seven numbered mechanisms. Each row names
 the technical problem in the machine, the particular structure this code
 uses to solve it, what that structure changes about how the machine
 behaves, and where the structure is reduced to practice and held by a

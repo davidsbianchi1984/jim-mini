@@ -21,9 +21,9 @@ version number names one tested combination of all three.
 
 > **Patent pending** — *Networked Responsive Personal Guidance System for
 > Known Conditions* (U.S. Patent Application No. 19/038,196, **published as
-> US 2025/0246290 A1**). The dated invention disclosure — each mechanism,
-> where it is reduced to practice in this repository, and the release that
-> first shipped it — is [docs/invention-disclosure.md](docs/invention-disclosure.md).
+> US 2025/0246290 A1**). The application as filed and as published is in
+> [docs/patents/](docs/patents/); where each mechanism is reduced to
+> practice in this repository is [docs/examination.md](docs/examination.md).
 
 ## Who it is for
 
