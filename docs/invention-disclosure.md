@@ -10,8 +10,6 @@ applications. It is a factual record, not legal advice and not a license
 Each item names the mechanism, where it is reduced to practice in this
 repository, and the release that first shipped it.
 
-*Updated 2026-09-06: mechanisms 8–15 added. Each names the release that first shipped it; the recorded date above is the original disclosure's and is unchanged.*
-
 ## 1. Wearable-to-guardian bridge requiring no vendor app store
 
 **The process:** health readings from a closed wearable ecosystem
@@ -115,94 +113,6 @@ cooldown period; calm path only, with the escalation ladder untouched.
 The user's own credential authorizes it, stored like the tandem token,
 never echoed, deleted on unlink (`jim/careteam.py`; shipped v0.13.0,
 recorded 2026-07-29).
-
-## 8. The reach-out cascade, with the contact's choice on the keypad
-
-**The process:** when a critical reading goes unanswered the guardian
-calls the person's emergency contacts one after another, from the
-person outward. Before anything else the contact chooses on the keypad
-— hear the message, or never be called again — and one call event
-decides *reached* or *unreached* for the whole ladder, so a voicemail is
-not a person. The cascade's acute trigger is a crash watch: the vigil
-measures silence in days and wakes a steward, this measures a pulse
-going shallow in minutes and starts the calls. The transport is real —
-a telephony vendor rings, speaks, listens and reports, with the
-guardian's half holding the number rules and the voice door
-(`jim/reachout.py`, `jim/crashwatch.py`, `jim/telephony.py`; shipped
-v3.0.1, v3.0.2, v3.0.8).
-
-## 9. The emergency send built to completion and held shut in source
-
-**The process:** the one thing a health product must not do by accident
-is place an emergency call. The dialer assembles a dispatcher-ready
-briefing — who, conditions, medications, vitals, the life-saving steps
-in progress — relays it to the trusted person and every connected
-device, and carries the whole cascade to the transport; and the send
-itself is held by a constant in source, `SEND_ENABLED = False`, that no
-setting, plan or waiver opens. The posture is proven rather than
-described: a test walks every door and shows each one shut, and the
-ladder is held to end at a person (`jim/dialer.py`; shipped v3.0.1 and
-held at every release since; posture test v3.0.10).
-
-## 10. The moderated mailbox
-
-**The process:** the coach agent carries on correspondence — reads what
-comes in, drafts a reply, answers back and forth — and nothing leaves
-without a person approving it. Every message the agent would send is
-composed as a draft and held in a moderation queue the owner reads; the
-send is the owner's act. The same holding rule the dialer keeps, applied
-to mail (`jim/mailbox.py`, `jim/mailer.py`; shipped v3.0.3).
-
-## 11. The offline training corpus, and a learn task that plants itself
-
-**The process:** a sealed machine with no local model answers with a
-stub, and a local model cannot learn from exchanges nobody kept. Every
-exchange the agents have is banked as a training record on the machine;
-when capture is on, a standing learn task plants itself in the vault
-and archives the bank on its own clock, and turning capture off takes
-the task back. Nothing about the bank leaves the host (`jim/corpus.py`;
-shipped v3.0.4, v3.0.7).
-
-## 12. App edits held at apply, under company oversight
-
-**The process:** a person proposes a change to the application itself —
-with an assistant that writes the code, in the widget screen — and the
-proposal is held as a row with a state rather than applied or lost.
-Two lanes carry it: a submission the reviewer's queue shows on a
-screen, and an apply that waits for that review. `BOX_SLOTS = 2`
-bounds how many proposals are tried at once (`jim/appedits.py`; shipped
-v3.0.5, v3.0.6).
-
-## 13. The coding assistant's box
-
-**The process:** a proposed change is tried inside four walls before a
-person judges it: the assistant's draft runs in a workroom confined by
-an AppArmor profile loaded on the host and a seccomp filter carried
-with the container, with no route out. The box opens on the hosted
-deployment and on a busy server alike, and the person sees what the
-draft did rather than what it said it would do (`jim/workroom.py`,
-`jim/appedits.py`, `docker/jim-box.apparmor`, `docker/jim-box.seccomp.json`;
-shipped v3.0.11, v3.1.0).
-
-## 14. The lookout: a page the vault keeps fresh on the person's behalf
-
-**The process:** "keep an eye on this page" becomes one standing task in
-the vault's resident, re-run on an interval inside the facility with no
-cron, no worker and no caller. The coach conditions its answers on the
-watched pages beside the person's sealed records, says when a page
-changed and why a fetch failed, and the same task grows ears — a page
-that is a video is heard into words before it is read
-(`jim/lookout.py`, `jim/coach.py`; shipped v0.88.0–v0.90.0, ears
-v0.94.0).
-
-## 15. Cues read from a room, footage never kept
-
-**The process:** the person's own cameras and speakers are read for
-visual and verbal cues — a fall, a call for help, a silence where
-speech should be — and what is kept is the cue, timestamped and graded,
-never the footage or the audio. The cue lands on the same escalation
-ladder as a reading, under the same quality caps (`jim/cues.py`;
-shipped v0.98.0).
 
 ---
 
