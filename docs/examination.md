@@ -27,7 +27,7 @@ referred to below are shown in [the README](../README.md#screenshots).
 
 ## The mechanisms on file
 
-Seven numbered mechanisms. Each row names
+Eight numbered mechanisms. Each row names
 the technical problem in the machine, the particular structure this code
 uses to solve it, what that structure changes about how the machine
 behaves, and where the structure is reduced to practice and held by a
@@ -94,6 +94,13 @@ system, and each is photographed on the screens below.
 <td valign="top">Three separately deployable services that interoperate over <strong>HTTP only</strong> with <strong>one tenant and one token per integration</strong>; the guardian keeps only key references locally and seals the sensitive payload in the vault; one version number is cut across the three.</td>
 <td valign="top">A product can be replaced or moved without the others importing anything from it, and the sensitive record lives behind the vault's seal rather than in the guardian's database.</td>
 <td valign="top"><code>jim/<wbr>qrme_<wbr>client.py</code>,<br><code>jim/<wbr>pdi_<wbr>client.py</code> — <code>test_<wbr>pdi_<wbr>tandem.py</code>,<br><code>test_<wbr>tandem.py</code></td>
+</tr>
+<tr>
+<td valign="top">8</td>
+<td valign="top">The model that answers a person attends to its context by its own weights; nothing in the machine tied where it looked to how far each reading could be trusted, to the condition the person declared, or to how engaged they were, and the state that should have conditioned it was a sentence that could not be trained.</td>
+<td valign="top">A <strong>condition network the guardian owns</strong>: a two-layer, two-head transformer in numpy (<code>condition_net.py</code>, d_model 16, forward and backward written out and gradient-checked) run over the last twelve readings before every coach turn, companion check-in and engaged-session reply. Each key's attention logit carries that reading's <strong>trust</strong> (<code>signal.py</code>'s grade) through a learned <code>gamma</code>; the softmax temperature is set by the sensitivity dial and the <strong>current degree of engagement</strong>; the declared <strong>known conditions</strong> ride every position as a context vector. <strong>Fine-tuning</strong> replays the person's own readings into window→next-reading pairs labelled by the product's detector and fits the weights by Adam under the fine-tune module's network block; the weights rest as <strong>AES-GCM ciphertext</strong> under a key derived per install and bound to the user, versioned on every pass, retrained on their own every sixteenth reading.</td>
+<td valign="top">The reply is conditioned by a number that can be printed: each turn leaves a row in <code>condition_conditioning</code> with the attention over the readings, the temperature and the emphases (reassure, act, escalate, monitor) — indices, weights, trust and times only, never a value or a note. Loss before and after are kept per pass; a pass that reached for the network is refused rather than allowed to upload.</td>
+<td valign="top"><code>jim/<wbr>condition_<wbr>net.py</code>,<br><code>jim/<wbr>coach.py</code>,<br><code>jim/<wbr>engaged.py</code>,<br><code>jim/<wbr>finetune.py</code> — <code>test_<wbr>condition_<wbr>net.py</code></td>
 </tr>
 </tbody>
 </table>

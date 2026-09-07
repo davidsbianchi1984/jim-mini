@@ -261,6 +261,10 @@ def train(user_id: str, pdi=None, backend: str | None = None) -> dict:
         trained = BACKENDS[name](rows)
     finally:
         _restore(original)
+    # The attention layers (jim/condition_net.py) train in the same pass,
+    # from the readings rather than the follow-ups, under the same block.
+    from . import condition_net
+    network = condition_net.train(user_id, pdi=pdi)
 
     helped = sum(r["helped"] for r in rows)  # bools; the sum is the count
     artifact = {
@@ -284,6 +288,10 @@ def train(user_id: str, pdi=None, backend: str | None = None) -> dict:
                    f"of this user's own answered follow-ups, using the "
                    f"{trained['backend']} backend. Nothing was transmitted."),
         "trained_at": db.utcnow(),
+        # The attention network's own pass: samples, steps, loss before and
+        # after, version. Its weights stay sealed in condition_weights and
+        # are not repeated here in the clear.
+        "network": network,
     }
     artifact["digest"] = hashlib.sha256(
         json.dumps({k: v for k, v in artifact.items() if k != "digest"},

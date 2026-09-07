@@ -1113,6 +1113,12 @@ def converse(user_id: str, said: str, *, app, authorization: str | None,
     watching = watch_lines(user_id)
     if watching:
         system += "\n" + "\n".join(watching)
+    # The engaged session is conditioned like the coach (jim/condition_net.py):
+    # the same attention over the same readings, recorded under its own
+    # surface so the two can be told apart afterwards.
+    from . import condition_net
+    system += "".join("\n" + line for line in
+                      condition_net.prompt_lines(user_id, "engaged"))
 
     _record_turn(engagement_id, "user", said)
     history = list(session["turns"])

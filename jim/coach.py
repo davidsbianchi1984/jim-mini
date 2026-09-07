@@ -229,6 +229,14 @@ def reply(user_id: str, area: str, message: str, pdi=None,
     attention = continuity.attention_lines(user_id)
     if attention:
         system += "\n" + "\n".join(attention)
+    # The attention layers themselves (jim/condition_net.py): the network
+    # JIM owns, run over this person's recent readings — biased by how far
+    # each can be trusted, tempered by the dial and the current state, in
+    # the context of the declared condition — and read out as emphases.
+    # Recorded per reply, so a turn can be shown to have been conditioned.
+    from . import condition_net
+    system += "".join("\n" + line for line in
+                      condition_net.prompt_lines(user_id, "coach", pdi=pdi))
     # Long-term memory through the vault (jim/recall.py): the moments
     # nearest this question, sealed in PDI and found by meaning. Context the
     # model may use, never an instruction — and nothing at all when no vault
@@ -519,6 +527,9 @@ def companion_checkin(user_id: str) -> dict:
         area="ambient companionship — a brief, warm, unprompted check-in",
         context=_context(user_id))
     system += personalize(user)
+    from . import condition_net
+    system += "".join("\n" + line for line in
+                      condition_net.prompt_lines(user_id, "checkin"))
     system += (f"\n\nYou are reaching out first ({mood_note}). One or two "
                "sentences, warm and unpressured; invite, never demand.")
     text = llm.provider_for_user(user_id).generate(system, "Reach out and check in.")

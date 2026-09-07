@@ -796,6 +796,11 @@ def monitor(user_id: str, sample: dict, note: str | None, qrme=None,
                    "signal_grade": quality["grade"],
                    **({"note": note} if note else {})},
            pdi=pdi, vault_scope="medical/biometric")
+    # Every sixteenth reading, the condition network re-fits itself to this
+    # person's own history (jim/condition_net.py) — on this machine, with
+    # the network blocked, and never in a way that can break this reading.
+    from . import condition_net as _condition_net
+    _condition_net.maybe_train(user_id, pdi=pdi)
 
     known = (user or {}).get("known_conditions") or []
     sensitivity = (user or {}).get("sensitivity") or "balanced"

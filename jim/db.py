@@ -220,6 +220,38 @@ CREATE TABLE IF NOT EXISTS user_models (
     rebuilt_at     TEXT NOT NULL
 );
 
+-- The condition network (jim/condition_net.py; claims 22 and 26): per-user
+-- attention weights over the reading history, sealed with AES-GCM under the
+-- install's model key. Trained on this machine from the person's own
+-- readings; no row means the deterministic initial weights are in use.
+CREATE TABLE IF NOT EXISTS condition_weights (
+    user_id     TEXT PRIMARY KEY REFERENCES users(id),
+    blob        BLOB NOT NULL,      -- nonce || AES-GCM ciphertext of the weights
+    version     INTEGER NOT NULL DEFAULT 1,
+    trained_on  INTEGER NOT NULL DEFAULT 0,  -- (window -> next reading) samples
+    loss_before REAL,
+    loss_after  REAL,
+    updated_at  TEXT NOT NULL
+);
+
+-- What conditioned each reply: the attention row over the recent readings,
+-- the temperature the dial and the current state set, and the emphases read
+-- out — one row per prompt built, on the coach, the check-in and the engaged
+-- session. Indices, weights, trust and times only: no values, no note text,
+-- no condition name — the rule `user_continuity` below keeps.
+CREATE TABLE IF NOT EXISTS condition_conditioning (
+    id                  TEXT PRIMARY KEY,
+    user_id             TEXT NOT NULL REFERENCES users(id),
+    surface             TEXT NOT NULL,     -- coach | checkin | engaged
+    weights_version     INTEGER NOT NULL,
+    temperature         REAL NOT NULL,
+    engagement          REAL NOT NULL,
+    predicted_deviation REAL NOT NULL,
+    attention           TEXT NOT NULL,     -- JSON: per-reading weight, trust, time
+    emphases            TEXT NOT NULL,     -- JSON: reassure, act, escalate, monitor
+    created_at          TEXT NOT NULL
+);
+
 -- The latent continuity vector (jim/continuity.py).
 --
 -- One row per user: six named 0..1 dimensions, EMA-updated at the three

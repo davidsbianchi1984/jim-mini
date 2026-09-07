@@ -6,6 +6,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The attention layers are the guardian's own, and they train.** A
+  condition network (`jim/condition_net.py`) — a two-layer, two-head
+  transformer in numpy, forward and backward written out and
+  gradient-checked — runs over the person's last twelve readings before
+  every coach turn, companion check-in and engaged-session reply. Each
+  reading's attention logit carries how far it can be trusted
+  (`signal.py`'s grade) through a learned weight; the softmax temperature
+  is set by the sensitivity dial and the current degree of engagement;
+  the declared known conditions ride every position. The readout — where
+  the next reading is expected against baseline, and four emphases:
+  reassure, act, escalate, monitor — goes into the prompt as a sentence
+  and into `condition_conditioning` as a row per turn carrying indices,
+  weights, trust and times only, never a value or a note.
+  `GET /condition-net/{user}` shows the weights' state and the last turns
+  they conditioned.
+- **Fine-tuning fits those weights, offline, encrypted.**
+  `POST /condition-net/{user}/train` replays the person's own readings
+  into window→next-reading pairs, labels each by the product's own
+  detector, and fits the network by Adam under the fine-tune module's
+  network block, reporting loss before and after. `POST /finetune/{user}`
+  runs the same pass alongside the follow-up model and carries it in the
+  artifact as `network`; ingest runs it on its own every sixteenth
+  reading. The weights rest in `condition_weights` as AES-GCM ciphertext
+  under a key derived per install (`JIM_MODEL_KEY`, else from the
+  database path) and bound to the user. Erasing the person takes the
+  weights and the record. Mechanism 8 on the examination page.
+
 ### Changed
 
 - **The invention disclosure is retired.** The application as filed and as published, US 2025/0246290 A1, lives in `docs/patents/`, with the

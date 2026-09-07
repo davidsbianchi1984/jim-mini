@@ -3119,6 +3119,26 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         return finetune_mod.activate(user_id, body.active)
 
+    # ---- the condition network (claims 22 and 26) --------------------------
+
+    @app.get("/condition-net/{user_id}")
+    def condition_net_status(user_id: str, request: Request) -> dict:
+        """The attention network for this person — trained or initial, loss
+        before and after, sealed size — and the last replies it conditioned,
+        each with its attention row, temperature and emphases."""
+        _user_or_404(user_id, request)
+        from . import condition_net
+        return {**condition_net.status(user_id),
+                "recent": condition_net.conditioning_of(user_id)}
+
+    @app.post("/condition-net/{user_id}/train", status_code=201)
+    def condition_net_train(user_id: str, request: Request) -> dict:
+        """Fit the attention layers to this person's own readings, here,
+        with the network blocked; the weights are sealed at rest."""
+        _user_or_404(user_id, request)
+        from . import condition_net
+        return condition_net.train(user_id, pdi=app.state.pdi)
+
     # ---- the state that survives between sessions -------------------------
 
     @app.get("/memory/{user_id}")
