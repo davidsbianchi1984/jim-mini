@@ -12,7 +12,7 @@ student under stress, somebody who lives alone at any age, and the
 families and care teams around all of them. Safety, independence, and
 peace of mind are not an age bracket.
 
-**Current release: v3.3.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.4.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 JIM-mini is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -552,6 +552,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.4.0** | **The attention layers are the guardian's own, and they train** — a condition network (`jim/condition_net.py`), a two-layer, two-head transformer in numpy with the forward and backward passes written out and gradient-checked, runs over the person's last twelve readings before every coach turn, companion check-in and engaged-session reply: each reading's attention logit carries how far it can be trusted through a learned weight, the softmax temperature is set by the sensitivity dial and the current degree of engagement, and the declared known conditions ride every position. The readout — where the next reading is expected against baseline, and reassure / act / escalate / monitor — goes into the prompt and into `condition_conditioning` as a row per turn carrying indices, weights, trust and times only. Training replays the person's own readings under the fine-tune module's network block, runs with `POST /finetune` and on its own every sixteenth reading; the weights rest as AES-GCM ciphertext under a per-install key bound to the user and are erased with the person. `GET /condition-net/{user}` reports the state; mechanism 8 on the examination page |
 | **3.3.1** | **Version only** — nothing in the console changed this round. QRME 3.3.1 puts a version check at the end of the deploy block and examines the occupation catalogue; this keeps the trio in step |
 | **3.3.0** | **Version only** — nothing in the console changed this round. The three products are deployed together and read each other's version; QRME 3.3.0 carries the occupation catalogue, and this keeps the trio in step |
 | **3.2.1** | **The release that could not build** — 3.2.0's lockfile bump rewrote `ejs` from `^3.1.10` to `^3.2.0` along with the project's own version, because both happened to be at 3.1.10. That release of `ejs` does not exist, so `npm ci` answered 404 and the image never built. `ejs` is restored, and a new guard fingerprints the lockfile with the project's own version fields masked so a release bump cannot move a dependency unnoticed |
