@@ -1048,7 +1048,7 @@ struct Finetune: Decodable {
 struct ConditionNet: Decodable {
     let user_id: String
     let trained: Bool
-    let version: Int
+    let weights_build: Int
     let trained_on: Int
     let loss_before: Double?
     let loss_after: Double?
@@ -1058,10 +1058,10 @@ struct ConditionNet: Decodable {
 struct ConditionNetTraining: Decodable {
     let trained: Bool
     let samples: Int
-    let steps: Int
+    let training_steps: Int
     let loss_before: Double?
     let loss_after: Double?
-    let version: Int
+    let weights_build: Int
     let reason: String?
 }
 

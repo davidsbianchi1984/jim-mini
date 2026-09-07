@@ -816,6 +816,27 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "set.ft.none": {
     en: "Nothing trained yet. It needs a stretch of conversation to learn from first.", es: "Todavía no hay nada entrenado. Primero necesita un tramo de conversación del que aprender.", fr: "Rien d'entraîné pour l'instant. Il lui faut d'abord un peu de conversation dont apprendre.", de: "Noch nichts trainiert. Es braucht zuerst ein Stück Gespräch, aus dem es lernen kann.", pt: "Ainda nada treinado. Precisa primeiro de um bocado de conversa de onde aprender.", it: "Ancora niente di addestrato. Serve prima un po' di conversazione da cui imparare.", ja: "まだ学習していません。まず学ぶだけの会話が必要です。", zh: "还没有训练过。它需要先有一段可供学习的对话。", hi: "अभी कुछ प्रशिक्षित नहीं। पहले सीखने लायक़ बातचीत चाहिए।", ar: "لا شيء مُدرَّب بعد. يحتاج أولًا إلى قدر من الحديث ليتعلّم منه.",
   },
+  "set.cn.title": {
+    en: "Attention on your readings", es: "Atención a tus lecturas", fr: "Attention à vos relevés", de: "Aufmerksamkeit auf deine Messwerte", pt: "Atenção às tuas leituras", it: "Attenzione alle tue letture", ja: "あなたの測定値への注意", zh: "对你读数的注意力", hi: "आपकी रीडिंग पर ध्यान", ar: "الانتباه إلى قراءاتك",
+  },
+  "set.cn.sub": {
+    en: "A small attention network of the guardian's own, run over your recent readings before every reply and trained here from your own history. The weights are kept encrypted.", es: "Una pequeña red de atención propia del guardián, aplicada a tus lecturas recientes antes de cada respuesta y entrenada aquí con tu propio historial. Los pesos se guardan cifrados.", fr: "Un petit réseau d'attention propre au gardien, appliqué à vos relevés récents avant chaque réponse et entraîné ici à partir de votre propre historique. Les poids sont conservés chiffrés.", de: "Ein kleines eigenes Aufmerksamkeitsnetz des Wächters, das vor jeder Antwort über deine jüngsten Messwerte läuft und hier aus deiner eigenen Geschichte trainiert wird. Die Gewichte werden verschlüsselt aufbewahrt.", pt: "Uma pequena rede de atenção do próprio guardião, aplicada às tuas leituras recentes antes de cada resposta e treinada aqui a partir do teu próprio histórico. Os pesos ficam guardados cifrados.", it: "Una piccola rete di attenzione propria del guardiano, applicata alle tue letture recenti prima di ogni risposta e addestrata qui dalla tua storia. I pesi sono conservati cifrati.", ja: "ガーディアン自身の小さな注意ネットワークです。毎回の返答の前に最近の測定値を読み、あなた自身の履歴からこの端末で学習します。重みは暗号化して保管されます。", zh: "守护者自己的一个小型注意力网络：每次回复前读取你最近的读数，并在本机用你自己的历史训练。权重加密保存。", hi: "गार्जियन का अपना एक छोटा अटेंशन नेटवर्क, जो हर उत्तर से पहले आपकी हाल की रीडिंग पढ़ता है और यहीं आपके अपने इतिहास से प्रशिक्षित होता है। वेट्स एन्क्रिप्टेड रखे जाते हैं।", ar: "شبكة انتباه صغيرة خاصة بالحارس، تُطبَّق على قراءاتك الأخيرة قبل كل رد وتُدرَّب هنا من سجلّك أنت. الأوزان محفوظة مشفّرة.",
+  },
+  "set.cn.trained": {
+    en: "Trained on {n} readings · pass {v}", es: "Entrenada con {n} lecturas · pasada {v}", fr: "Entraîné sur {n} relevés · passe {v}", de: "Trainiert an {n} Messwerten · Durchgang {v}", pt: "Treinada com {n} leituras · passagem {v}", it: "Addestrata su {n} letture · passata {v}", ja: "測定値 {n} 件で学習済み · 第 {v} 回", zh: "已用 {n} 条读数训练 · 第 {v} 轮", hi: "{n} रीडिंग पर प्रशिक्षित · दौर {v}", ar: "مُدرَّبة على {n} قراءة · الجولة {v}",
+  },
+  "set.cn.initial": {
+    en: "Not trained yet — the initial weights condition every reply until it is.", es: "Aún sin entrenar: los pesos iniciales condicionan cada respuesta hasta entonces.", fr: "Pas encore entraîné — les poids initiaux conditionnent chaque réponse jusque-là.", de: "Noch nicht trainiert — bis dahin bedingen die Anfangsgewichte jede Antwort.", pt: "Ainda não treinada — até lá, os pesos iniciais condicionam cada resposta.", it: "Non ancora addestrata — fino ad allora i pesi iniziali condizionano ogni risposta.", ja: "まだ学習していません。それまでは初期の重みがすべての返答を条件付けます。", zh: "尚未训练——在此之前，初始权重会作用于每一次回复。", hi: "अभी प्रशिक्षित नहीं — तब तक शुरुआती वेट्स हर उत्तर को प्रभावित करते हैं।", ar: "لم تُدرَّب بعد — وحتى ذلك الحين تُكيِّف الأوزان الأولية كل رد.",
+  },
+  "set.cn.train": {
+    en: "Train it on my readings", es: "Entrénala con mis lecturas", fr: "L'entraîner sur mes relevés", de: "Auf meine Messwerte trainieren", pt: "Treiná-la com as minhas leituras", it: "Addestrala sulle mie letture", ja: "私の測定値で学習させる", zh: "用我的读数训练它", hi: "इसे मेरी रीडिंग पर प्रशिक्षित करें", ar: "درِّبها على قراءاتي",
+  },
+  "set.cn.training": {
+    en: "Training…", es: "Entrenando…", fr: "Entraînement…", de: "Training läuft…", pt: "A treinar…", it: "Addestramento…", ja: "学習中…", zh: "训练中…", hi: "प्रशिक्षण हो रहा है…", ar: "جارٍ التدريب…",
+  },
+  "set.cn.loss": {
+    en: "Loss {a} → {b} on the last pass", es: "Pérdida {a} → {b} en la última pasada", fr: "Perte {a} → {b} à la dernière passe", de: "Verlust {a} → {b} im letzten Durchgang", pt: "Perda {a} → {b} na última passagem", it: "Perdita {a} → {b} nell'ultima passata", ja: "直近の学習で損失 {a} → {b}", zh: "上一轮损失 {a} → {b}", hi: "पिछले दौर में हानि {a} → {b}", ar: "الخسارة {a} → {b} في آخر جولة",
+  },
   "set.ft.train": {
     en: "Train it on me", es: "Entrénalo conmigo", fr: "L'entraîner sur moi", de: "Auf mich trainieren", pt: "Treiná-lo em mim", it: "Addestralo su di me", ja: "私で学習させる", zh: "用我来训练它", hi: "इसे मुझ पर प्रशिक्षित करें", ar: "درِّبه عليّ",
   },

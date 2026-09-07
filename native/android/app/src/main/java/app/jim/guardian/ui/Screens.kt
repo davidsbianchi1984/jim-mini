@@ -5504,12 +5504,16 @@ private fun TrainedModelCard(vm: GuardianViewModel) {
     var ft by remember { mutableStateOf<Finetune?>(null) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    // The attention layers themselves (jim/condition_net.py).
+    var cn by remember { mutableStateOf<org.json.JSONObject?>(null) }
+    var cnBusy by remember { mutableStateOf(false) }
 
     LaunchedEffect(vm.uid) {
         val uid = vm.uid ?: return@LaunchedEffect
         val token = vm.token ?: return@LaunchedEffect
         // A 404 until something has been trained, which is the normal state.
         vm.call({ ApiClient.finetune(uid, token) }) { r -> ft = r.getOrNull() }
+        vm.call({ ApiClient.conditionNet(uid, token) }) { r -> cn = r.getOrNull() }
     }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -5545,6 +5549,29 @@ private fun TrainedModelCard(vm: GuardianViewModel) {
             vm.call({ ApiClient.runFinetune(uid, token) }) { r ->
                 busy = false
                 r.onSuccess { ft = it }.onFailure { error = it.message }
+            }
+        }
+
+        Text(L10n.t("ov.cn.title", vm.language), color = Jim.Txt, fontSize = 14.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("ov.cn.sub", vm.language), color = Jim.T2, fontSize = 12.sp)
+        val trainedNet = cn?.optBoolean("trained") == true
+        Text(if (trainedNet) L10n.fill("ov.cn.trained", vm.language,
+                 mapOf("n" to cn!!.optInt("trained_on").toString(),
+                       "v" to cn!!.optInt("weights_build").toString()))
+             else L10n.t("ov.cn.initial", vm.language),
+            color = if (trainedNet) Jim.Txt else Jim.T2, fontSize = 12.sp)
+        SmallAction(L10n.t(if (cnBusy) "ov.cn.training" else "ov.cn.train",
+                           vm.language), enabled = !cnBusy) {
+            val uid = vm.uid ?: return@SmallAction
+            val token = vm.token ?: return@SmallAction
+            cnBusy = true; error = null
+            vm.call({ ApiClient.trainConditionNet(uid, token) }) { r ->
+                r.onSuccess { run ->
+                    if (!run.optBoolean("trained")) error = run.optString("reason")
+                    vm.call({ ApiClient.conditionNet(uid, token) }) { c ->
+                        cnBusy = false; cn = c.getOrNull() }
+                }.onFailure { cnBusy = false; error = it.message }
             }
         }
     }

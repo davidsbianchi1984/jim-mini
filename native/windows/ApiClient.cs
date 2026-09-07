@@ -602,7 +602,7 @@ public record Finetune(
 public record ConditionNet(
     [property: JsonPropertyName("user_id")] string UserId,
     [property: JsonPropertyName("trained")] bool Trained,
-    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("weights_build")] int WeightsBuild,
     [property: JsonPropertyName("trained_on")] int TrainedOn,
     [property: JsonPropertyName("loss_before")] double? LossBefore,
     [property: JsonPropertyName("loss_after")] double? LossAfter,
@@ -611,10 +611,10 @@ public record ConditionNet(
 public record ConditionNetTraining(
     [property: JsonPropertyName("trained")] bool Trained,
     [property: JsonPropertyName("samples")] int Samples,
-    [property: JsonPropertyName("steps")] int Steps,
+    [property: JsonPropertyName("training_steps")] int TrainingSteps,
     [property: JsonPropertyName("loss_before")] double? LossBefore,
     [property: JsonPropertyName("loss_after")] double? LossAfter,
-    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("weights_build")] int WeightsBuild,
     [property: JsonPropertyName("reason")] string? Reason);
 
 public record FinetuneSwitchResult(

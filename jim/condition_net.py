@@ -348,15 +348,16 @@ def status(user_id: str) -> dict:
         "SELECT version, trained_on, loss_before, loss_after, updated_at,"
         " length(blob) AS bytes FROM condition_weights WHERE user_id=?",
         (user_id,)).fetchone()
-    base = {"user_id": user_id, "config": CONFIG, "emphases": list(EMPHASES),
+    base = {"user_id": user_id, "config": CONFIG,
+            "emphasis_names": list(EMPHASES),
             "parameters": int(sum(v.size for v in init_params(0).values())),
             "encrypted_at_rest": True, "external_transmission": False,
             "trains_every_readings": TRAIN_EVERY}
     if row is None:
-        return {**base, "trained": False, "version": 0, "trained_on": 0,
+        return {**base, "trained": False, "weights_build": 0, "trained_on": 0,
                 "loss_before": None, "loss_after": None, "updated_at": None,
                 "sealed_bytes": 0}
-    return {**base, "trained": True, "version": row["version"],
+    return {**base, "trained": True, "weights_build": row["version"],
             "trained_on": row["trained_on"], "loss_before": row["loss_before"],
             "loss_after": row["loss_after"], "updated_at": row["updated_at"],
             "sealed_bytes": row["bytes"]}
@@ -432,7 +433,7 @@ def condition(user_id: str, details: list[dict] | None = None, *,
                          for n, v in zip(EMPHASES, cache["y_emph"])},
             "attention": [{"reading": i + 1, "weight": round(float(w), 4),
                            "trust": round(float(t), 3),
-                           "at": d.get("_at")}
+                           "read_at": d.get("_at")}
                           for i, (w, t, d) in enumerate(zip(row, trust, details))]}
 
 
@@ -552,8 +553,8 @@ def train(user_id: str, *, epochs: int = 8, pdi=None) -> dict:
     samples = _samples(user_id, pdi=pdi)
     p, version = load(user_id)
     if not samples:
-        return {"trained": False, "samples": 0, "steps": 0,
-                "loss_before": None, "loss_after": None, "version": version,
+        return {"trained": False, "samples": 0, "training_steps": 0,
+                "loss_before": None, "loss_after": None, "weights_build": version,
                 "reason": "fewer than two readings on record"}
     original = finetune._no_egress()
     try:
@@ -577,10 +578,12 @@ def train(user_id: str, *, epochs: int = 8, pdi=None) -> dict:
         (user_id, seal(user_id, p), 1, len(samples),
          round(loss_before, 6), round(loss_after, 6), db.utcnow()))
     conn.commit()
-    return {"trained": True, "samples": len(samples), "steps": steps,
+    # `weights_build`, `training_steps`: one wire name, one type — `version`
+    # is a string on /health and `steps` a list on the playbook.
+    return {"trained": True, "samples": len(samples), "training_steps": steps,
             "loss_before": round(loss_before, 6),
             "loss_after": round(loss_after, 6),
-            "version": status(user_id)["version"],
+            "weights_build": status(user_id)["weights_build"],
             "encrypted_at_rest": True, "external_transmission": False}
 
 

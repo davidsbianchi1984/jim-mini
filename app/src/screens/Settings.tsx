@@ -31,6 +31,11 @@ export function Settings() {
   const [keySaved, setKeySaved] = useState(false);
   const [pair, setPair] = useState<PairInfo | null>(null);
   const [look, setLook] = useState<Appearance | null>(null);
+  // The condition network (jim/condition_net.py): the attention layers the
+  // guardian owns, and the pass that fits them to this person's readings.
+  const [cn, setCn] = useState<Awaited<ReturnType<typeof api.conditionNet>> | null>(null);
+  const [cnBusy, setCnBusy] = useState(false);
+  const [cnError, setCnError] = useState<string | null>(null);
 
   useEffect(() => {
     api.health().then((h) => setHealth(`ok · vault tandem: ${h.tandem ? "connected" : "not configured (set by the deployment, not a switch)"}`)).catch(() => setHealth("unreachable"));
@@ -39,6 +44,7 @@ export function Settings() {
       api.adaptation(session.userId, session.userToken).then(setAdapt).catch(() => {});
       // 404 until something has been trained, which is the normal state.
       api.finetune(session.userId, session.userToken).then(setFt).catch(() => {});
+      api.conditionNet(session.userId, session.userToken).then(setCn).catch(() => {});
       api.corpus(session.userId, session.userToken).then(setCor).catch(() => {});
       api.anonymity(session.userId, session.userToken).then(setAnon).catch(() => {});
       api.continuity(session.userId, session.userToken).then(setCont).catch(() => {});
@@ -244,6 +250,41 @@ export function Settings() {
           </>
         )}
         {ftError && <p className="muted small">{ftError}</p>}
+      </div>
+
+      {/* The attention layers themselves. Distinct from the fine-tune above:
+          that is a logistic model over answered follow-ups; this is the
+          network that reads the recent readings before every reply. */}
+      <div className="card">
+        <h3>{tr("set.cn.title", lang)}</h3>
+        <p className="muted small">{tr("set.cn.sub", lang)}</p>
+        <div className="spec-row">
+          <div>
+            <b>{cn && cn.trained
+              ? tr("set.cn.trained", lang)
+                  .replace("{n}", String(cn.trained_on))
+                  .replace("{v}", String(cn.weights_build))
+              : tr("set.cn.initial", lang)}</b>
+            {cn && cn.trained && cn.loss_before !== null && cn.loss_after !== null && (
+              <div className="muted small">
+                {tr("set.cn.loss", lang)
+                  .replace("{a}", cn.loss_before.toFixed(4))
+                  .replace("{b}", cn.loss_after.toFixed(4))}
+              </div>
+            )}
+          </div>
+          <button disabled={cnBusy} onClick={async () => {
+            if (!session.userId || !session.userToken) return;
+            setCnBusy(true); setCnError(null);
+            try {
+              const run = await api.trainConditionNet(session.userId, session.userToken);
+              if (!run.trained && run.reason) setCnError(run.reason);
+              setCn(await api.conditionNet(session.userId, session.userToken));
+            } catch (e) { setCnError((e as Error).message); }
+            finally { setCnBusy(false); }
+          }}>{tr(cnBusy ? "set.cn.training" : "set.cn.train", lang)}</button>
+        </div>
+        {cnError && <p className="muted small">{cnError}</p>}
       </div>
 
       {/* The offline training corpus. Distinct from the fine-tune above: that

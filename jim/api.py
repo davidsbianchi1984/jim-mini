@@ -3129,7 +3129,7 @@ def create_app(qrme_client: QRMEClient | None = None,
         _user_or_404(user_id, request)
         from . import condition_net
         return {**condition_net.status(user_id),
-                "recent": condition_net.conditioning_of(user_id)}
+                "recent_conditioning": condition_net.conditioning_of(user_id)}
 
     @app.post("/condition-net/{user_id}/train", status_code=201)
     def condition_net_train(user_id: str, request: Request) -> dict:

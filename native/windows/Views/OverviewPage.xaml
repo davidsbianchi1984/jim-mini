@@ -245,6 +245,14 @@
                                Foreground="{StaticResource JimT3Brush}" />
                     <Button x:Name="FtTrainButton" Click="OnTrainModel"
                             Background="{StaticResource JimBrandABrush}" Foreground="White" />
+                    <TextBlock x:Name="CnHead" FontWeight="Bold" FontSize="14" Margin="0,8,0,0"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <TextBlock x:Name="CnSub" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimT2Brush}" />
+                    <TextBlock x:Name="CnState" FontSize="12" TextWrapping="Wrap"
+                               Foreground="{StaticResource JimTxtBrush}" />
+                    <Button x:Name="CnTrainButton" Click="OnTrainConditionNet"
+                            Background="{StaticResource JimBrandABrush}" Foreground="White" />
                 </StackPanel>
             </Border>
 

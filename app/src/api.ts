@@ -848,25 +848,25 @@ export interface Finetune {
 export interface ConditionNet {
   user_id: string;
   trained: boolean;
-  version: number;
+  weights_build: number;
   trained_on: number;
   loss_before: number | null;
   loss_after: number | null;
   updated_at: string | null;
   sealed_bytes: number;
   parameters: number;
-  emphases: string[];
+  emphasis_names: string[];
   encrypted_at_rest: boolean;
   external_transmission: boolean;
   trains_every_readings: number;
-  recent: {
+  recent_conditioning: {
     id: string;
     surface: string;
     weights_version: number;
     temperature: number;
     engagement: number;
     predicted_deviation: number;
-    attention: { reading: number; weight: number; trust: number; at: string | null }[];
+    attention: { reading: number; weight: number; trust: number; read_at: string | null }[];
     emphases: Record<string, number>;
     created_at: string;
   }[];
@@ -875,10 +875,10 @@ export interface ConditionNet {
 export interface ConditionNetTraining {
   trained: boolean;
   samples: number;
-  steps: number;
+  training_steps: number;
   loss_before: number | null;
   loss_after: number | null;
-  version: number;
+  weights_build: number;
   reason?: string;
 }
 

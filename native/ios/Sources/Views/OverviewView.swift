@@ -333,6 +333,9 @@ struct TrainedModelCard: View {
     @State private var ft: Finetune?
     @State private var busy = false
     @State private var error: String?
+    // The attention layers themselves (jim/condition_net.py).
+    @State private var cn: ConditionNet?
+    @State private var cnBusy = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -367,6 +370,26 @@ struct TrainedModelCard: View {
                 .padding(.horizontal, 12).padding(.vertical, 8)
                 .background(Theme.brandA).clipShape(Capsule())
                 .disabled(busy)
+
+            Divider()
+            Text(L10n.t("ov.cn.title", state.language)).font(.subheadline.bold())
+            Text(L10n.t("ov.cn.sub", state.language))
+                .font(.caption).foregroundStyle(Theme.t2)
+            if let cn, cn.trained {
+                Text(L10n.fill("ov.cn.trained", state.language,
+                               ["n": String(cn.trained_on),
+                                "v": String(cn.weights_build)]))
+                    .font(.footnote.bold())
+            } else {
+                Text(L10n.t("ov.cn.initial", state.language))
+                    .font(.footnote).foregroundStyle(Theme.t2)
+            }
+            Button(L10n.t(cnBusy ? "ov.cn.training" : "ov.cn.train",
+                          state.language)) { trainConditionNet() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Theme.brandA).clipShape(Capsule())
+                .disabled(cnBusy)
         }
         .card()
         .task { await load() }
@@ -376,6 +399,20 @@ struct TrainedModelCard: View {
         guard let uid = state.uid, let token = state.token else { return }
         // A 404 until something has been trained, which is the normal state.
         ft = try? await ApiClient.shared.finetune(uid: uid, token: token)
+        cn = try? await ApiClient.shared.conditionNet(uid: uid, token: token)
+    }
+
+    private func trainConditionNet() {
+        guard let uid = state.uid, let token = state.token else { return }
+        cnBusy = true; error = nil
+        Task {
+            do {
+                let run = try await ApiClient.shared.trainConditionNet(uid: uid, token: token)
+                if !run.trained, let why = run.reason { self.error = why }
+                cn = try? await ApiClient.shared.conditionNet(uid: uid, token: token)
+            } catch { self.error = error.localizedDescription }
+            cnBusy = false
+        }
     }
 
     private func train() {

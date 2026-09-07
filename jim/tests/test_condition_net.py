@@ -124,15 +124,15 @@ def test_a_coach_turn_is_conditioned_and_the_record_carries_no_values(client):
                                             "message": "how am I doing?"})
     assert r.status_code == 200, r.text
     status = client.get(f"/condition-net/{user}").json()
-    assert status["trained"] is False and status["version"] == 0
+    assert status["trained"] is False and status["weights_build"] == 0
     assert status["encrypted_at_rest"] is True
-    rows = [x for x in status["recent"] if x["surface"] == "coach"]
-    assert rows, status["recent"]
+    rows = [x for x in status["recent_conditioning"] if x["surface"] == "coach"]
+    assert rows, status["recent_conditioning"]
     row = rows[0]
     assert len(row["attention"]) == 3
     # Indices, weights, trust and times only — never a reading's value.
     assert {k for a in row["attention"] for k in a} == {"reading", "weight",
-                                                         "trust", "at"}
+                                                         "trust", "read_at"}
     assert set(row["emphases"]) == set(cn.EMPHASES)
     # The third reading arrived suspect; it is trusted less than the first.
     assert row["attention"][2]["trust"] < row["attention"][0]["trust"]
@@ -164,7 +164,7 @@ def test_the_engaged_session_is_conditioned_under_its_own_surface(client):
 def test_nothing_is_said_before_the_first_reading(client):
     user = enroll(client)
     assert cn.prompt_lines(user, "coach") == []
-    assert client.get(f"/condition-net/{user}").json()["recent"] == []
+    assert client.get(f"/condition-net/{user}").json()["recent_conditioning"] == []
 
 
 # -- training (claim 26) -----------------------------------------------------
@@ -177,9 +177,9 @@ def test_training_fits_the_weights_here_and_seals_them(client, monkeypatch):
     r = client.post(f"/condition-net/{user}/train")
     assert r.status_code == 201, r.text
     net = r.json()
-    assert net["trained"] is True and net["samples"] == 5 and net["steps"] > 0
+    assert net["trained"] is True and net["samples"] == 5 and net["training_steps"] > 0
     assert net["loss_after"] < net["loss_before"]
-    assert net["external_transmission"] is False and net["version"] == 1
+    assert net["external_transmission"] is False and net["weights_build"] == 1
 
     after, version = cn.load(user)
     assert version == 1
@@ -193,8 +193,8 @@ def test_training_fits_the_weights_here_and_seals_them(client, monkeypatch):
     client.post(f"/coach/{user}", json={"area": "general", "message": "and now?"})
     status = client.get(f"/condition-net/{user}").json()
     assert status["trained"] is True
-    assert status["recent"][0]["weights_version"] == 1
-    assert client.post(f"/condition-net/{user}/train").json()["version"] == 2
+    assert status["recent_conditioning"][0]["weights_version"] == 1
+    assert client.post(f"/condition-net/{user}/train").json()["weights_build"] == 2
 
 
 def test_training_refuses_to_reach_the_network(client, monkeypatch):
@@ -231,7 +231,8 @@ def test_training_before_two_readings_says_why(client):
     user = enroll(client)
     _read(client, user, 1)
     net = client.post(f"/condition-net/{user}/train").json()
-    assert net["trained"] is False and "two readings" in net["reason"]
+    assert net["trained"] is False and net["training_steps"] == 0
+    assert "two readings" in net["reason"]
 
 
 def test_erasing_the_person_takes_the_weights_and_the_record(client):

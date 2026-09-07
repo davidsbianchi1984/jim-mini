@@ -106,6 +106,11 @@ public sealed partial class OverviewPage : Page
         FtUse.Header = L10n.T("ov.ft.use");
         FtTrainButton.Content = L10n.T("ov.ft.train");
         LoadFinetune();
+        CnHead.Text = L10n.T("ov.cn.title");
+        CnSub.Text = L10n.T("ov.cn.sub");
+        CnState.Text = L10n.T("ov.cn.initial");
+        CnTrainButton.Content = L10n.T("ov.cn.train");
+        LoadConditionNet();
         NameTitle.Text = L10n.T("ov.name");
     }
 
@@ -214,6 +219,42 @@ public sealed partial class OverviewPage : Page
         {
             FtTrainButton.IsEnabled = true;
             FtTrainButton.Content = L10n.T("ov.ft.train");
+        }
+    }
+
+    /// <summary>The attention layers themselves (jim/condition_net.py):
+    /// trained or initial, from the same door the coach reads.</summary>
+    private async void LoadConditionNet()
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        try { RenderConditionNet(await ApiClient.Shared.ConditionNet(s.Uid, s.Token)); }
+        catch { /* the door answers once enrolled; nothing to show before */ }
+    }
+
+    private void RenderConditionNet(ConditionNet c) =>
+        CnState.Text = c.Trained
+            ? L10n.T("ov.cn.trained").Replace("{n}", c.TrainedOn.ToString())
+                                     .Replace("{v}", c.WeightsBuild.ToString())
+            : L10n.T("ov.cn.initial");
+
+    private async void OnTrainConditionNet(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Uid is null || s.Token is null) return;
+        CnTrainButton.IsEnabled = false;
+        CnTrainButton.Content = L10n.T("ov.cn.training");
+        try
+        {
+            var run = await ApiClient.Shared.TrainConditionNet(s.Uid, s.Token);
+            if (!run.Trained && run.Reason is not null) CnState.Text = run.Reason;
+            else RenderConditionNet(await ApiClient.Shared.ConditionNet(s.Uid, s.Token));
+        }
+        catch (Exception ex) { CnState.Text = ex.Message; }
+        finally
+        {
+            CnTrainButton.IsEnabled = true;
+            CnTrainButton.Content = L10n.T("ov.cn.train");
         }
     }
 
