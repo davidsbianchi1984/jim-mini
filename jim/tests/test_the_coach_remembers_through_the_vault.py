@@ -193,7 +193,7 @@ def test_errand_results_land_as_queryable_rows(client, monkeypatch):
                              "why": "coach_missed"}][:limit])
 
     def fake_excursion(user_id, topic, cloud=None, learn=True,
-                       pdi=None):
+                       pdi=None, purpose="errand"):
         from jim import db
         cid = db.new_id("exc")
         db.connect().execute(
@@ -224,7 +224,7 @@ def test_a_down_tandem_keeps_the_errand_and_says_not_vaulted(client,
                              "why": "coach_missed"}][:limit])
 
     def fake_excursion(user_id, topic, cloud=None, learn=True,
-                       pdi=None):
+                       pdi=None, purpose="errand"):
         from jim import db
         cid = db.new_id("exc")
         db.connect().execute(
