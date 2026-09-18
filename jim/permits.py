@@ -147,7 +147,7 @@ AREAS: dict[str, dict] = {
                 "and when it lacks something ask a model in general terms "
                 "only — every name, number, date and place taken out first, "
                 "and every sentence that leaves kept in a log you can read",
-        "tools": ("ask_generic",),
+        "tools": ("ask_general",),
     },
     "handle_what_you_notice": {
         "standing": "asked",

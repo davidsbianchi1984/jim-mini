@@ -22,7 +22,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   recorded miss is closed, so the same gap is asked once; a degrade to
   the local stub is not learned; offline mode is not opened by the
   permit. The reply's provenance carries `asked_outside` — the sentence
-  word for word, or null.
+  word for word, or null. The engaged session gets the same door as a
+  tool, `ask_general`, on the irreversible list with its siblings.
 - **A log of every sentence that left, for a person to read.** One
   `egress` row per sentence that could leave the device — exactly as
   sent, with the fixed framing that went with it, what was taken out

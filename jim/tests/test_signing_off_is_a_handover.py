@@ -331,9 +331,11 @@ def test_the_reach_says_which_of_it_cannot_be_taken_back(client):
     # general topic to a model — `study` is the excursion asked for out
     # loud, `study_unattended` its unattended sibling — and one,
     # `handle_unattended` (0.84.0), carries their own situation to a model.
+    # `ask_general` carries a question with the person taken out of it,
+    # and a general question that left is still a sentence that left.
     # Everything else acts on their own records and can be put back.
     assert sorted(row["name"] for row in forever) == [
-        "ask_specialist", "handle_unattended", "speak_to_their_guardian",
-        "study", "study_unattended"]
+        "ask_general", "ask_specialist", "handle_unattended",
+        "speak_to_their_guardian", "study", "study_unattended"]
     assert all(row["reversible"] for row in can
                if row["acts"] and not row["irreversible_because"])

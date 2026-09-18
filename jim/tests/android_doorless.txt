@@ -1,4 +1,4 @@
-# status: backlog — 32 rows
+# status: backlog — 33 rows
 #
 # Every route this shell cannot reach.
 #
@@ -180,3 +180,13 @@ PUT /users/{user_id}/region
 # (app/src/screens/Safety.tsx). A phone's crisis job stays what it is:
 # answering the alarm.
 POST /dialer/{user_id}/probe
+
+# ## Unreleased: the egress ledger is read on the console first
+#
+# `jim/egress.py` writes one row per sentence that could leave the device,
+# word for word. The coach screen of the console shows it beside the errand
+# ledger it belongs with (app/src/screens/Coach.tsx). The phones already do
+# not carry the errand and excursion ledgers this sits beside; when those
+# land on a shell, this lands with them, as one "what left" surface rather
+# than three.
+GET /egress/{user_id}
