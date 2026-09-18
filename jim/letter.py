@@ -160,7 +160,7 @@ def _write_body(user_id: str, lines: list[str], cloud=None) -> dict:
     outbound, redactions = (research.sanitize(user_id, digest)
                             if left_host else (digest, 0))
     result = llm.generate_for_user(user_id, _PROSE_SYSTEM, outbound,
-                                   cloud=cloud)
+                                   cloud=cloud, source="letter")
     prose = (result.get("text") or "").strip()
     if prose and result.get("provider") not in (None, "stub"):
         body, described_by = prose, "model"

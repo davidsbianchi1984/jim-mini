@@ -389,7 +389,12 @@ export interface Guidance { delivered: boolean; source?: string; content: string
   // to them, so the speaking sphere can open a discussion at that door.
   specialist?: string;
   specialist_area?: string | null;
-  provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null } }
+  provenance?: { generated_by?: string; degraded?: boolean; degraded_reason?: string | null;
+    // What went out this turn under the general-terms posture, if anything:
+    // the sentence word for word and whether it left the host. Null when
+    // nothing was asked; absent on an older server.
+    asked_outside?: { sentence: string; redactions: number; left_host: boolean;
+      answered_by: string | null; learned: boolean } | null } }
 // The offline coach's store and syllabus (jim/pipeline.py): what it can
 // draw on, what JIM should study next, and what one press of study did.
 export interface CoachStoreEntry { topic: string; lesson: string;
@@ -653,6 +658,27 @@ export interface ErrandLedger {
 
 export interface ErrandsRun {
   errands: Errand[]; remaining_today: number; nothing_to_study: boolean;
+}
+
+// -- the egress ledger: every sentence that left (jim/egress.py) ---------
+//
+// One row per sentence that could leave this device, word for word as it
+// was sent, with the fixed framing that went with it. `kept` is what was
+// taken out first — it never went, and the names are not even in here.
+// `left_host` is whether it reached another party's machine at all.
+export interface EgressRow {
+  id: string; purpose: string; sentence: string; framing: string;
+  redactions: number; kept: { took: string; as: string }[];
+  destination: string; answered_by: string | null; left_host: boolean;
+  created_at: string;
+}
+
+// `permitted` is the coach's general-terms posture: with it on, a coach
+// turn is answered from the store and only a general question can leave;
+// without it a turn on a vendor model goes as written — and is still here.
+export interface EgressLedger {
+  sentences: EgressRow[]; count: number; left: number; note: string;
+  permitted: boolean;
 }
 
 // -- the lookout: a page the vault keeps fresh (jim/lookout.py) -----------
@@ -2394,6 +2420,8 @@ export const api = {
     req<Alongside>(`/alongside/${uid}`, { method: "POST", body, token }),
   errands: (uid: string, token: string) =>
     req<ErrandLedger>(`/errands/${uid}`, { token }),
+  egress: (uid: string, token: string) =>
+    req<EgressLedger>(`/egress/${uid}`, { token }),
   runErrands: (uid: string, token: string) =>
     req<ErrandsRun>(`/errands/${uid}`, { method: "POST", token }),
   // The lookout: plant, list, read the capture back, stop watching.

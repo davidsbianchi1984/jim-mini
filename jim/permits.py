@@ -132,6 +132,23 @@ AREAS: dict[str, dict] = {
                 "kept where the offline coach can read it",
         "tools": ("study_unattended",),
     },
+    "ask_in_general_terms": {
+        "standing": "asked",
+        # The coach is the offline model. Under this switch a coach turn is
+        # answered from what it has already learned, on the device, and
+        # only when it lacks something does anything go to a model — a
+        # question rewritten to be about a person and not this person,
+        # every name, number, date and place taken out first, and every
+        # sentence that leaves kept in a log the person reads. Its own yes
+        # because what changes is exactly what leaves: without it a coach
+        # turn on a vendor's model carries the question as written and the
+        # context a coach turn uses.
+        "says": "answer from what it has already learned, on this device, "
+                "and when it lacks something ask a model in general terms "
+                "only — every name, number, date and place taken out first, "
+                "and every sentence that leaves kept in a log you can read",
+        "tools": ("ask_generic",),
+    },
     "handle_what_you_notice": {
         "standing": "asked",
         # It says what *leaves*, because that is the one thing a person needs

@@ -1411,6 +1411,27 @@ CREATE TABLE IF NOT EXISTS errands (
 CREATE INDEX IF NOT EXISTS idx_errands_day
     ON errands (user_id, opened_at);
 
+-- Every sentence that could leave this device, word for word as it was
+-- sent (jim/egress.py). Written by the two doors anything goes out by —
+-- the study path and the model door — and read by GET /egress/{user}, so
+-- "nothing private left" is a record a person checks rather than a claim
+-- this product makes. `kept` is what was taken out first; it never went.
+CREATE TABLE IF NOT EXISTS egress (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    purpose     TEXT NOT NULL,             -- coach | study | errand | excursion | letter | noticed | …
+    sentence    TEXT NOT NULL,             -- exactly what was sent
+    framing     TEXT NOT NULL DEFAULT '',  -- the fixed instruction sent with it
+    redactions  INTEGER NOT NULL DEFAULT 0,
+    kept        TEXT NOT NULL DEFAULT '[]', -- JSON: what was taken out; local only
+    destination TEXT NOT NULL DEFAULT '',  -- the provider it was sent to
+    answered_by TEXT,                      -- who actually answered
+    left_host   INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_egress_user
+    ON egress (user_id, created_at);
+
 -- An assisted call: the agent on a shared-route call, with the far side told
 -- out loud before anything listens. Nothing about the other party is stored —
 -- no number, no name, no transcript — because they have no account here and

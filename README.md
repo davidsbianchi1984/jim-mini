@@ -86,6 +86,7 @@ worded, or designed around one generation.
 | Capability | Description |
 |---|---|
 | **Privacy and offline mode** | With `JIM_OFFLINE=1`, nothing leaves the host — enforced at every socket in the codebase and verified by tests, not policy. |
+| **The coach asks in general terms** | Under its own permit the coach answers from what it has learned on the device, and what it lacks it asks of a model with the person taken out — names, contacts, links, phones, dates, times, ages, readings and every number replaced by a marker, first person turned to third — then learns the answer so the gap is asked once. Every sentence that could leave, by any door, is on a ledger the person reads word for word (`GET /egress/{user}`). |
 | **Memory with an eraser** | Long-term memory lives sealed in the PDI vault, shown to the person it is about, with a per-moment forget that unmakes the vector, the seal and the ledger row together. |
 | **A record that shows tampering** | Consequential acts land in an append-only, hash-chained audit log; an erase records itself rather than removing what the chain already said. |
 | **Take it or delete it, anytime** | A full export derived from the schema, and an erasure measured against the schema — never against a list somebody wrote once. |

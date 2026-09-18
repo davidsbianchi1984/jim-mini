@@ -85,9 +85,10 @@ def would_leave(cloud) -> bool:
     return (not _offline()) and (cloud is not None)
 
 
-def gather(brief: str, cloud=None) -> str:
-    provider = llm.get_provider(None if _offline() else cloud)
-    findings = provider.generate(_RESEARCH_SYSTEM, brief)
+def gather(brief: str, cloud=None, choice: str | None = None,
+           framing: str | None = None) -> str:
+    provider = llm.get_provider(None if _offline() else cloud, choice=choice)
+    findings = provider.generate(framing or _RESEARCH_SYSTEM, brief)
     # Who actually answered, duck-typed the way `generate_for_user` reads
     # it: the fallback and cloud wrappers carry `answered_by`, the bare
     # stub is itself, and anything else stays unrecorded rather than
@@ -123,7 +124,8 @@ def gather_inside(brief: str, pdi=None) -> str:
 
 def excursion(user_id: str, topic: str, question: str = "",
               private: list[str] | None = None, cloud=None,
-              learn: bool = False, pdi=None) -> str:
+              learn: bool = False, pdi=None, choice: str | None = None,
+              purpose: str = "excursion", framing: str | None = None) -> str:
     """Go and study one topic, and write down exactly what could have left.
 
     The whole outbound path, in one function. It was written twice inline in
@@ -145,8 +147,14 @@ def excursion(user_id: str, topic: str, question: str = "",
     out of it, ``left_host`` says whether anything actually went — and
     ``answered_by``, who actually wrote what came back.
     """
-    brief, redactions = sanitize(user_id, f"{topic}\n{question}".strip(),
-                                 private)
+    # The composer (jim/egress.py) begins with `sanitize` — the names —
+    # and goes on to every shape a value about a person takes: links,
+    # phones, dates, times, ages, readings, bare numbers, and the first
+    # person itself. What it took out stays here, beside the row.
+    from . import egress
+    composed = egress.compose(user_id, f"{topic}\n{question}".strip(),
+                              private)
+    brief, redactions = composed["sentence"], composed["redactions"]
     # The study speaks with the voice the person chose. A user whose
     # provider is the vault studies *inside*: the brief goes to the
     # resident, nothing reaches an external model, and left_host says so
@@ -160,14 +168,25 @@ def excursion(user_id: str, topic: str, question: str = "",
     token = _GATHERED_BY.set(None)
     try:
         if llm.resolve_choice(llm.get_choice(user_id)) == "vault":
-            left_host = False
+            destination, left_host = "vault", False
             findings = gather_inside(brief, pdi)
         else:
-            left_host = would_leave(cloud)
-            findings = gather(brief, cloud)
+            destination = ("cloud" if would_leave(cloud)
+                           else llm.resolve_choice(choice))
+            findings = gather(brief, cloud, choice=choice, framing=framing)
+            # It left if the gateway took it, or if the provider that
+            # answered is one on another party's machine. Before this line
+            # only the gateway counted, and a brief answered by a keyed
+            # vendor model was recorded as having stayed.
+            left_host = would_leave(cloud) or egress.left(_GATHERED_BY.get())
         answered = _GATHERED_BY.get()
     finally:
         _GATHERED_BY.reset(token)
+    # The ledger row: the brief word for word, with the framing that went
+    # with it, where it went and who answered (jim/egress.py).
+    egress.note(user_id, purpose, brief, framing or _RESEARCH_SYSTEM,
+                redactions, composed["kept"], destination, answered,
+                left_host)
     cid = db.new_id("exc")
     conn = db.connect()
     conn.execute(

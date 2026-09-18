@@ -183,6 +183,18 @@ _BEARING_PROMPT: dict[str, str] = {
 }
 
 
+#: What the coach says under the general-terms permit when the store has
+#: nothing and there was nobody worth asking — the person's provider is
+#: the local stub, or the ask came back empty. Plain about it, rather than
+#: the built-in helper's advice to add a key, which is wrong for somebody
+#: who has one and chose not to have their question sent as written.
+_NOTHING_STORED = (
+    "I don't have this in what I've learned yet, and there was no model I "
+    "could ask about it in general terms. Your message is saved, and this "
+    "question is on the coach's study list."
+)
+
+
 def reply(user_id: str, area: str, message: str, pdi=None,
           recall_pdi=None, cut_off_heard: str | None = None) -> dict:
     from . import i18n
@@ -296,32 +308,64 @@ def reply(user_id: str, area: str, message: str, pdi=None,
             " have just said, and take as read only the part above.")
     language = i18n.effective_language(user_id)
     system += i18n.directive(language)
-    gen = llm.generate_for_user(user_id, system, message,
-                                 source="coach")
-    text = gen["text"]
-
-    # When the stub is what answered, the offline stack answers better: the
-    # add-&-norm pipeline (jim/pipeline.py) over the curated pack, JIM's
-    # learned excursions and every deposit a paid turn left — chosen by the
-    # question *and* the current readings. A real model keeps its nuance;
-    # the stack never overrides one.
+    from . import egress, permits, pipeline
     knowledge_entry = None
     pipeline_layers = None
-    if gen["provider"] == "stub" or gen.get("degraded"):
-        from . import pipeline
+    asked_outside = None
+    generic = permits.granted(user_id, egress.PERMIT)
+    if generic:
+        # The coach is the offline model (jim/egress.py). Under this
+        # permit the store answers first — the add-&-norm stack over the
+        # curated pack, what JIM learned and what was deposited — and the
+        # prompt built above, with everything private in it, goes nowhere.
+        # Only when the stack has nothing does a model hear anything, and
+        # what it hears is the question in general terms: this person
+        # taken out, every value taken out and kept here, the sentence
+        # written down for them to read. The answer is learned, the stack
+        # runs again and answers from it; the same gap is never bought
+        # twice.
         ran = pipeline.run(user_id, area, message)
+        if ran["text"] is None:
+            asked_outside = egress.ask(user_id, area, message, pdi=pdi)
+            if asked_outside is not None and asked_outside["learned"]:
+                ran = pipeline.run(user_id, area, message)
         pipeline_layers = ran["layers"]
         if ran["text"] is not None:
-            knowledge_entry = ran["entry"]
-            text = ran["text"]
+            knowledge_entry, text = ran["entry"], ran["text"]
+        elif asked_outside is not None and asked_outside["findings"]:
+            # Learned, but the stack's own scoring did not reach it from
+            # this wording: the general answer is still the honest reply,
+            # and it is in the store for next time.
+            text = asked_outside["findings"]
+        else:
+            text = _NOTHING_STORED
+        who = (asked_outside or {}).get("answered_by") or "stub"
+        gen = {"text": text, "provider": who if asked_outside else "stub",
+               "degraded": False, "reason": None}
     else:
-        # The paid turn becomes a permanent asset: distilled into the store
-        # the offline stack predicts from, so the same gap is never bought
-        # twice. The user's own words are the topic — it is their store.
-        from . import pipeline
-        if not _DENY.search(text):
-            pipeline.deposit(user_id, area, message, text, "coach",
-                             gen["provider"])
+        gen = llm.generate_for_user(user_id, system, message,
+                                     source="coach")
+        text = gen["text"]
+
+        # When the stub is what answered, the offline stack answers better:
+        # the add-&-norm pipeline (jim/pipeline.py) over the curated pack,
+        # JIM's learned excursions and every deposit a paid turn left —
+        # chosen by the question *and* the current readings. A real model
+        # keeps its nuance; the stack never overrides one.
+        if gen["provider"] == "stub" or gen.get("degraded"):
+            ran = pipeline.run(user_id, area, message)
+            pipeline_layers = ran["layers"]
+            if ran["text"] is not None:
+                knowledge_entry = ran["entry"]
+                text = ran["text"]
+        else:
+            # The paid turn becomes a permanent asset: distilled into the
+            # store the offline stack predicts from, so the same gap is
+            # never bought twice. The user's own words are the topic — it
+            # is their store.
+            if not _DENY.search(text):
+                pipeline.deposit(user_id, area, message, text, "coach",
+                                 gen["provider"])
 
     safe = not _DENY.search(text)
     conn = db.connect()
@@ -389,7 +433,12 @@ def reply(user_id: str, area: str, message: str, pdi=None,
             "bearing": carried,
             "adapted_bearing": adapted_bearing,
             "provenance": {
-                "method": ("offline pipeline — stored knowledge and current "
+                "method": ("offline coach — answered from the store on this "
+                           "device; what it lacked was asked of a model in "
+                           "general terms only, and every sentence that "
+                           "left is in the egress ledger")
+                          if generic else
+                          ("offline pipeline — stored knowledge and current "
                            "readings through an add-and-norm stack, every "
                            "layer on the record; a configured model key "
                            "replaces this with real conversation")
@@ -397,6 +446,12 @@ def reply(user_id: str, area: str, message: str, pdi=None,
                           "model-generated coaching grounded in this user's "
                           "own check-ins and goals — general habits advice, "
                           "not professional counsel",
+                # What went out this turn, if anything: the sentence word
+                # for word, what was taken out of it first, where it went
+                # and whether it left the host. None when nothing was
+                # asked. An adaptation nobody can see is an uncanny one,
+                # and a send nobody can see is a leak.
+                "asked_outside": asked_outside,
                 # Who actually answered — not who was picked. The distinction
                 # is the whole point: a silent degrade to the stub under a
                 # screen that says Claude is how a founder demos canned text
