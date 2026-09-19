@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type CoachCurriculum, type CoachStore, type ErrandLedger,
-         type Guidance, type LookoutList, type LookoutPage,
+import { api, type CoachCurriculum, type CoachStore, type EgressLedger,
+         type ErrandLedger, type Guidance, type LookoutList, type LookoutPage,
          type NoticeLedger, type SpecialistAnswer } from "../api";
 import { fill, t as tr, visitorLang } from "../l10n";
 import { CONVERSATION_IDLE_MS, hush, hushAndReport, heardNothing, listen, primeVoice,
@@ -73,6 +73,10 @@ export function Coach({ go }: {
   // The unattended pass — what it went and learned without being asked, and
   // what is left to spend today.
   const [ledger, setLedger] = useState<ErrandLedger | null>(null);
+  // Every sentence that left this device on this person's behalf, word
+  // for word (jim/egress.py) — the record they check "nothing private
+  // went" against, rather than a claim this screen makes.
+  const [went, setWent] = useState<EgressLedger | null>(null);
   const [running, setRunning] = useState(false);
   // The situational half of the same ladder: what the coach noticed during
   // the day, and which half of it settled each one.
@@ -90,6 +94,7 @@ export function Coach({ go }: {
       setKnows(await api.coachStore(session.userId, session.userToken));
       setSyllabus(await api.coachCurriculum(session.userId, session.userToken));
       setLedger(await api.errands(session.userId, session.userToken));
+      setWent(await api.egress(session.userId, session.userToken));
       setNoticed(await api.noticed(session.userId, session.userToken));
       setWatches(await api.lookouts(session.userId, session.userToken));
     } catch { /* the ask card stands on its own */ }
@@ -485,6 +490,16 @@ export function Coach({ go }: {
             <div className="muted small">{tr("cch.answered", lang)
               .replace("{who}", String(reply.provenance.generated_by))}</div>
           )}
+          {/* Under the general-terms posture, what went out on this turn —
+              the sentence exactly as sent, so the person sees at the moment
+              of the answer that they were not in it. */}
+          {reply.provenance?.asked_outside && (
+            <div className="muted small">
+              {tr("egr.asked", lang)} “{reply.provenance.asked_outside.sentence}” —{" "}
+              {reply.provenance.asked_outside.left_host
+                ? tr("egr.left", lang) : tr("egr.stayed", lang)}
+            </div>
+          )}
 
           {/* A specialist covers this area. An offer, not a send — what would
               cross is what the person just wrote, so the button is theirs to
@@ -570,6 +585,47 @@ export function Coach({ go }: {
                       {e.left_host ? tr("err.left", lang) : tr("err.stayed", lang)}
                       {e.redactions > 0 && ` · ${e.redactions} ${tr("err.redacted", lang)}`}
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* The egress ledger: every sentence that could have left this
+              device, newest first, word for word. Shown whether or not the
+              general-terms posture is on — a turn sent as written is on it
+              too, which is the point. */}
+          {went && (
+            <div style={{ marginTop: 10 }}>
+              <div className="muted small">
+                <b>{tr("egr.head", lang)}</b>
+              </div>
+              <div className="muted small">{tr("egr.lead", lang)}</div>
+              {went.sentences.length === 0 && (
+                <div className="muted small">{tr("egr.none", lang)}</div>
+              )}
+              {went.sentences.map((row) => (
+                <div key={row.id} className="spec-row">
+                  <div>
+                    “{row.sentence}”
+                    <div className="muted small">
+                      {row.purpose === "coach" ? tr("egr.why.coach", lang)
+                        : row.purpose === "general_terms" ? tr("egr.why.general_terms", lang)
+                        : row.purpose === "study" ? tr("egr.why.study", lang)
+                        : row.purpose === "errand" ? tr("egr.why.errand", lang)
+                        : row.purpose === "excursion" ? tr("egr.why.excursion", lang)
+                        : row.purpose === "letter" ? tr("egr.why.letter", lang)
+                        : row.purpose === "noticed" ? tr("egr.why.noticed", lang)
+                        : tr("egr.why.other", lang)}
+                      {" · "}
+                      {row.left_host ? tr("egr.left", lang) : tr("egr.stayed", lang)}
+                      {row.redactions > 0 && ` · ${row.redactions} ${tr("err.redacted", lang)}`}
+                    </div>
+                    {row.kept.length > 0 && (
+                      <div className="muted small">
+                        {row.kept.map((k) => `${k.took} → ${k.as}`).join(" · ")}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

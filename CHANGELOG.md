@@ -6,6 +6,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The coach is the offline model, and what it lacks it asks for in
+  general terms.** A new permit, `ask_in_general_terms` (its own yes,
+  because what changes is exactly what leaves): under it a coach turn is
+  answered from the store on the device first, and the prompt a coach
+  turn builds — with the person's context in it — goes nowhere. Only a
+  miss reaches a model, and what reaches it is the question recomposed
+  by `jim/egress.py`: the person's names, their contacts, links, phones,
+  dates, times, ages, readings and every bare number taken out and
+  replaced by a marker saying what it was, the first person turned into
+  the third. What was taken out is kept on the device and never sent.
+  The answer is learned where the offline coach reads it and the
+  recorded miss is closed, so the same gap is asked once; a degrade to
+  the local stub is not learned; offline mode is not opened by the
+  permit. The reply's provenance carries `asked_outside` — the sentence
+  word for word, or null. The engaged session gets the same door as a
+  tool, `ask_general`, on the irreversible list with its siblings.
+- **A log of every sentence that left, for a person to read.** One
+  `egress` row per sentence that could leave the device — exactly as
+  sent, with the fixed framing that went with it, what was taken out
+  first, the provider it went to, who answered and whether it left the
+  host. Written by the two doors anything goes out by: the study path
+  (`research.excursion`, so every excursion, study and errand is on it)
+  and the model door (`llm.generate_for_user`, so a coach turn, letter or
+  handled notice sent as written to a vendor is on it too). Served by
+  `GET /egress/{user}` and on the coach screen, in ten languages. A test
+  names every other place a provider is spoken to directly, so a third
+  door has to be added on purpose. Mechanism 9 on the examination page.
+
+### Changed
+
+- The excursions' `left_host` is now true when the brief was answered by
+  a keyed vendor model, not only when the cloud gateway took it. Before
+  this a brief sent to a configured provider was recorded as having
+  stayed.
+- The composer runs on every excursion brief, so the study path now
+  takes out links, phones, dates, times, ages, readings and bare numbers
+  as well as the two names it always redacted, and the brief is about *a
+  person* rather than *me*. The topic itself stays local and unchanged;
+  only the brief that leaves is recomposed.
+
 ## [3.4.0] - 2026-09-07
 
 ### Added

@@ -208,7 +208,8 @@ def _ask_jim(user_id: str, item: dict, cloud=None) -> dict:
     system = _SYSTEM.format(situation=situation,
                             context=coach._context(user_id))
     system += i18n.directive(i18n.effective_language(user_id))
-    gen = llm.generate_for_user(user_id, system, situation, cloud=cloud)
+    gen = llm.generate_for_user(user_id, system, situation, cloud=cloud,
+                                source="noticed")
     return {"text": gen["text"], "provider": gen["provider"],
             "degraded": bool(gen.get("degraded")), "reason": gen.get("reason")}
 

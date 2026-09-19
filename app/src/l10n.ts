@@ -6217,6 +6217,52 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   "err.redacted": {
     en: "taken out of it", es: "suprimido de ahí", fr: "retiré du texte", de: "daraus entfernt", pt: "retirado dali", it: "rimossi dal testo", ja: "を伏せ字にしました", zh: "处已被去除", hi: "बातें हटाई गईं", ar: "حُذفت منه",
   },
+  // The egress ledger (jim/egress.py): every sentence that could have left
+  // this device, word for word, and why it went. `egr.why.*` are the wire's
+  // purposes given words; `egr.asked` sits on the reply card for the turn
+  // that just went out in general terms.
+  "egr.head": {
+    en: "Every sentence that left", es: "Cada frase que salió", fr: "Chaque phrase qui est partie", de: "Jeder Satz, der das Gerät verlassen hat", pt: "Cada frase que saiu", it: "Ogni frase che è uscita", ja: "外に出たすべての文", zh: "离开设备的每一句话", hi: "बाहर गया हर वाक्य", ar: "كل جملة غادرت",
+  },
+  "egr.lead": {
+    en: "Word for word, as it was sent — read it to check that nothing private went.", es: "Palabra por palabra, tal como se envió: léelo para comprobar que nada privado salió.", fr: "Mot pour mot, tel qu'envoyé — lisez-le pour vérifier que rien de privé n'est parti.", de: "Wort für Wort, wie es gesendet wurde – lies nach, dass nichts Privates hinausging.", pt: "Palavra por palavra, tal como foi enviado — leia para confirmar que nada privado saiu.", it: "Parola per parola, così com'è stato inviato — leggilo per verificare che nulla di privato sia uscito.", ja: "送信されたままを一語一句。個人的な情報が出ていないか確認できます。", zh: "逐字逐句，如同发送时一样——读一读，确认没有私人信息外泄。", hi: "शब्दशः, जैसा भेजा गया — पढ़कर जाँचें कि कुछ भी निजी बाहर नहीं गया।", ar: "كلمة بكلمة كما أُرسلت — اقرأها لتتأكد أن لا شيء خاصًا غادر.",
+  },
+  "egr.none": {
+    en: "Nothing has left this device.", es: "Nada ha salido de este dispositivo.", fr: "Rien n'a quitté cet appareil.", de: "Nichts hat dieses Gerät verlassen.", pt: "Nada saiu deste dispositivo.", it: "Niente ha lasciato questo dispositivo.", ja: "この端末から何も出ていません。", zh: "没有任何内容离开此设备。", hi: "इस डिवाइस से कुछ भी बाहर नहीं गया।", ar: "لم يغادر أي شيء هذا الجهاز.",
+  },
+  "egr.left": {
+    en: "left this device", es: "salió de este dispositivo", fr: "a quitté cet appareil", de: "hat dieses Gerät verlassen", pt: "saiu deste dispositivo", it: "ha lasciato questo dispositivo", ja: "この端末から出ました", zh: "已离开此设备", hi: "इस डिवाइस से बाहर गया", ar: "غادرت هذا الجهاز",
+  },
+  "egr.stayed": {
+    en: "did not leave this device", es: "no salió de este dispositivo", fr: "n'a pas quitté cet appareil", de: "hat dieses Gerät nicht verlassen", pt: "não saiu deste dispositivo", it: "non ha lasciato questo dispositivo", ja: "この端末から出ていません", zh: "未离开此设备", hi: "इस डिवाइस से बाहर नहीं गया", ar: "لم تغادر هذا الجهاز",
+  },
+  "egr.asked": {
+    en: "Asked in general terms:", es: "Preguntado en términos generales:", fr: "Demandé en termes généraux :", de: "In allgemeinen Worten gefragt:", pt: "Perguntado em termos gerais:", it: "Chiesto in termini generali:", ja: "一般的な言い方で尋ねました：", zh: "以一般措辞提问：", hi: "सामान्य शब्दों में पूछा गया:", ar: "سُئل بعبارات عامة:",
+  },
+  "egr.why.coach": {
+    en: "a coach turn, as written", es: "un turno del coach, tal como se escribió", fr: "un tour du coach, tel qu'écrit", de: "eine Coach-Antwort, wie geschrieben", pt: "uma vez do coach, tal como escrito", it: "un turno del coach, così come scritto", ja: "コーチの一回、書かれたまま", zh: "教练的一轮对话，原样发送", hi: "कोच की एक बारी, जैसा लिखा गया", ar: "دور للمدرّب، كما كُتب",
+  },
+  "egr.why.general_terms": {
+    en: "the coach asked in general terms", es: "el coach preguntó en términos generales", fr: "le coach a demandé en termes généraux", de: "der Coach fragte in allgemeinen Worten", pt: "o coach perguntou em termos gerais", it: "il coach ha chiesto in termini generali", ja: "コーチが一般的な言い方で尋ねました", zh: "教练以一般措辞提问", hi: "कोच ने सामान्य शब्दों में पूछा", ar: "سأل المدرّب بعبارات عامة",
+  },
+  "egr.why.study": {
+    en: "a study you asked for", es: "un estudio que pediste", fr: "une étude que vous avez demandée", de: "ein Studium auf deine Bitte", pt: "um estudo que pediu", it: "uno studio che hai chiesto", ja: "あなたが頼んだ学習", zh: "你请求的研究", hi: "आपके कहने पर अध्ययन", ar: "دراسة طلبتها أنت",
+  },
+  "egr.why.errand": {
+    en: "an errand it ran on its own", es: "un encargo que hizo por su cuenta", fr: "une course faite de lui-même", de: "ein Botengang von sich aus", pt: "um recado que fez por conta própria", it: "una commissione fatta da solo", ja: "自分で行った用事", zh: "它自行完成的差事", hi: "अपने आप किया गया काम", ar: "مهمة قام بها من تلقاء نفسه",
+  },
+  "egr.why.excursion": {
+    en: "an excursion", es: "una excursión", fr: "une excursion", de: "ein Ausflug", pt: "uma excursão", it: "un'escursione", ja: "知識の外出", zh: "一次知识外出", hi: "एक ज्ञान-यात्रा", ar: "رحلة معرفية",
+  },
+  "egr.why.letter": {
+    en: "the weekly letter", es: "la carta semanal", fr: "la lettre hebdomadaire", de: "der Wochenbrief", pt: "a carta semanal", it: "la lettera settimanale", ja: "週の手紙", zh: "每周信件", hi: "साप्ताहिक पत्र", ar: "الرسالة الأسبوعية",
+  },
+  "egr.why.noticed": {
+    en: "something it noticed and handled", es: "algo que detectó y resolvió", fr: "quelque chose qu'il a remarqué et traité", de: "etwas, das ihm auffiel und das es regelte", pt: "algo que reparou e resolveu", it: "qualcosa che ha notato e gestito", ja: "気づいて対処したこと", zh: "它注意到并处理的事", hi: "जो इसने नोटिस किया और संभाला", ar: "شيء لاحظه وعالجه",
+  },
+  "egr.why.other": {
+    en: "another door", es: "otra puerta", fr: "une autre porte", de: "eine andere Tür", pt: "outra porta", it: "un'altra porta", ja: "別の経路", zh: "另一扇门", hi: "एक और द्वार", ar: "باب آخر",
+  },
   // The situational half of the ladder (jim/noticed.py). `ntc.free` is the
   // number the whole thing exists to move: of what it handled unattended,
   // how much the free coach carried.
@@ -6512,6 +6558,9 @@ const TABLE: Record<string, Partial<Record<Lang, string>>> = {
   },
   "permits.area.study_on_your_own": {
     en: "Study on its own", es: "Estudiar por su cuenta", fr: "Étudier de lui-même", de: "Eigenständig studieren", pt: "Estudar por conta própria", it: "Studiare da solo", ja: "自分で学びに行く", zh: "自行研究", hi: "अपने आप अध्ययन", ar: "الدراسة من تلقاء نفسه",
+  },
+  "permits.area.ask_in_general_terms": {
+    en: "Ask in general terms", es: "Preguntar en términos generales", fr: "Demander en termes généraux", de: "In allgemeinen Worten fragen", pt: "Perguntar em termos gerais", it: "Chiedere in termini generali", ja: "一般的な言い方で尋ねる", zh: "以一般措辞提问", hi: "सामान्य शब्दों में पूछना", ar: "السؤال بعبارات عامة",
   },
   "permits.area.handle_what_you_notice": {
     en: "Handle what it notices", es: "Atender lo que nota", fr: "Traiter ce qu'il remarque", de: "Bearbeiten, was ihm auffällt", pt: "Tratar do que nota", it: "Gestire ciò che nota", ja: "気づいたことに対処する", zh: "处理它注意到的事", hi: "जो यह नोटिस करे उसे संभालना", ar: "معالجة ما يلاحظه",

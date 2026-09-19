@@ -682,6 +682,18 @@ def generate_for_user(user_id: str, system: str, user: str, cloud=None,
     # raises into a generation.
     from . import corpus
     corpus.capture(user_id, system, user, text, actual, source=source)
+    # And the egress ledger (jim/egress.py): when the turn was sent to a
+    # model on another party's machine, the words that went — the person's
+    # message and the whole framing around it — are written down for the
+    # person to read. Judged on who was *asked*, not on who answered: a
+    # vendor call that failed after the request left still left.
+    from . import egress
+    if egress.left(intended):
+        try:
+            egress.note(user_id, source or "turn", user, system, 0, [],
+                        intended, actual, True)
+        except Exception:  # noqa: BLE001 — the record never costs the turn
+            logger.exception("egress ledger write failed")
     return {"text": text, "provider": actual, "degraded": degraded,
             "reason": reason, "grounded": grounded,
             "drew_on": list(getattr(inner, "drew_on", []) or [])

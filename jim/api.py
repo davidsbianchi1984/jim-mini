@@ -4163,7 +4163,8 @@ def create_app(qrme_client: QRMEClient | None = None,
                                          "is empty and no topic was named")
             topic, area = head[0]["topic"], head[0]["area"]
         cid = research.excursion(user_id, topic, cloud=app.state.cloud,
-                                 learn=True, pdi=app.state.pdi)
+                                 learn=True, pdi=app.state.pdi,
+                                 purpose="study")
         left_host = bool(db.connect().execute(
             "SELECT left_host FROM excursions WHERE id=?",
             (cid,)).fetchone()["left_host"])
@@ -4665,6 +4666,24 @@ def create_app(qrme_client: QRMEClient | None = None,
                 "spent_today": errands.spent_today(user_id),
                 "daily": errands.DAILY,
                 "permitted": permits.granted(user_id, errands.PERMIT)}
+
+    # ---- the egress ledger: every sentence that left, word for word -------
+
+    @app.get("/egress/{user_id}")
+    def egress_ledger(user_id: str, request: Request) -> dict:
+        """Everything that could have left this device on this person's
+        behalf, newest first — each sentence exactly as it was sent, the
+        fixed framing it went with, what was taken out of it first (kept
+        here), where it went, who answered and whether it left the host at
+        all (jim/egress.py). `permitted` says whether the coach is under
+        the general-terms posture, so an empty page reads as *nothing has
+        gone* rather than *nothing is being written down*.
+        """
+        _user_or_404(user_id, request)
+        from . import egress
+        out = egress.ledger(user_id)
+        out["permitted"] = permits.granted(user_id, egress.PERMIT)
+        return out
 
     # ---- the lookout: a page the vault keeps fresh ------------------------
 

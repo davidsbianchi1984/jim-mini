@@ -351,6 +351,19 @@ TOOLS: tuple[dict, ...] = (
              "coach and the monitors; it asks you first, in the "
              "conversation, and only goes on your yes",
      "irreversible": "engaged.cannot_unsay"},
+    # The coach's general-terms door (jim/egress.py), under its own asked
+    # permit: the question goes to the coach, which answers from its store
+    # and, when it cannot, asks a model with the person taken out of the
+    # sentence. Irreversible for the same reason as its siblings — what
+    # left for a model cannot be recalled — even though what leaves here
+    # is a general question with every name, number, date and place out.
+    {"name": "ask_general", "acts": True,
+     "route": ("POST", "/coach/{user_id}"),
+     "says": "put a question the coach could not answer to a model in "
+             "general terms — you taken out of it, every name, number, "
+             "date and place taken out, and the sentence kept in a log "
+             "you can read",
+     "irreversible": "engaged.cannot_unsay"},
     {"name": "study_unattended", "acts": True,
      "route": ("POST", "/errands/{user_id}"),
      "says": "go and study what the coach could not answer, on its own",
