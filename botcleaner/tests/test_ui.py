@@ -150,9 +150,12 @@ def test_assisted_path_browser_extension(server):
     (ext / "manifest.json").write_text(json.dumps(m))
 
     with sync_api.sync_playwright() as p:
-        kw = dict(headless=True, args=[f"--disable-extensions-except={ext}", f"--load-extension={ext}", "--headless=new"])
+        # Extensions need full Chromium; Playwright's default headless shell can't load them.
+        kw = dict(headless=True, args=[f"--disable-extensions-except={ext}", f"--load-extension={ext}"])
         if os.environ.get("CHROMIUM_PATH"):
             kw["executable_path"] = os.environ["CHROMIUM_PATH"]
+        else:
+            kw["channel"] = "chromium"
         ctx = p.chromium.launch_persistent_context(tempfile.mkdtemp(), **kw)
         clicks = []
         ctx.expose_binding("reportClick", lambda src, x: clicks.append(x))
