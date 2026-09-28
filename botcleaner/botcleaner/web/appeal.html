@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Account Appeal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🧹%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main style="max-width:640px">
+  <div class="panel" id="box"><p class="muted">Loading your notice…</p></div>
+</main>
+<script src="/static/common.js"></script>
+<script>
+const token = decodeURIComponent(location.pathname.split("/").pop());
+const box = document.getElementById("box");
+const STATE_TEXT = { active: "Your account is active.", challenged: "Your account needs verification.", restricted: "Your account is restricted.", suspended: "Your account is suspended.", removed: "Your account was removed." };
+async function load() {
+  let n;
+  try { n = await api(`/api/appeal/${encodeURIComponent(token)}`); }
+  catch (e) { box.innerHTML = `<h2>We couldn't find this notice</h2><p class="muted">${esc(e.message)}. Check that you opened the full link from your notice.</p>`; return; }
+  const ap = n.appeal;
+  box.innerHTML = `
+    <h2>A notice about your ${esc(n.platform)} account</h2>
+    <p class="notice"><b>${esc(STATE_TEXT[n.current_state] || "")}</b><br>${esc(n.what_happened)}</p>
+    <h3>Why</h3>
+    <ul>${n.why.map(x => `<li>${esc(x)}</li>`).join("") || "<li>Our automated systems flagged the account as likely automated.</li>"}</ul>
+    <h3>If we got it wrong</h3>
+    <p>${esc(n.how_to_appeal)}</p>
+    <div id="form"></div>`;
+  const f = document.getElementById("form");
+  if (ap && ap.status !== "void") {
+    const msg = { open: `Your appeal is with our review team. We aim to decide by ${fmtDate(ap.review_due)}.`,
+      approved: "Your appeal was approved and your account has been restored. Sorry for the trouble.",
+      denied: "Your appeal was reviewed by a person and the decision stands." }[ap.status];
+    f.innerHTML = `<div class="card"><b>Appeal ${esc(ap.status)}</b><p>${esc(msg)}</p>${ap.decision_note ? `<p class="muted">Reviewer's note: ${esc(ap.decision_note)}</p>` : ""}</div>`;
+  } else if (n.can_appeal) {
+    f.innerHTML = `
+      <label class="f">Tell us about yourself and how you use your account
+        <textarea id="st" maxlength="5000" placeholder="I'm a real person — I use this account to…"></textarea></label>
+      <label class="f" style="margin-top:8px">How can we reach you? (optional)<input id="ct" maxlength="200" placeholder="Email or phone"></label>
+      <p class="small muted">Never share your password. We will never ask for it.</p>
+      <div class="row end"><button class="primary" id="send">Send appeal</button></div>`;
+    document.getElementById("send").onclick = async () => {
+      try { await api(`/api/appeal/${encodeURIComponent(token)}`, { method: "POST", body: { statement: document.getElementById("st").value, contact: document.getElementById("ct").value } });
+        toast("Appeal sent"); load(); } catch (e) { toast(e.message); }
+    };
+  } else {
+    f.innerHTML = `<p class="muted">${n.current_state === "active" ? "Nothing to appeal — your account is active." : `The appeal window closed on ${fmtDate(n.appeal_deadline)}.`}</p>`;
+  }
+}
+load();
+</script>
+</body>
+</html>

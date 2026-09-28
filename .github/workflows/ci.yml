@@ -41,6 +41,20 @@ jobs:
       - run: pip install -e .[dev]
       - run: pytest -q
 
+  # Bot Account Cleaner: a standalone app in botcleaner/, tested on its own.
+  botcleaner:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: botcleaner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .[dev]
+      - run: pytest -q
+
   # Smoke-test the front-end: every PR proves the desktop app still type-checks
   # and builds. (Skips the Electron binary download — the renderer build does
   # not need it.)

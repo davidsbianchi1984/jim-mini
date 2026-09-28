@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Purge Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🧹%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>🛡️ Platform Purge Console</h1>
+  <span class="muted small" id="who"></span>
+  <span class="spacer"></span>
+  <a class="btn" href="/">Personal Cleaner</a>
+  <button id="signout" class="hidden">Sign out</button>
+</header>
+<main>
+  <section id="auth" class="panel hidden" style="max-width:560px;margin:40px auto">
+    <h2>Purge bots from your platform — with appeals</h2>
+    <p class="muted">Score every account on your service, act in reversible tiers, and give every affected user a notice and a way to contest.</p>
+    <label class="f">Owner or reviewer API key<input id="keyIn" placeholder="bcp_… or bcr_…"></label>
+    <div class="row end" style="margin-top:8px"><button class="primary" id="useKey">Sign in</button></div>
+    <h3>New platform</h3>
+    <div class="row"><input id="tName" placeholder="Platform name" style="flex:1"><input id="adminTok" placeholder="Admin token (if required)"><button id="createTenant">Create</button></div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <nav class="tabs" id="tabs">
+      <button data-tab="overview" class="on">Overview</button>
+      <button data-tab="connect">Connect data</button>
+      <button data-tab="accounts">Accounts</button>
+      <button data-tab="rings">Rings</button>
+      <button data-tab="act">Rules &amp; dry run</button>
+      <button data-tab="batches">Batches</button>
+      <button data-tab="appeals">Appeals</button>
+      <button data-tab="removal">Permanent removal</button>
+      <button data-tab="audit">Audit log</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+
+    <div data-view="overview">
+      <div class="panel"><div class="row"><h2 style="margin:0">Overview</h2><span style="flex:1"></span><button class="primary owner" id="scanBtn">Scan all accounts</button></div>
+        <div class="grid" id="kpis" style="margin-top:12px"></div></div>
+      <div class="panel"><h2>Top reasons</h2><div id="topReasons"></div></div>
+      <div class="panel"><h2>Actions in the last 30 days</h2><div id="trend"></div></div>
+    </div>
+
+    <div data-view="connect" class="hidden">
+      <div class="panel">
+        <h2>Connect your account data (read-only)</h2>
+        <p class="small muted">Send accounts through the REST API (<code>POST /api/purge/accounts</code>), or upload a CSV or JSON export of your user table with signup and activity signals. Lists in CSV cells are separated with <code>|</code>.</p>
+        <div class="row"><input type="file" id="accFile" accept=".csv,.json"><button class="primary owner" id="accUpload">Upload</button></div>
+        <h3>Columns we understand</h3>
+        <pre>account_id, username, display_name, email, created_at, signup_ip, signup_asn, device_fingerprint, user_agent,
+webdriver, captcha_solve_ms, honeypot_filled, honeypot_link_hit, login_ips, login_asns, action_timestamps,
+posts, email_verified, phone_verified, tags</pre>
+        <h3>Real-time signup gate</h3>
+        <p class="small muted">Call <code>POST /api/purge/gate</code> with the same fields before creating an account. It answers <b>allow</b>, <b>challenge</b> or <b>block</b> with reasons.</p>
+        <h3>Enforcement</h3>
+        <p class="small muted">Poll <code>GET /api/purge/feed?since=&lt;last id&gt;</code> (or set a webhook in Settings) and apply each state on your side: challenged, restricted, suspended, removed or active. Every action includes the plain-language notice and appeal link to show the user.</p>
+      </div>
+    </div>
+
+    <div data-view="accounts" class="hidden">
+      <div class="panel">
+        <div class="row">
+          <label class="f">Min score<input id="aMin" type="number" value="60" style="width:90px"></label>
+          <label class="f">Max score<input id="aMax" type="number" value="100" style="width:90px"></label>
+          <label class="f">Reason<select id="aReason"><option value="">Any</option></select></label>
+          <label class="f">State<select id="aState"><option value="">Any</option><option>active</option><option>challenged</option><option>restricted</option><option>suspended</option><option>removed</option></select></label>
+          <label class="f">Signed up after<input id="aAfter" type="date"></label>
+          <label class="f">Ring<input id="aRing" placeholder="ring id" style="width:140px"></label>
+          <button id="aGo" class="primary" style="align-self:end">Filter</button>
+          <button id="aSample" style="align-self:end">Spot-check sample</button>
+        </div>
+        <p class="small muted" id="aTotal"></p>
+        <div class="table-wrap"><table><thead><tr><th>Account</th><th>Score</th><th>Why</th><th>State</th><th class="hide-sm">Signed up</th><th>Spot check</th></tr></thead><tbody id="aRows"></tbody></table></div>
+      </div>
+    </div>
+
+    <div data-view="rings" class="hidden"><div class="panel"><h2>Bot rings</h2><div id="ringList"></div></div></div>
+
+    <div data-view="act" class="hidden">
+      <div class="panel">
+        <h2>Owner rules</h2>
+        <p class="small muted">Rules layer on top of the model; the first matching rule decides the tier (0 = exempt). Rules can't reach tier 4 — permanent removal always waits for the appeal window and a human reviewer.</p>
+        <div id="ruleList"></div>
+        <div class="row" style="margin-top:8px">
+          <input id="rName" placeholder="Rule name" style="width:160px">
+          <input id="rMin" type="number" placeholder="min score" style="width:100px">
+          <select id="rReason"><option value="">any reason</option></select>
+          <select id="rTier"><option value="1">→ Tier 1 challenge</option><option value="2">→ Tier 2 restrict</option><option value="3">→ Tier 3 suspend</option><option value="0">→ Exempt</option></select>
+          <button class="owner" id="rAdd">Add rule</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="row"><h2 style="margin:0">Dry run</h2><span style="flex:1"></span><button class="primary owner" id="dryBtn">Run dry run</button></div>
+        <p class="small muted">Shows exactly who would be hit and why. Nothing changes until you execute the batch.</p>
+        <div id="dryOut"></div>
+      </div>
+    </div>
+
+    <div data-view="batches" class="hidden"><div class="panel"><h2>Batches</h2><div id="batchList"></div></div></div>
+
+    <div data-view="appeals" class="hidden">
+      <div class="panel">
+        <div class="row"><h2 style="margin:0">Appeals</h2><span style="flex:1"></span>
+          <select id="apStatus"><option value="open">Open</option><option value="approved">Approved</option><option value="denied">Denied</option></select></div>
+        <div id="apList" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div data-view="removal" class="hidden">
+      <div class="panel">
+        <h2>Ready for permanent removal (Tier 4)</h2>
+        <p class="small muted">Suspended accounts whose appeal window has closed without a successful or pending appeal. A reviewer must confirm; the account's data is then deleted per your retention policy. This can't be undone.</p>
+        <div id="remList"></div>
+      </div>
+    </div>
+
+    <div data-view="audit" class="hidden">
+      <div class="panel"><div class="row"><h2 style="margin:0">Audit log</h2><span style="flex:1"></span><span id="auditOk"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>When</th><th>Who</th><th>What</th><th>Details</th></tr></thead><tbody id="auditRows"></tbody></table></div></div>
+    </div>
+
+    <div data-view="settings" class="hidden">
+      <div class="panel">
+        <h2>Thresholds &amp; policy</h2>
+        <div class="grid" id="cfgForm"></div>
+        <div class="row end" style="margin-top:12px"><button class="primary owner" id="cfgSave">Save</button></div>
+      </div>
+      <div class="panel owner">
+        <h2>Reviewers</h2>
+        <div class="row"><input id="rvName" placeholder="Reviewer name"><button id="rvAdd">Add reviewer</button></div>
+        <p class="small muted" id="rvOut"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/static/common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let key = store.get("bc_key"), me = null;
+const H = () => ({ "X-API-Key": key });
+const STATE_CHIP = { active: "good", challenged: "warn", restricted: "warn", suspended: "bad", removed: "bad" };
+const REASONS = ["signup_velocity_ip","signup_velocity_subnet","signup_velocity_asn","signup_velocity_fingerprint","disposable_email","sequential_email","captcha_timing","headless","honeypot","templated_posts","datacenter_ip","inhuman_timing","random_username","no_verification"];
+["aReason", "rReason"].forEach(id => $(id).innerHTML += REASONS.map(r => `<option value="${r}">${r.replace(/_/g, " ")}</option>`).join(""));
+
+async function show() {
+  $("auth").classList.toggle("hidden", !!key); $("appView").classList.toggle("hidden", !key); $("signout").classList.toggle("hidden", !key);
+  if (!key) return;
+  try { me = await api("/api/purge/me", { headers: H() }); } catch (e) { key = null; store.set("bc_key", null); toast(e.message); return show(); }
+  $("who").textContent = `${me.name} · ${me.role}`;
+  document.querySelectorAll(".owner").forEach(el => el.classList.toggle("hidden", me.role !== "owner"));
+  switchTab("overview");
+}
+$("useKey").onclick = () => { key = $("keyIn").value.trim(); store.set("bc_key", key); show(); };
+$("signout").onclick = () => { key = null; store.set("bc_key", null); show(); };
+$("createTenant").onclick = async () => {
+  try { const r = await api("/api/purge/tenants", { method: "POST", body: { name: $("tName").value || "My platform" }, headers: { "X-Admin-Token": $("adminTok").value } });
+    key = r.api_key; store.set("bc_key", key); alert("Your owner API key (shown once — store it safely):\n\n" + key); show(); } catch (e) { toast(e.message); }
+};
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+function switchTab(t) {
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.querySelectorAll("[data-view]").forEach(v => v.classList.toggle("hidden", v.dataset.view !== t));
+  ({ overview: loadOverview, connect: () => {}, accounts: loadAccounts, rings: loadRings, act: loadRules, batches: loadBatches, appeals: loadAppeals, removal: loadRemoval, audit: loadAudit, settings: loadSettings })[t]();
+}
+const kpi = (label, v, sub = "") => `<div class="card"><div class="small muted">${esc(label)}</div><div class="big">${esc(v)}</div><div class="small muted">${sub}</div></div>`;
+
+async function loadOverview() {
+  const r = await api("/api/purge/report", { headers: H() });
+  const s = r.accounts_by_state, l = r.accounts_by_label, total = Object.values(s).reduce((a, b) => a + b, 0);
+  const ap = r.appeals, apTotal = Object.values(ap).reduce((a, b) => a + b, 0);
+  $("kpis").innerHTML = kpi("Accounts", total.toLocaleString(), `${(l.tier3 || 0) + (l.tier2 || 0) + (l.tier1 || 0)} flagged`) +
+    kpi("Suspended", s.suspended || 0, `${s.restricted || 0} restricted · ${s.challenged || 0} challenged`) +
+    kpi("Bots removed", r.bots_removed) +
+    kpi("Appeals", apTotal, `${ap.open || 0} open`) +
+    kpi("Overturn rate", (100 * r.overturn_rate).toFixed(1) + "%", r.overturn_target_met === null ? "no decisions yet" : r.overturn_target_met ? "within the 5% target" : "above the 5% target — review thresholds") +
+    kpi("Signup gate", Object.entries(r.signup_gate).map(([k, v]) => `${v} ${k}`).join(" · ") || "—");
+  const maxR = Math.max(1, ...Object.values(r.top_reasons));
+  $("topReasons").innerHTML = Object.entries(r.top_reasons).map(([k, v]) => `<div class="row small"><span style="width:200px">${esc(k.replace(/_/g, " "))}</span><div class="progress" style="flex:1"><div style="width:${100 * v / maxR}%"></div></div><span style="width:60px;text-align:right">${v}</span></div>`).join("") || `<p class="muted">Run a scan to see why accounts are flagged.</p>`;
+  const days = {}; r.trend.forEach(t => { (days[t.day] ||= {})[t.tier] = t.n; });
+  $("trend").innerHTML = Object.keys(days).length ? `<table><thead><tr><th>Day</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Tier 4</th><th>Restored</th></tr></thead><tbody>` +
+    Object.entries(days).map(([d, t]) => `<tr><td>${d}</td><td>${t[1] || 0}</td><td>${t[2] || 0}</td><td>${t[3] || 0}</td><td>${t[4] || 0}</td><td>${t[0] || 0}</td></tr>`).join("") + "</tbody></table>" : `<p class="muted">No actions yet.</p>`;
+}
+$("scanBtn").onclick = async () => { $("scanBtn").disabled = true; try { const r = await api("/api/purge/scan", { method: "POST", headers: H() }); toast(`Scanned ${r.scanned} accounts · ${r.rings} rings`); loadOverview(); } catch (e) { toast(e.message); } finally { $("scanBtn").disabled = false; } };
+
+$("accUpload").onclick = async () => {
+  const f = $("accFile").files[0]; if (!f) return toast("Choose a file");
+  try {
+    let r;
+    if (f.name.endsWith(".json")) r = await api("/api/purge/accounts", { method: "POST", body: JSON.parse(await f.text()), headers: H() });
+    else { const fd = new FormData(); fd.append("file", f); r = await api("/api/purge/accounts/csv", { method: "POST", form: fd, headers: H() }); }
+    toast(`Ingested ${r.ingested} accounts. Run a scan from Overview.`);
+  } catch (e) { toast(e.message); }
+};
+
+function accountRow(a, review = true) {
+  return `<tr><td><b>${esc(a.username || a.account_id)}</b><div class="small muted">${esc(a.account_id)}${a.email ? " · " + esc(a.email) : ""}</div>
+    ${a.ring_id ? `<span class="chip warn">${esc(a.ring_id)}</span>` : ""}${a.exempt ? `<span class="chip good">exempt</span>` : ""}${a.human_reviewed ? `<span class="chip">reviewed</span>` : ""}${a.tags.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</td>
+    <td><span class="pill ${esc(a.label || "")}">${a.score == null ? "—" : Math.round(a.score)}</span></td>
+    <td><ul class="reasons">${a.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul></td>
+    <td><span class="chip ${STATE_CHIP[a.state] || ""}">${esc(a.state)}</span></td><td class="hide-sm small">${fmtDate(a.created_at)}</td>
+    <td>${review ? `<div class="row"><button class="small" data-rv="${esc(a.account_id)}" data-bot="1">Bot</button><button class="small" data-rv="${esc(a.account_id)}" data-bot="0">Human</button></div>` : ""}</td></tr>`;
+}
+function bindReview(scope, reload) {
+  scope.querySelectorAll("[data-rv]").forEach(b => b.onclick = async () => {
+    await api(`/api/purge/accounts/${encodeURIComponent(b.dataset.rv)}/review`, { method: "POST", body: { is_bot: b.dataset.bot === "1" }, headers: H() });
+    toast(b.dataset.bot === "1" ? "Confirmed as bot" : "Marked human — exempt from automated action"); reload();
+  });
+}
+async function loadAccounts() {
+  const q = new URLSearchParams({ min_score: $("aMin").value || 0, max_score: $("aMax").value || 100 });
+  if ($("aReason").value) q.set("reason", $("aReason").value);
+  if ($("aState").value) q.set("state", $("aState").value);
+  if ($("aAfter").value) q.set("signup_after", $("aAfter").value);
+  if ($("aRing").value) q.set("ring_id", $("aRing").value);
+  const r = await api("/api/purge/accounts?" + q, { headers: H() });
+  $("aTotal").textContent = `${r.total.toLocaleString()} accounts match${r.total > r.accounts.length ? ` (showing ${r.accounts.length})` : ""}`;
+  $("aRows").innerHTML = r.accounts.map(a => accountRow(a)).join("") || `<tr><td colspan="6" class="muted">No accounts match.</td></tr>`;
+  bindReview($("aRows"), loadAccounts);
+}
+$("aGo").onclick = loadAccounts;
+$("aSample").onclick = async () => {
+  const s = await api("/api/purge/sample?per_label=10", { headers: H() });
+  const rows = [...s.tier3, ...s.tier2, ...s.tier1];
+  $("aTotal").textContent = `Random spot-check sample: ${s.tier3.length} tier 3, ${s.tier2.length} tier 2, ${s.tier1.length} tier 1. Mark each Bot or Human.`;
+  $("aRows").innerHTML = rows.map(a => accountRow(a)).join(""); bindReview($("aRows"), () => {});
+};
+async function loadRings() {
+  const rs = await api("/api/purge/rings", { headers: H() });
+  $("ringList").innerHTML = rs.length ? `<table><thead><tr><th>Ring</th><th>Size</th><th>Mean score</th><th>Shared signals</th><th>States</th><th></th></tr></thead><tbody>` +
+    rs.map(r => `<tr><td>${esc(r.ring_id)}</td><td>${r.size}</td><td>${r.mean_score}</td><td>${r.top_reasons.map(x => `<span class="chip">${esc(x.replace(/_/g, " "))}</span>`).join("")}</td>
+      <td class="small">${Object.entries(r.states).map(([k, v]) => `${v} ${k}`).join(", ")}</td><td><button data-ring="${esc(r.ring_id)}">Members</button></td></tr>`).join("") + "</tbody></table>" : `<p class="muted">No rings found. Scan first.</p>`;
+  document.querySelectorAll("[data-ring]").forEach(b => b.onclick = () => { $("aRing").value = b.dataset.ring; $("aMin").value = 0; switchTab("accounts"); });
+}
+async function loadRules() {
+  const rules = await api("/api/purge/rules", { headers: H() });
+  $("ruleList").innerHTML = rules.length ? rules.map(r => `<div class="row card" style="margin-bottom:6px"><b>${esc(r.name)}</b><span class="small muted">
+    ${r.min_score != null ? "score ≥ " + r.min_score : ""} ${r.reasons_any.length ? "reason: " + r.reasons_any.join(", ") : ""} → ${r.exempt || r.tier === 0 ? "exempt" : "tier " + r.tier}</span><span style="flex:1"></span>
+    ${me.role === "owner" ? `<button class="small danger" data-del="${esc(r.id)}">Delete</button>` : ""}</div>`).join("") : `<p class="muted small">No rules — the model's thresholds decide.</p>`;
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => { await api(`/api/purge/rules/${b.dataset.del}`, { method: "DELETE", headers: H() }); loadRules(); });
+}
+$("rAdd").onclick = async () => {
+  const tier = +$("rTier").value;
+  const body = { name: $("rName").value || "Rule", tier, exempt: tier === 0 };
+  if ($("rMin").value) body.min_score = +$("rMin").value;
+  if ($("rReason").value) body.reasons_any = [$("rReason").value];
+  try { await api("/api/purge/rules", { method: "POST", body, headers: H() }); loadRules(); } catch (e) { toast(e.message); }
+};
+$("dryBtn").onclick = async () => {
+  try {
+    const r = await api("/api/purge/dry-run", { method: "POST", body: {}, headers: H() });
+    $("dryOut").innerHTML = `<p><b>${r.total}</b> accounts would be actioned: ${Object.entries(r.by_tier).map(([t, n]) => `${n} × tier ${t}`).join(", ") || "none"}.
+      <span class="small muted">By cause: ${Object.entries(r.by_cause).map(([c, n]) => `${esc(c)} ${n}`).join(", ")}</span></p>
+      ${r.total ? `<div class="row"><button class="primary" id="execBtn">Execute batch ${esc(r.batch_id)}</button><span class="small muted">Applied in chunks; you can pause or roll back.</span></div>` : ""}
+      <div class="table-wrap"><table><thead><tr><th>Account</th><th>Now</th><th>Would become</th><th>Score</th><th>Why</th><th>Cause</th></tr></thead><tbody>
+      ${r.items.slice(0, 500).map(i => `<tr><td>${esc(i.account_id)}${i.ring_id ? ` <span class="chip warn">ring</span>` : ""}</td><td>${esc(i.current_state)}</td><td><span class="chip ${STATE_CHIP[i.action]}">${esc(i.action)}</span></td><td>${Math.round(i.score)}</td><td><ul class="reasons">${i.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul></td><td class="small">${esc(i.cause)}</td></tr>`).join("")}
+      </tbody></table></div>`;
+    if ($("execBtn")) $("execBtn").onclick = async () => {
+      if (!confirm(`Apply ${r.total} actions? Each affected user gets a notice with an appeal link.`)) return;
+      await api(`/api/purge/batches/${r.batch_id}/execute`, { method: "POST", headers: H() }); switchTab("batches");
+    };
+  } catch (e) { toast(e.message); }
+};
+async function loadBatches() {
+  const bs = await api("/api/purge/batches", { headers: H() });
+  $("batchList").innerHTML = bs.length ? `<table><thead><tr><th>Batch</th><th>Created</th><th>By</th><th>State</th><th>Progress</th><th></th></tr></thead><tbody>` + (await Promise.all(bs.map(async b => {
+    const s = await api(`/api/purge/batches/${b.id}`, { headers: H() });
+    const own = me.role === "owner";
+    return `<tr><td>${esc(b.id)}</td><td class="small">${fmtDate(b.created_at)}</td><td class="small">${esc(b.actor)}</td><td><span class="chip">${esc(b.state)}</span></td>
+      <td class="small">${s.cursor}/${s.total} · ${s.applied} applied${s.rolled_back ? ` · ${s.rolled_back} rolled back` : ""}</td>
+      <td><div class="row">${own && b.state === "planned" ? `<button data-b="${b.id}" data-op="execute" class="primary">Execute</button>` : ""}
+      ${own && b.state === "running" ? `<button data-b="${b.id}" data-op="step">Next chunk</button><button data-b="${b.id}" data-op="pause">Pause</button>` : ""}
+      ${own && b.state === "paused" ? `<button data-b="${b.id}" data-op="execute">Resume</button>` : ""}
+      ${own && ["running", "paused", "done"].includes(b.state) && s.applied ? `<button class="danger" data-b="${b.id}" data-op="rollback">Roll back</button>` : ""}</div></td></tr>`;
+  }))).join("") + "</tbody></table>" : `<p class="muted">No batches yet. Run a dry run first.</p>`;
+  document.querySelectorAll("[data-op]").forEach(b => b.onclick = async () => {
+    if (b.dataset.op === "rollback" && !confirm("Restore every account in this batch to its previous state?")) return;
+    try { await api(`/api/purge/batches/${b.dataset.b}/${b.dataset.op}`, { method: "POST", headers: H() }); loadBatches(); } catch (e) { toast(e.message); }
+  });
+}
+$("apStatus").onchange = loadAppeals;
+async function loadAppeals() {
+  const aps = await api("/api/purge/appeals?status=" + $("apStatus").value, { headers: H() });
+  $("apList").innerHTML = aps.map(a => `<div class="card" style="margin-bottom:10px">
+    <div class="row"><b>${esc(a.account.username || a.account_id)}</b><span class="chip ${STATE_CHIP[a.account.state]}">${esc(a.account.state)}</span>
+      <span class="pill ${esc(a.account.label || "")}">${Math.round(a.account.score || 0)}</span>${a.overdue ? `<span class="chip bad">overdue</span>` : ""}
+      <span style="flex:1"></span><span class="small muted">submitted ${fmtDate(a.created_at)} · due ${fmtDate(a.review_due)}</span></div>
+    <p style="white-space:pre-wrap">${esc(a.statement)}</p>${a.contact ? `<p class="small muted">Contact: ${esc(a.contact)}</p>` : ""}
+    <div class="small muted">Flagged because:</div><ul class="reasons">${a.account.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    ${a.status === "open" ? `<div class="row" style="margin-top:8px"><input placeholder="Note to the user (optional)" id="note-${a.id}" style="flex:1">
+      <button class="primary" data-ap="${a.id}" data-ok="1">Approve &amp; restore</button><button class="danger" data-ap="${a.id}" data-ok="0">Deny</button></div>`
+      : `<p class="small">Decision: <b>${esc(a.status)}</b> by ${esc(a.reviewer)} ${a.decision_note ? "— " + esc(a.decision_note) : ""}</p>`}</div>`).join("") || `<p class="muted">No ${esc($("apStatus").value)} appeals.</p>`;
+  document.querySelectorAll("[data-ap]").forEach(b => b.onclick = async () => {
+    try { await api(`/api/purge/appeals/${b.dataset.ap}/decide`, { method: "POST", body: { approve: b.dataset.ok === "1", note: $("note-" + b.dataset.ap).value }, headers: H() });
+      toast(b.dataset.ok === "1" ? "Approved — account restored" : "Denied"); loadAppeals(); } catch (e) { toast(e.message); }
+  });
+}
+async function loadRemoval() {
+  const cs = await api("/api/purge/removal-candidates", { headers: H() });
+  $("remList").innerHTML = cs.length ? `<div class="row"><button class="danger" id="remAll">Permanently remove ${cs.length} account${cs.length > 1 ? "s" : ""}</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Account</th><th>Score</th><th>Why</th><th>State</th><th class="hide-sm">Signed up</th><th></th></tr></thead><tbody>${cs.map(a => accountRow(a, false)).join("")}</tbody></table></div>`
+    : `<p class="muted">Nothing is eligible. Accounts become eligible only after their appeal window closes with no successful or pending appeal.</p>`;
+  if ($("remAll")) $("remAll").onclick = async () => {
+    if (!confirm(`Permanently remove ${cs.length} accounts and delete their data? This cannot be undone.`)) return;
+    const r = await api("/api/purge/remove-permanently", { method: "POST", body: { account_ids: cs.map(c => c.account_id) }, headers: H() });
+    toast(`Removed ${r.removed.length}${r.refused.length ? `, refused ${r.refused.length}` : ""}`); loadRemoval();
+  };
+}
+async function loadAudit() {
+  const [rows, v] = await Promise.all([api("/api/purge/audit", { headers: H() }), api("/api/purge/audit/verify", { headers: H() })]);
+  $("auditOk").innerHTML = v.ok ? `<span class="chip good">Chain intact · ${v.entries} entries</span>` : `<span class="chip bad">Tampering detected at #${v.broken_at}</span>`;
+  $("auditRows").innerHTML = rows.slice().reverse().map(r => `<tr><td>${r.seq}</td><td class="small">${new Date(r.at).toLocaleString()}</td><td class="small">${esc(r.actor)}</td><td>${esc(r.kind)}</td><td><code class="small">${esc(JSON.stringify(r.payload)).slice(0, 220)}</code></td></tr>`).join("");
+}
+const CFG_FIELDS = [["tier1_min", "Tier 1 (challenge) from score"], ["tier2_min", "Tier 2 (restrict) from score"], ["tier3_min", "Tier 3 (suspend) from score"],
+  ["appeal_window_days", "Appeal window (days, ≥7)"], ["review_sla_days", "Appeal review deadline (days)"], ["batch_size", "Batch chunk size"],
+  ["ring_tier3_min_size", "Ring size for tier 3"], ["appeal_base_url", "Public appeal URL base"], ["enforcement_webhook", "Enforcement webhook URL"],
+  ["exempt_tags", "Exempt tags (comma separated)"], ["allowed_tiers", "Allowed tiers (comma separated)"]];
+async function loadSettings() {
+  const c = await api("/api/purge/config", { headers: H() });
+  $("cfgForm").innerHTML = CFG_FIELDS.map(([k, l]) => `<label class="f">${esc(l)}<input data-cfg="${k}" value="${esc(Array.isArray(c[k]) ? c[k].join(", ") : c[k] ?? "")}" ${me.role !== "owner" ? "disabled" : ""}></label>`).join("");
+}
+$("cfgSave").onclick = async () => {
+  const patch = {};
+  document.querySelectorAll("[data-cfg]").forEach(i => {
+    const k = i.dataset.cfg, v = i.value.trim();
+    if (k === "exempt_tags") patch[k] = v ? v.split(",").map(s => s.trim()).filter(Boolean) : [];
+    else if (k === "allowed_tiers") patch[k] = v.split(",").map(s => +s.trim()).filter(Boolean);
+    else if (["appeal_base_url", "enforcement_webhook"].includes(k)) patch[k] = v || null;
+    else patch[k] = +v;
+  });
+  if (patch.appeal_base_url == null) delete patch.appeal_base_url;
+  try { await api("/api/purge/config", { method: "PATCH", body: patch, headers: H() }); toast("Saved"); } catch (e) { toast(e.message); }
+};
+$("rvAdd").onclick = async () => {
+  try { const r = await api("/api/purge/reviewers", { method: "POST", body: { name: $("rvName").value || "Reviewer" }, headers: H() });
+    $("rvOut").innerHTML = `Reviewer key for ${esc(r.name)} (shown once): <code>${esc(r.key)}</code>`; } catch (e) { toast(e.message); }
+};
+show();
+</script>
+</body>
+</html>
