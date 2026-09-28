@@ -1,0 +1,37 @@
+name: Bot Account Cleaner — browser, accuracy and load checks
+
+# PRD section 7: weekly automated UI tests of every guided and assisted path
+# (web app, browser extension, phone-sized viewport with iOS/Android steps),
+# the accuracy gates including the red-team set, and a load test.
+# Runs weekly, and on any push that touches botcleaner/ so a branch can fail
+# before it is merged.
+on:
+  push:
+    paths:
+      - "botcleaner/**"
+      - ".github/workflows/botcleaner-weekly.yml"
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: botcleaner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .[dev] playwright
+      - run: python -m playwright install --with-deps chromium
+      - name: Browser tests (guided, assisted, extension, console, appeals)
+        run: BOTCLEANER_UI_TESTS=1 pytest -q tests/test_ui.py
+      - name: Accuracy gates and red team
+        run: python -m botcleaner.evaluation
+      - name: Load test, Module A (100k connections)
+        run: python -m botcleaner.loadtest --module a --size 100000
+      - name: Load test, Module B (100k accounts)
+        run: python -m botcleaner.loadtest --module b --size 100000

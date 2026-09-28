@@ -65,7 +65,7 @@ class RemovalService:
         job_id = sec.new_id("j_")
         now = sec.iso()
         with self.db.tx() as tx:
-            tx.execute("INSERT INTO removal_jobs VALUES (?,?,?,?,?,?,?,?)",
+            tx.execute("INSERT INTO removal_jobs(id,user_id,platform,mode,state,created_at,pace_seconds,next_at) VALUES (?,?,?,?,?,?,?,?)",
                        (job_id, user_id, platform, mode, "running", now, PACE[mode], now))
             for i, (aid, direction, action) in enumerate(items):
                 tx.execute("INSERT INTO removal_items(job_id,idx,platform,account_id,direction,action,mode,updated_at)"
@@ -97,7 +97,8 @@ class RemovalService:
         if j["state"] in ("done", "cancelled"):
             raise ValueError(f"job is already {j['state']}")
         with self.db.tx() as tx:
-            tx.execute("UPDATE removal_jobs SET state=?, next_at=? WHERE id=?", (state, sec.iso(), job_id))
+            tx.execute("UPDATE removal_jobs SET state=?, next_at=?, finished_at=CASE WHEN ?='cancelled' THEN ? ELSE finished_at END"
+                       " WHERE id=?", (state, sec.iso(), state, sec.iso(), job_id))
             if state == "cancelled":
                 for it in j["items"]:
                     if it["status"] in ("queued", "opened"):
@@ -228,5 +229,5 @@ class RemovalService:
     def _maybe_done(self, job_id: str) -> None:
         left = self.db.one("SELECT COUNT(*) n FROM removal_items WHERE job_id=? AND status IN ('queued','opened')", (job_id,))["n"]
         if left == 0:
-            self.db.x("UPDATE removal_jobs SET state='done' WHERE id=? AND state='running'", (job_id,))
+            self.db.x("UPDATE removal_jobs SET state='done', finished_at=? WHERE id=? AND state='running'", (sec.iso(), job_id))
 

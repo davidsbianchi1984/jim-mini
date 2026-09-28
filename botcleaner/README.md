@@ -11,7 +11,7 @@ cd botcleaner
 pip install -e .[dev]
 python -m botcleaner --port 8000        # http://localhost:8000  (Personal Cleaner)
                                         # http://localhost:8000/console  (Purge Console)
-pytest -q                               # 55 tests, including the accuracy gates
+pytest -q                               # 66 tests, including the accuracy gates (+5 browser tests with BOTCLEANER_UI_TESTS=1)
 python -m botcleaner.evaluation         # print the §7 validation gates on seeded networks
 ```
 
@@ -74,6 +74,42 @@ Also included:
    - a hash-chained **append-only audit log**: database triggers refuse edits and deletes, and `GET /api/purge/audit/verify` detects tampering
    - separate owner and reviewer keys, and tenant isolation
 
+## Assisted-mode browser extension
+
+`extension/` is a Manifest V3 extension for Chrome and Edge. To try it:
+1. Open `chrome://extensions` and turn on developer mode.
+2. Choose **Load unpacked** and select `botcleaner/extension`.
+3. Open the popup and enter your server address and access key.
+4. Pick an Assisted job and open the first profile.
+
+It opens each flagged profile and shows the steps in a small panel beside it. **You** click Remove or Unfollow yourself, then press "I removed them".
+
+Rules the extension follows:
+- It never clicks, types, submits or reads anything on the platform's page.
+- A test checks the source for any code that could do that, and a browser test confirms the page's Remove button is never clicked.
+- It asks for access only to your own server.
+- It keeps the server's human pace between profiles.
+
+## Platform SDK and admin-API adapters (Module B)
+
+- **`/static/sdk.js`** adds three things to a signup form:
+  - a hidden honeypot field and an invisible bait link
+  - headless-browser detection
+  - CAPTCHA and form-fill timing
+
+  `BotCleaner.protect(form).collect()` returns those signals. Your server forwards them to `POST /api/purge/gate`.
+- **Adapters** (`PUT /api/purge/adapter`, then `POST /api/purge/adapter/sync`) import members and apply each tier on the platform itself:
+
+  | State | Discourse | Discord |
+  |---|---|---|
+  | Challenged | deactivate | verification role |
+  | Restricted | silence | 28-day timeout |
+  | Suspended | suspend until the appeal deadline | ban |
+  | Removed | delete | ban stays |
+  | Active | undo | undo |
+
+  Staff and admins, and Discord bot integrations, arrive tagged as exempt. Credentials are encrypted at rest. Shopify and WordPress remain CSV/REST imports for now.
+
 ## Validation (§7)
 
 `botcleaner/evaluation.py` builds seeded test networks with a known mix of real people and bots. Real people include hard cases: new accounts, no photo, birth-year handles. It then checks the PRD's accuracy gates:
@@ -83,15 +119,47 @@ Also included:
 - bias (no group above 2× the overall false-flag rate)
 - clone traps (every planted clone must be caught in a single scan)
 
-It also includes shadow-mode comparison and stratified 1% review sampling. The test suite fails if any gate fails.
+It also includes shadow-mode comparison and stratified 1% review sampling. The suite fails if any gate fails.
 
-**These gates run on synthetic data.** Passing them shows the pipeline behaves as designed. It does not show real-world accuracy. Before launch, run the same gates on licensed labelled datasets and in ≥2 weeks of shadow mode, as §7 requires.
+**Red team (§7.5).** Three levels of evasive bots with aged accounts, realistic photos and human names:
+- Level 1: recycled posts on a fixed timer. Caught.
+- Level 2: human timing, but no mutual friends and a lopsided follow ratio. Caught.
+- Level 3: nothing in the data tells them apart from people. Not caught. This level measures the blind spot and is reported, not gated.
+
+**Browser tests (§7.9).** `BOTCLEANER_UI_TESTS=1 pytest tests/test_ui.py` drives Chromium through:
+- the guided path at desktop and phone widths, with steps for every platform × device × action
+- Assisted mode in the web app and through the extension
+- the console, the appeals portal and the audit log
+
+`.github/workflows/botcleaner-weekly.yml` runs these weekly, with the gates and load tests.
+
+**Load tests (§7.10).** `python -m botcleaner.loadtest --module a|b --size N` times a full import and scan. On a 4-core dev box:
+
+| Load | Time |
+|---|---|
+| 100k connections (Module A) | ~32 s |
+| 1M connections (Module A) | ~4.6 min, ~10 GB peak memory (test data generated in the same process) |
+| 100k accounts (Module B) | ~33 s |
+
+At 100k connections all four Module A gates pass (0.05% false flags).
+
+**Product metrics (§10).** `GET /api/admin/metrics` (admin token) reports each measure against its target:
+- flag confirmation rate
+- share of users who complete a removal after their first scan
+- median scan-to-clean time
+- accounts users report as restricted by a platform
+- Module B overturn rate
+
+Users report a restriction with `POST /api/me/restriction-report`.
+
+**These gates run on synthetic data.** Passing them shows the pipeline behaves as designed. It does not show real-world accuracy. Before launch, run them on licensed labelled datasets and in ≥2 weeks of shadow mode, as §7 requires.
 
 ## Known limits and open items
 
-- **Instagram, Facebook, TikTok and LinkedIn exports carry only names or handles and dates.** On those platforms most bots reach *Suspicious* (shown for review) rather than *Likely bot* (pre-selected). Scoring prefers precision when evidence is thin. Enrichment through the Assisted extension is the next step.
-- **Clones with no photo.** An account with the same name as a friend but no photo is capped at *Suspicious*. Near-identical names need a matching photo to count as a clone.
-- **No browser extension or mobile apps yet.** The browser extension and native iOS/Android clients are not built. Assisted mode runs in the web app today: it opens each profile in a new tab and paces you.
-- **X API.** The tier and whether it still allows block/unblock need confirming (PRD §11). Scoring handles about 22k connections in ~8 s. 1M-follower accounts would need a job queue and chunked scoring.
-- **Module B admin-API adapters** (Discord, Shopify, WordPress, Discourse) aren't built. Integrate through the REST API and the enforcement feed/webhook.
-- **Legal review** of each platform's terms, and GDPR/CCPA/DSA review, are still to do.
+- **Instagram, Facebook, TikTok and LinkedIn exports carry only names or handles and dates.** On those platforms most bots reach *Suspicious* (shown for review) rather than *Likely bot* (pre-selected). Scoring prefers precision when evidence is thin.
+- **Clones with no photo.** An account with the same name as a friend but no photo is capped at *Suspicious*. Near-identical names need a matching photo. In very large lists, common names are compared by photo only.
+- **No native mobile apps yet.** Native iOS and Android clients are not built. The web app works at phone width and shows iOS/Android steps.
+- **Module B at 50M accounts** (§7.10) needs a real database and sharded scoring. SQLite and single-process scoring top out around a few million.
+- **The X API tier** and whether it still allows block/unblock need confirming (PRD §11).
+- **Shopify and WordPress adapters** aren't built.
+- **Legal review** of each platform's terms and of the extension, and GDPR/CCPA/DSA review, are still to do.

@@ -39,7 +39,7 @@ class Services:
         self.instructions = InstructionStore(db)
         self.x_http = x_http
         self.removal = RemovalService(db, self.personal, x_client_for=self.x_client_for)
-        self.purge = PurgeService(db, enforcer=purge_enforcer)
+        self.purge = PurgeService(db, enforcer=purge_enforcer, http=x_http)
 
     def x_client_for(self, user_id: str):
         tok = self.db.one("SELECT sealed FROM secrets WHERE user_id=? AND name='x_access_token'", (user_id,))
@@ -381,6 +381,25 @@ def create_app(db_path: Optional[str] = None, purge_enforcer=None, x_http=None, 
     def moderate_instructions(iid: str, body: ModerateIn):
         return svc.instructions.moderate(iid, body.approve)
 
+    # Section 10 metrics
+    @app.get("/api/admin/metrics", dependencies=[Depends(admin)])
+    def admin_metrics():
+        from .metrics import product_metrics
+
+        return product_metrics(svc.db)
+
+    class RestrictionIn(BaseModel):
+        platform: Platform
+        note: str = ""
+
+    @app.post("/api/me/restriction-report")
+    def restriction_report(body: RestrictionIn, uid: str = Depends(user)):
+        """A platform restricted the user's own account. The target is zero; every report is investigated."""
+        svc.db.x("INSERT INTO alerts VALUES (?,?,?,?,?,?,?,?,1)",
+                 (sec.new_id("al_"), uid, sec.iso(), "platform_restriction",
+                  f"You reported a restriction on {body.platform.value}: {body.note[:500]}", body.platform.value, None, None))
+        return {"ok": True}
+
     # Alerts, schedule, export, undo
     @app.get("/api/alerts")
     def alerts(uid: str = Depends(user)):
@@ -453,6 +472,32 @@ def create_app(db_path: Optional[str] = None, purge_enforcer=None, x_http=None, 
     async def ingest_csv(file: UploadFile = File(...), t=Depends(owner)):
         text = (await file.read()).decode("utf-8-sig")
         return svc.purge.ingest(t[0], svc.purge.parse_csv(text))
+
+    class AdapterIn(BaseModel):
+        kind: str
+        secret: str = Field(description="Discourse API key or Discord bot token")
+        base_url: Optional[str] = None
+        api_username: Optional[str] = None
+        guild_id: Optional[str] = None
+        verify_role_id: Optional[str] = None
+
+    @app.get("/api/purge/adapter")
+    def get_adapter(t=Depends(owner)):
+        return svc.purge.adapter_info(t[0])
+
+    @app.put("/api/purge/adapter")
+    def put_adapter(body: AdapterIn, t=Depends(owner)):
+        settings = body.model_dump(exclude={"kind", "secret"}, exclude_none=True)
+        return svc.purge.set_adapter(t[0], body.kind, settings, body.secret)
+
+    @app.delete("/api/purge/adapter")
+    def delete_adapter(t=Depends(owner)):
+        svc.purge.remove_adapter(t[0])
+        return {"ok": True}
+
+    @app.post("/api/purge/adapter/sync")
+    def sync_adapter(t=Depends(owner)):
+        return svc.purge.sync_adapter(t[0])
 
     @app.post("/api/purge/scan")
     def purge_scan(t=Depends(owner)):

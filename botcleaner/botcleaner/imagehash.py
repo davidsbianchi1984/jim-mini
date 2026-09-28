@@ -68,15 +68,50 @@ def similar(a: str | None, b: str | None, threshold: int = 10) -> bool:
     return hamming(a, b) <= threshold
 
 
+_MASKS: dict[tuple[int, int], list[int]] = {}
+
+
+def _masks(width: int, k: int) -> list[int]:
+    """XOR masks with at most ``k`` bits set, cached."""
+    key = (width, k)
+    if key not in _MASKS:
+        from itertools import combinations
+
+        out = [0]
+        for r in range(1, k + 1):
+            for bits in combinations(range(width), r):
+                m = 0
+                for b in bits:
+                    m |= 1 << b
+                out.append(m)
+        _MASKS[key] = out
+    return _MASKS[key]
+
+
+def _layout(n: int, threshold: int) -> tuple[int, int]:
+    """Cheapest (blocks, flips-per-block) for the pigeonhole search over ``n`` hashes."""
+    from math import comb
+
+    best = None
+    for blocks in (2, 4, 8):
+        width = 64 // blocks
+        k = -(-(threshold + 1) // blocks) - 1  # some block must differ in at most k bits
+        probes = sum(comb(width, i) for i in range(k + 1))
+        cost = blocks * probes * (1 + n / 2 ** width)
+        if best is None or cost < best[0]:
+            best = (cost, blocks, k)
+    return best[1], best[2]
+
+
 def cluster(hashes: dict[str, str], threshold: int = 6) -> list[list[str]]:
     """Group ids whose avatar hashes are near-duplicates (single-linkage).
 
-    Pigeonhole banding keeps this near-linear: split the 64 bits into
-    ``threshold + 1`` bands; two hashes within ``threshold`` bits must agree
-    exactly on at least one band, so only ids sharing a band are compared.
+    Near-linear via pigeonhole: the 64 bits are split into equal blocks; two hashes
+    within ``threshold`` bits must have some block that differs in at most k bits,
+    so each hash is only compared with hashes sharing a block up to k flips. The
+    block layout is chosen by estimated cost for this many hashes. Identical photos
+    (one stock image on a thousand bots) are grouped outright before the search.
     """
-    # Identical photos (one stock image on a thousand bots) are grouped outright;
-    # only the distinct hash values go through the near-duplicate search.
     by_value: dict[int, list[str]] = {}
     for i, h in hashes.items():
         by_value.setdefault(int(h, 16), []).append(i)
@@ -89,23 +124,25 @@ def cluster(hashes: dict[str, str], threshold: int = 6) -> list[list[str]]:
             i = parent[i]
         return i
 
-    bands = threshold + 1
-    edges = [round(64 * b / bands) for b in range(bands + 1)]
-    compared: set[tuple[int, int]] = set()
-    for b in range(bands):
-        lo, hi = edges[b], edges[b + 1]
-        mask = ((1 << (hi - lo)) - 1) << lo
-        buckets: dict[int, list[int]] = {}
-        for idx, v in enumerate(values):
-            buckets.setdefault(v & mask, []).append(idx)
-        for members in buckets.values():
-            for x, a in enumerate(members):
-                for c in members[x + 1:]:
-                    if (a, c) in compared:
+    blocks, k = _layout(len(values), threshold)
+    width = 64 // blocks
+    full = (1 << width) - 1
+    index: list[dict[int, list[int]]] = [{} for _ in range(blocks)]
+    for idx, v in enumerate(values):
+        for b in range(blocks):
+            index[b].setdefault((v >> (width * b)) & full, []).append(idx)
+    masks = _masks(width, k)
+    for idx, v in enumerate(values):
+        seen: set[int] = set()
+        for b in range(blocks):
+            block, bucket = (v >> (width * b)) & full, index[b]
+            for m in masks:
+                for other in bucket.get(block ^ m, ()):
+                    if other <= idx or other in seen:
                         continue
-                    compared.add((a, c))
-                    if bin(values[a] ^ values[c]).count("1") <= threshold:
-                        parent[find(a)] = find(c)
+                    seen.add(other)
+                    if bin(v ^ values[other]).count("1") <= threshold:
+                        parent[find(idx)] = find(other)
     groups: dict[int, list[str]] = {}
     for idx, v in enumerate(values):
         groups.setdefault(find(idx), []).extend(by_value[v])

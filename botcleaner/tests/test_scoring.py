@@ -147,3 +147,24 @@ def test_scales_to_large_follower_lists():
     res = Scorer(now=NOW).score(s.conns)
     assert len(res) == len(s.conns)
     assert time.time() - t < 60
+
+
+def test_date_only_exports_dont_make_conference_days_look_like_bursts():
+    # LinkedIn's "Connected On" has no time, so a busy conference day is 12 identical timestamps.
+    day0 = datetime(2024, 1, 1, tzinfo=timezone.utc)
+    conns = [conn(f"p{i}", platform=Platform.linkedin, handle=f"person-{i}", name=f"Person {i} Name",
+                  direction=Direction.friend, connected_at=day0 + timedelta(days=9 * i)) for i in range(60)]
+    conns += [conn(f"conf{i}", platform=Platform.linkedin, handle=f"attendee-{i}", name=f"Attendee {i} Name",
+                   direction=Direction.friend, connected_at=datetime(2025, 3, 14, tzinfo=timezone.utc)) for i in range(12)]
+    res = Scorer(now=NOW).score(conns)
+    assert all(r.label == Label.looks_real for r in res)
+
+
+def test_signup_wave_is_relative_to_the_lists_normal_day():
+    # A creator with 3,000 followers: ~2 accounts created per day is normal, 40 on one day isn't.
+    base = datetime(2020, 1, 1, tzinfo=timezone.utc)
+    conns = [conn(f"u{i}", created_at=base + timedelta(days=i // 2, hours=i % 24)) for i in range(3000)]
+    wave = [conn(f"w{i}", created_at=datetime(2025, 5, 5, 3, i % 60, tzinfo=timezone.utc)) for i in range(40)]
+    res = {r.connection.account_id: r for r in Scorer(now=NOW).score(conns + wave)}
+    assert not any("bot_wave" in {x.code for x in res[f"u{i}"].reasons} for i in range(3000))
+    assert all("bot_wave" in {x.code for x in res[f"w{i}"].reasons} for i in range(40))

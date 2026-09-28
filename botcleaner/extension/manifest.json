@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Bot Account Cleaner — Assisted removal",
+  "version": "0.2.0",
+  "description": "Opens each flagged profile and shows you the steps. You click Remove or Unfollow yourself — this extension never clicks for you.",
+  "permissions": ["storage", "tabs"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Bot Account Cleaner" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*", "https://twitter.com/*",
+        "https://www.facebook.com/*", "https://m.facebook.com/*",
+        "https://www.instagram.com/*",
+        "https://www.tiktok.com/*",
+        "https://www.linkedin.com/*"
+      ],
+      "js": ["overlay.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

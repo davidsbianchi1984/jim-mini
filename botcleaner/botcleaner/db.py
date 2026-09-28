@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS removal_jobs (
     state TEXT NOT NULL,                            -- running | paused | done | cancelled
     created_at TEXT NOT NULL,
     pace_seconds REAL NOT NULL,
-    next_at TEXT
+    next_at TEXT,
+    finished_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS removal_items (
@@ -253,6 +254,13 @@ CREATE TRIGGER IF NOT EXISTS t_audit_no_delete BEFORE DELETE ON t_audit
 WHEN (SELECT COUNT(*) FROM tenants WHERE id = OLD.tenant_id) > 0
 BEGIN SELECT RAISE(ABORT, 'audit log is append-only'); END;
 
+CREATE TABLE IF NOT EXISTS t_adapters (
+    tenant_id TEXT PRIMARY KEY REFERENCES tenants(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    settings_json TEXT NOT NULL,
+    sealed BLOB NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS t_signups (
     tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     at TEXT NOT NULL,
@@ -272,6 +280,13 @@ class DB:
         self.lock = threading.RLock()
         with self.lock:
             self.conn.executescript(SCHEMA)
+            self._migrate()
+
+    def _migrate(self) -> None:
+        """Add columns introduced after a database was first created."""
+        cols = {r["name"] for r in self.conn.execute("PRAGMA table_info(removal_jobs)")}
+        if "finished_at" not in cols:
+            self.conn.execute("ALTER TABLE removal_jobs ADD COLUMN finished_at TEXT")
 
     @contextmanager
     def tx(self) -> Iterator[sqlite3.Connection]:

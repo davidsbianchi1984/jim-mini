@@ -52,7 +52,7 @@ WEIGHTS: dict[str, float] = {
     "inflated_audience": 0.45,
     "follow_spree": 0.20,
     # behaviour
-    "fixed_interval": 0.40,
+    "fixed_interval": 0.55,
     "round_the_clock": 0.30,
     "repeated_content": 0.40,
     "repost_only": 0.25,
@@ -164,6 +164,7 @@ class _Ctx:
     names_by_platform: dict[str, set[str]] = field(default_factory=dict)
     platforms: set[str] = field(default_factory=set)
     created_day_clusters: set[str] = field(default_factory=set)
+    date_only: set[str] = field(default_factory=set)
 
 
 class Scorer:
@@ -187,12 +188,29 @@ class Scorer:
         for c in conns:
             ctx.names_by_platform.setdefault(c.platform.value, set()).add(_norm_name(c.name))
 
-        # Arrival bursts: many connections landing in the same hour, per platform+direction.
+        # Some exports only give dates (LinkedIn's "Connected On"), which makes every
+        # day's connections share one timestamp. Detect that per platform so it isn't
+        # mistaken for bursts or follow sprees.
+        ctx.date_only = set()
+        times: dict[str, Counter] = defaultdict(Counter)
+        for c in conns:
+            t = _utc(c.connected_at)
+            if t:
+                times[c.platform.value][t.timetz().replace(tzinfo=None)] += 1
+        for plat, cnt in times.items():
+            total = sum(cnt.values())
+            if total >= 20 and cnt.most_common(1)[0][1] / total >= 0.9:
+                ctx.date_only.add(plat)
+
+        # Arrival bursts: many connections landing in the same hour (or day, for date-only
+        # exports) per platform+direction, far above this list's normal rate.
         buckets: dict[tuple, list[Connection]] = defaultdict(list)
         for c in conns:
             t = _utc(c.connected_at)
             if t and c.direction != Direction.following:
-                buckets[(c.platform, c.direction, t.replace(minute=0, second=0, microsecond=0))].append(c)
+                unit = t.replace(hour=0, minute=0, second=0, microsecond=0) if c.platform.value in ctx.date_only \
+                    else t.replace(minute=0, second=0, microsecond=0)
+                buckets[(c.platform, c.direction, unit)].append(c)
         if buckets:
             sizes = [len(v) for v in buckets.values()]
             med = statistics.median(sizes)
@@ -207,7 +225,8 @@ class Scorer:
 
         # Follow sprees: the user followed many accounts within ten minutes.
         following = sorted(
-            (c for c in conns if c.direction == Direction.following and c.connected_at),
+            (c for c in conns if c.direction == Direction.following and c.connected_at
+             and c.platform.value not in ctx.date_only),
             key=lambda c: _utc(c.connected_at),
         )
         j = 0
@@ -222,14 +241,21 @@ class Scorer:
         for c in conns:
             if c.created_at:
                 by_day[(c.platform, _utc(c.created_at).date())].append(c)
-        for v in by_day.values():
-            if len(v) >= 8:
+        per_platform_days: dict[str, list[int]] = defaultdict(list)
+        for (plat, _day), v in by_day.items():
+            per_platform_days[plat.value].append(len(v))
+        for (plat, _day), v in by_day.items():
+            # A wave is many creations on one day *relative to this list's usual day*.
+            typical = statistics.median(per_platform_days[plat.value])
+            if len(v) >= max(8, 5 * typical):
                 ctx.created_day_clusters.update(c.key for c in v)
 
         # Shared-photo clusters: one avatar reused across differently named accounts.
         hashes = {c.key: c.avatar_hash for c in conns if c.avatar_hash}
         by_key = {c.key: c for c in conns}
-        for group in imagehash.cluster(hashes):
+        # Very large lists: match near-identical copies only (recompression flips a few
+        # bits), which keeps the search near-linear at a million followers.
+        for group in imagehash.cluster(hashes, threshold=6 if len(hashes) <= 50_000 else 3):
             names = {_norm_name(by_key[k].name) for k in group}
             if len(group) >= 3 and len(names) >= 2:
                 ctx.photo_cluster_keys.update(group)
@@ -253,10 +279,18 @@ class Scorer:
             items = list(accounts.values())
             pairs: set[tuple[str, str]] = set()
             for group in by_name.values():
-                for a in group:
-                    for b in group:
-                        if a.account_id < b.account_id:
-                            pairs.add((a.account_id, b.account_id))
+                if len(group) <= 50:
+                    for a in group:
+                        for b in group:
+                            if a.account_id < b.account_id:
+                                pairs.add((a.account_id, b.account_id))
+                else:
+                    # Very common names in huge lists: only near-identical photos can make a clone.
+                    hashes = {c.account_id: c.avatar_hash for c in group if c.avatar_hash}
+                    for members in imagehash.cluster(hashes, threshold=6):
+                        for i, a_id in enumerate(members):
+                            for b_id in members[i + 1:]:
+                                pairs.add(tuple(sorted((a_id, b_id))))
             # Near matches (typo-squats such as "Jon Smith" vs "John Smith").
             if len(items) <= 3000:
                 norm = {c.account_id: _norm_name(c.name) for c in items}
@@ -272,7 +306,7 @@ class Scorer:
                             continue
                         if SequenceMatcher(None, na, nb).ratio() >= 0.9:
                             pairs.add(tuple(sorted((a.account_id, b.account_id))))
-            for a_id, b_id in pairs:
+            for a_id, b_id in sorted(pairs):
                 a, b = accounts[a_id], accounts[b_id]
                 exact = _norm_name(a.name) == _norm_name(b.name)
                 if a.avatar_hash and b.avatar_hash:
@@ -288,6 +322,12 @@ class Scorer:
                     continue
                 if newer.key in self.model.whitelist:
                     continue
+                prev = ctx.clones.get(newer.key)
+                if prev:
+                    # Several lookalikes: point at the oldest one, the likely original.
+                    if self._newer(older, accounts[prev[0]])[0] is older:
+                        continue
+                    strength = max(strength, prev[1])
                 ctx.clones[newer.key] = (older.account_id, strength)
 
         ctx.has_mutual_data = any(c.mutual_ids for c in conns)
@@ -406,8 +446,10 @@ class Scorer:
         if len(ts) >= 10:
             gaps = [(b - a).total_seconds() for a, b in zip(ts, ts[1:])]
             mean = statistics.mean(gaps)
-            if mean > 0 and statistics.pstdev(gaps) / mean < 0.1:
-                add("fixed_interval", 1.0, f"Posts at a fixed interval (every {self._fmt_secs(mean)})")
+            cv = statistics.pstdev(gaps) / mean if mean > 0 else 1.0
+            if cv < 0.1:
+                # Near-perfect regularity is machine timing; loose regularity may be a scheduling tool.
+                add("fixed_interval", 1.0 if cv < 0.02 else 0.7, f"Posts at a fixed interval (every {self._fmt_secs(mean)})")
         if len(ts) >= 50 and len({t.hour for t in ts}) >= 22:
             add("round_the_clock", 1.0, "Posts around the clock, with no time to sleep")
         if c.repost_ratio is not None and c.repost_ratio >= 0.95:

@@ -134,10 +134,44 @@ class Forbidden(PermissionError):
 
 class PurgeService:
     def __init__(self, db: DB, enforcer: Optional[Callable[[str, dict], None]] = None,
-                 clock: Callable[[], datetime] = sec.now):
+                 clock: Callable[[], datetime] = sec.now, http=None):
         self.db = db
         self.enforcer = enforcer
         self.clock = clock
+        self.http = http  # injected httpx client for adapters (tests)
+
+    # ---- admin-API adapters (Discord, Discourse) -------------------------------------
+
+    def set_adapter(self, tid: str, kind: str, settings: dict, secret: str) -> dict:
+        from . import adapters
+
+        adapters.build(kind, settings, secret)  # validates settings
+        self.db.x("INSERT OR REPLACE INTO t_adapters VALUES (?,?,?,?)",
+                  (tid, kind, dumps(settings), sec.seal(secret, f"{tid}:adapter")))
+        self.audit(tid, "owner", "adapter.connected", {"kind": kind, "settings": settings})
+        return {"kind": kind, "settings": settings}
+
+    def adapter_info(self, tid: str) -> Optional[dict]:
+        r = self.db.one("SELECT kind, settings_json FROM t_adapters WHERE tenant_id=?", (tid,))
+        return {"kind": r["kind"], "settings": loads(r["settings_json"], {})} if r else None
+
+    def remove_adapter(self, tid: str) -> None:
+        self.db.x("DELETE FROM t_adapters WHERE tenant_id=?", (tid,))
+        self.audit(tid, "owner", "adapter.disconnected", {})
+
+    def adapter_for(self, tid: str):
+        from . import adapters
+
+        r = self.db.one("SELECT * FROM t_adapters WHERE tenant_id=?", (tid,))
+        if not r:
+            return None
+        return adapters.build(r["kind"], loads(r["settings_json"], {}), sec.unseal(r["sealed"], f"{tid}:adapter"), http=self.http)
+
+    def sync_adapter(self, tid: str) -> dict:
+        a = self.adapter_for(tid)
+        if not a:
+            raise ValueError("No platform adapter is connected")
+        return {**self.ingest(tid, a.fetch_accounts()), "source": a.kind}
 
     # ---- tenants & auth ------------------------------------------------------------
 
@@ -548,6 +582,13 @@ class PurgeService:
                     httpx.post(url, json=payload, timeout=10)
         except Exception as exc:  # the feed below is the source of truth; a failed push is retried by polling
             self.audit(tid, "system", "enforcement.push_failed", {"account_id": account_id, "error": str(exc)[:200]})
+        try:
+            adapter = self.adapter_for(tid)
+            if adapter:
+                adapter.enforce(account_id, state, payload.get("notice"))
+        except Exception as exc:
+            self.audit(tid, "system", "enforcement.adapter_failed",
+                       {"account_id": account_id, "state": state, "error": str(exc)[:200]})
 
     def enforcement_feed(self, tid: str, since_id: int = 0, limit: int = 1000) -> list[dict]:
         """Actions for the platform to enforce, in order (poll with the last id you processed)."""

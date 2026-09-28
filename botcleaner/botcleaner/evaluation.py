@@ -73,14 +73,14 @@ def seeded_network(n_real: int = 500, n_bots: int = 40, n_clones: int = 10, n_fo
             handle = f"{first.lower()}.{last.lower()}{rng.choice(['', '_', str(rng.randint(1, 99))])}"
         else:
             handle = f"{first.lower()}{last.lower()[:3]}{rng.choice(['', 'x', 'official', 'dev'])}"
-        created = now - timedelta(days=rng.randint(60, 4000))            # a few are new
+        created = now - timedelta(days=rng.randint(60, 4000), seconds=rng.randint(0, 86399))  # a few are new
         followers = int(rng.lognormvariate(5.5, 1.0))
         following = int(rng.lognormvariate(5.3, 0.8))
         mutuals = rng.sample(real_ids, rng.randint(2, 25))
         direction = rng.choice([Direction.follower, Direction.following, Direction.follower])
         c = Connection(
             platform=platform, account_id=rid, handle=handle, name=name, direction=direction,
-            connected_at=created + timedelta(days=rng.randint(1, max(2, (now - created).days - 1))),
+            connected_at=created + timedelta(days=rng.randint(1, max(2, (now - created).days - 1)), seconds=rng.randint(0, 86399)),
             created_at=created, followers_count=followers, following_count=following,
             bio=rng.choice(["", "Coffee, code, cats.", "Nurse. Mom of two.", "Runner | Teacher", "Photographer",
                             "Views my own.", "Student", "Chef at a small bistro"]),
@@ -154,6 +154,59 @@ def seeded_network(n_real: int = 500, n_bots: int = 40, n_clones: int = 10, n_fo
         conns.append(c)
         truth[tkey(c)] = True
     return Seeded(conns, truth, group, clones)
+
+
+def red_team_network(n_real: int = 500, per_level: int = 30, seed: int = 21, now: Optional[datetime] = None) -> tuple[Seeded, dict[str, int]]:
+    """Quarterly red-team set (section 7.5): evasive bots added to a normal network.
+
+    Level 1: aged accounts with realistic unique photos and names, but they post
+             recycled content on a fixed schedule.
+    Level 2: also human posting times; the only tells are zero mutual friends in a
+             tightly knit network and following thousands with few followers back.
+    Level 3: indistinguishable from people on the data we can see. They're here to
+             measure the blind spot honestly, not to be caught.
+    Returns the network and each evasive account's level.
+    """
+    rng = random.Random(seed)
+    now = now or datetime(2026, 6, 1, tzinfo=timezone.utc)
+    base = seeded_network(n_real=n_real, n_bots=0, n_clones=0, n_following_bad=0, seed=seed, now=now)
+    level: dict[str, int] = {}
+    for lvl in (1, 2, 3):
+        for i in range(per_level):
+            first, last = rng.choice(FIRST), rng.choice(LAST)
+            created = now - timedelta(days=rng.randint(700, 2400))
+            kw = dict(platform=Platform.x, account_id=f"rt{lvl}_{i}", handle=f"{first.lower()}.{last.lower()}{rng.randint(1, 99)}",
+                      name=f"{first} {last}", direction=Direction.follower, created_at=created,
+                      connected_at=now - timedelta(days=rng.randint(5, 600)), avatar_hash=_hash(rng),
+                      bio=rng.choice(["Coffee lover", "Travel | Food", "Dad, runner", "Designer"]), has_default_avatar=False)
+            if lvl == 1:
+                kw.update(followers_count=rng.randint(150, 900), following_count=rng.randint(150, 900),
+                          mutual_ids=rng.sample([f"r{k}" for k in range(n_real)], 3),
+                          recent_posts=["Check out this amazing deal!"] * 4 + ["Best offer today, link in bio"],
+                          post_timestamps=[now - timedelta(hours=4 * k) for k in range(20)])
+            elif lvl == 2:
+                kw.update(followers_count=rng.randint(20, 120), following_count=rng.randint(2500, 6000), mutual_ids=[],
+                          post_timestamps=[now - timedelta(hours=rng.randint(1, 900)) for _ in range(15)])
+            else:
+                kw.update(followers_count=rng.randint(150, 900), following_count=rng.randint(150, 900),
+                          mutual_ids=rng.sample([f"r{k}" for k in range(n_real)], rng.randint(3, 12)),
+                          post_timestamps=[now - timedelta(hours=rng.randint(1, 900)) for _ in range(15)])
+            c = Connection(**kw)
+            base.conns.append(c)
+            base.truth[tkey(c)] = True
+            level[tkey(c)] = lvl
+    return base, level
+
+
+def red_team_report(results: list[ScoredAccount], truth: dict[str, bool], level: dict[str, int]) -> dict:
+    flagged = lambda r: r.label in (Label.likely_bot, Label.suspicious)  # noqa: E731
+    per = {}
+    for lvl in (1, 2, 3):
+        rs = [r for r in results if level.get(tkey(r.connection)) == lvl]
+        per[f"level{lvl}_recall"] = _ratio(sum(flagged(r) for r in rs), len(rs), 0.0)
+    reals = [r for r in results if not truth[tkey(r.connection)]]
+    per["false_flag_rate"] = _ratio(sum(flagged(r) for r in reals), len(reals), 0.0)
+    return per
 
 
 @dataclass
@@ -317,22 +370,33 @@ def main() -> None:  # pragma: no cover - CLI
     s = seeded_network()
     res = Scorer(now=datetime(2026, 6, 1, tzinfo=timezone.utc), stock_hashes=[]).score(s.conns)
     m = metrics_a(res, s.truth)
+    failed = [k for k, ok in gates_a(m).items() if not ok]
     for k, v in m.as_dict().items():
         print(f"  {k:18} {v:.4f}" if isinstance(v, float) else f"  {k:18} {v}")
     for k, ok in gates_a(m).items():
         print(f"  gate {k:22} {'PASS' if ok else 'FAIL'}")
     b = bias_check(res, s.truth, s.group)
+    if not b["ok"]:
+        failed.append("bias")
     print(f"  bias check           {'PASS' if b['ok'] else 'FAIL'} {b['per_group']}")
     clones_found = sum(1 for r in res if tkey(r.connection) in s.clones and r.is_clone)
     print(f"  clone traps fired    {clones_found}/{len(s.clones)}")
 
+    print("\nRed team — evasive bots (30 per level) in a 500-person network")
+    rt, lv = red_team_network()
+    for k, v in red_team_report(Scorer(now=datetime(2026, 6, 1, tzinfo=timezone.utc)).score(rt.conns), rt.truth, lv).items():
+        print(f"  {k:18} {v:.4f}")
+
     print("\nModule B — seeded site (3000 real + 300 bots)")
     accs, truth = seeded_site()
     mb = metrics_b(SiteScorer().score(accs), truth)
+    failed += [k for k, ok in gates_b(mb).items() if not ok]
     for k, v in mb.as_dict().items():
         print(f"  {k:18} {v:.4f}" if isinstance(v, float) else f"  {k:18} {v}")
     for k, ok in gates_b(mb).items():
         print(f"  gate {k:22} {'PASS' if ok else 'FAIL'}")
+    if failed:
+        raise SystemExit(f"\nFAILED gates: {failed}")
 
 
 if __name__ == "__main__":  # pragma: no cover

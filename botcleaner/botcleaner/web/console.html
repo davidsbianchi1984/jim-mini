@@ -51,10 +51,27 @@
         <h2>Connect your account data (read-only)</h2>
         <p class="small muted">Send accounts through the REST API (<code>POST /api/purge/accounts</code>), or upload a CSV or JSON export of your user table with signup and activity signals. Lists in CSV cells are separated with <code>|</code>.</p>
         <div class="row"><input type="file" id="accFile" accept=".csv,.json"><button class="primary owner" id="accUpload">Upload</button></div>
+        <h3>Or connect your platform's admin API</h3>
+        <p class="small muted">Imports members and applies each tier on your platform (Discourse: deactivate / silence / suspend / delete; Discord: verification role / timeout / ban). Credentials are encrypted at rest.</p>
+        <div class="row owner">
+          <select id="adKind"><option value="discourse">Discourse</option><option value="discord">Discord</option></select>
+          <input id="adUrl" placeholder="https://forum.example.com  (Discourse)">
+          <input id="adGuild" placeholder="Server (guild) ID  (Discord)">
+          <input id="adSecret" type="password" placeholder="API key / bot token">
+          <button id="adSave">Connect</button><button id="adSync" class="primary">Import members</button>
+        </div>
+        <p class="small muted" id="adStatus"></p>
         <h3>Columns we understand</h3>
         <pre>account_id, username, display_name, email, created_at, signup_ip, signup_asn, device_fingerprint, user_agent,
 webdriver, captcha_solve_ms, honeypot_filled, honeypot_link_hit, login_ips, login_asns, action_timestamps,
 posts, email_verified, phone_verified, tags</pre>
+        <h3>Client SDK (honeypots, automation markers, CAPTCHA timing)</h3>
+        <pre>&lt;script src="/static/sdk.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const bc = BotCleaner.protect(document.querySelector("#signup-form"));
+  // captcha.onStart(bc.captchaStarted); captcha.onSolved(bc.captchaSolved);
+  // on submit: send bc.collect() to your server, which forwards it to /api/purge/gate
+&lt;/script&gt;</pre>
         <h3>Real-time signup gate</h3>
         <p class="small muted">Call <code>POST /api/purge/gate</code> with the same fields before creating an account. It answers <b>allow</b>, <b>challenge</b> or <b>block</b> with reasons.</p>
         <h3>Enforcement</h3>
@@ -145,7 +162,7 @@ const $ = id => document.getElementById(id);
 let key = store.get("bc_key"), me = null;
 const H = () => ({ "X-API-Key": key });
 const STATE_CHIP = { active: "good", challenged: "warn", restricted: "warn", suspended: "bad", removed: "bad" };
-const REASONS = ["signup_velocity_ip","signup_velocity_subnet","signup_velocity_asn","signup_velocity_fingerprint","disposable_email","sequential_email","captcha_timing","headless","honeypot","templated_posts","datacenter_ip","inhuman_timing","random_username","no_verification"];
+const REASONS = ["signup_velocity_ip","signup_velocity_subnet","signup_velocity_asn","signup_velocity_fingerprint","disposable_email","sequential_email","captcha_timing","form_speed","headless","honeypot","templated_posts","datacenter_ip","inhuman_timing","random_username","no_verification"];
 ["aReason", "rReason"].forEach(id => $(id).innerHTML += REASONS.map(r => `<option value="${r}">${r.replace(/_/g, " ")}</option>`).join(""));
 
 async function show() {
@@ -166,7 +183,7 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => switchT
 function switchTab(t) {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
   document.querySelectorAll("[data-view]").forEach(v => v.classList.toggle("hidden", v.dataset.view !== t));
-  ({ overview: loadOverview, connect: () => {}, accounts: loadAccounts, rings: loadRings, act: loadRules, batches: loadBatches, appeals: loadAppeals, removal: loadRemoval, audit: loadAudit, settings: loadSettings })[t]();
+  ({ overview: loadOverview, connect: loadAdapter, accounts: loadAccounts, rings: loadRings, act: loadRules, batches: loadBatches, appeals: loadAppeals, removal: loadRemoval, audit: loadAudit, settings: loadSettings })[t]();
 }
 const kpi = (label, v, sub = "") => `<div class="card"><div class="small muted">${esc(label)}</div><div class="big">${esc(v)}</div><div class="small muted">${sub}</div></div>`;
 
@@ -188,6 +205,19 @@ async function loadOverview() {
 }
 $("scanBtn").onclick = async () => { $("scanBtn").disabled = true; try { const r = await api("/api/purge/scan", { method: "POST", headers: H() }); toast(`Scanned ${r.scanned} accounts · ${r.rings} rings`); loadOverview(); } catch (e) { toast(e.message); } finally { $("scanBtn").disabled = false; } };
 
+async function loadAdapter() {
+  if (me.role !== "owner") return;
+  const a = await api("/api/purge/adapter", { headers: H() });
+  $("adStatus").textContent = a ? `Connected: ${a.kind} ${a.settings.base_url || a.settings.guild_id || ""}` : "No adapter connected.";
+}
+$("adSave").onclick = async () => {
+  const kind = $("adKind").value, body = { kind, secret: $("adSecret").value };
+  if (kind === "discourse") body.base_url = $("adUrl").value; else body.guild_id = $("adGuild").value;
+  try { await api("/api/purge/adapter", { method: "PUT", body, headers: H() }); $("adSecret").value = ""; toast("Connected"); loadAdapter(); } catch (e) { toast(e.message); }
+};
+$("adSync").onclick = async () => {
+  try { const r = await api("/api/purge/adapter/sync", { method: "POST", headers: H() }); toast(`Imported ${r.ingested} members from ${r.source}. Run a scan from Overview.`); } catch (e) { toast(e.message); }
+};
 $("accUpload").onclick = async () => {
   const f = $("accFile").files[0]; if (!f) return toast("Choose a file");
   try {

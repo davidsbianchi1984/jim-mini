@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bot Account Cleaner</title>
+<style>
+  :root { --bg:#fff; --ink:#16181d; --muted:#5d6470; --line:#e2e5ea; --accent:#2856d8; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#171a21; --ink:#e8eaef; --muted:#9aa3b2; --line:#2a2f3a; --accent:#6d8ff5; color-scheme: dark; } }
+  body { margin:0; width:320px; padding:14px; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,sans-serif; }
+  h1 { font-size:15px; margin:0 0 8px; } label { display:block; font-size:12px; color:var(--muted); margin-top:8px; }
+  input, select { width:100%; box-sizing:border-box; font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:8px; background:transparent; color:inherit; }
+  button { font:inherit; margin-top:10px; padding:6px 12px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  button.s { background:transparent; color:inherit; border-color:var(--line); font-weight:400; }
+  .m { font-size:12px; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+  <h1>🧹 Assisted removal</h1>
+  <div id="setup">
+    <label>Server<input id="server" placeholder="https://your-botcleaner-server"></label>
+    <label>Access key (Dashboard → Settings)<input id="token" type="password"></label>
+    <button id="save">Save</button>
+  </div>
+  <div id="run" hidden>
+    <label>Removal job<select id="job"></select></label>
+    <button id="start">Open first profile</button>
+    <button id="reset" class="s">Change server</button>
+  </div>
+  <p class="m" id="msg">Opens each flagged profile with the steps beside it. You click Remove or Unfollow yourself — we never click for you, so your account stays safe.</p>
+  <script src="popup.js"></script>
+</body>
+</html>

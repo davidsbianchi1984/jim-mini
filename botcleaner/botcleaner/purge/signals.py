@@ -25,6 +25,7 @@ WEIGHTS = {
     "disposable_email": 0.40,
     "sequential_email": 0.55,
     "captcha_timing": 0.35,
+    "form_speed": 0.45,
     "headless": 0.65,
     "honeypot": 0.85,
     "templated_posts": 0.55,
@@ -62,6 +63,7 @@ class SiteAccount(BaseModel):
     user_agent: Optional[str] = None
     webdriver: Optional[bool] = None             # navigator.webdriver reported by the SDK
     captcha_solve_ms: Optional[int] = None
+    form_fill_ms: Optional[int] = None           # page load to submit, from the SDK
     honeypot_filled: bool = False                # hidden form field had a value
     honeypot_link_hit: bool = False              # followed an invisible link / bait endpoint
     login_ips: list[str] = Field(default_factory=list)
@@ -231,6 +233,8 @@ class SiteScorer:
                     add("captcha_timing", 1.0, f"Solved the CAPTCHA in {a.captcha_solve_ms} ms, faster than a person can")
                 elif a.captcha_solve_ms > 90_000:
                     add("captcha_timing", 0.5, "CAPTCHA took unusually long, typical of solver services")
+            if a.form_fill_ms is not None and a.form_fill_ms < 1500:
+                add("form_speed", 1.0, f"Filled in the whole signup form in {a.form_fill_ms} ms")
             if a.webdriver or (a.user_agent and HEADLESS_UA.search(a.user_agent)):
                 add("headless", 1.0, "Signed up from an automated or headless browser")
             if a.honeypot_filled or a.honeypot_link_hit:
